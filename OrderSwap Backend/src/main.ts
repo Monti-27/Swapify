@@ -50,10 +50,10 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   const port = configService.get('PORT') || 3000;
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   
-  console.log(`🚀 OrderSwap Backend running on: http://localhost:${port}`);
-  console.log(`📚 API Documentation: http://localhost:${port}/api/docs`);
+  console.log(`🚀 OrderSwap Backend running on port: ${port}`);
+  console.log(`📚 API Documentation available at: /api/docs`);
 }
 
 bootstrap();
