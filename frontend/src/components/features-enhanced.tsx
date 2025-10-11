@@ -66,7 +66,7 @@ const features = [
 
 export function FeaturesEnhanced() {
   return (
-    <section id="features" className="py-24 sm:py-32 relative">
+    <section id="features" className="py-24 sm:py-32 relative bg-background">
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:50px_50px]" />
       

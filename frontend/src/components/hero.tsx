@@ -9,7 +9,7 @@ import { motion } from 'framer-motion';
 
 export function Hero() {
   return (
-    <LampContainer className="!bg-background !h-[100vh]">
+    <LampContainer className="!bg-background !min-h-screen">
       <motion.div
         initial={{ opacity: 0, y: 100 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -18,7 +18,7 @@ export function Hero() {
           duration: 0.8,
           ease: "easeInOut",
         }}
-        className="w-full pt-16"
+        className="w-full pt-24"
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl text-center relative">

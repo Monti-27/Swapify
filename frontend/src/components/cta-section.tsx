@@ -8,7 +8,7 @@ import { GlowingEffect } from '@/components/ui/glowing-effect';
 
 export function CTASection() {
   return (
-    <section className="py-24 sm:py-32 relative overflow-hidden">
+    <section className="py-24 sm:py-32 relative overflow-hidden bg-background">
       {/* Background Effects */}
       <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:50px_50px]" />
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent" />

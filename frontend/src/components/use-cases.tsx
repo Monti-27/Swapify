@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { TrendingUp, Repeat, Droplets, Bot, Target, Percent } from 'lucide-react';
+import { TrendingUp, Repeat, Bot, Target, Percent } from 'lucide-react';
 
 const useCases = [
   {
@@ -17,13 +17,6 @@ const useCases = [
     description: 'Set up automated recurring buys to build your position over time. Smart investing made simple.',
     color: 'from-violet-500/20 to-violet-600/20',
     iconBg: 'bg-violet-500/10',
-  },
-  {
-    icon: Droplets,
-    title: 'Liquidity Provision',
-    description: 'Provide liquidity and earn fees from every trade in the pool. Contribute to the ecosystem and get rewarded.',
-    color: 'from-indigo-500/20 to-indigo-600/20',
-    iconBg: 'bg-indigo-500/10',
   },
   {
     icon: Bot,
@@ -50,7 +43,7 @@ const useCases = [
 
 export function UseCases() {
   return (
-    <section className="py-24 sm:py-32 relative overflow-hidden">
+    <section className="py-24 sm:py-32 relative overflow-hidden bg-background">
       {/* Background Elements */}
       <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:50px_50px]" />
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
@@ -69,7 +62,7 @@ export function UseCases() {
               Built for <span className="text-gradient-purple">Every Trading Strategy</span>
             </h2>
             <p className="text-lg text-muted-foreground">
-              Whether you're a day trader, long-term investor, or liquidity provider,
+              Whether you're a day trader, long-term investor, or automated trader,
               WeSwap has the tools you need.
             </p>
           </motion.div>

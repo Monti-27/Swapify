@@ -37,7 +37,7 @@ const trustIndicators = [
 
 export function TrustSection() {
   return (
-    <section className="py-24 sm:py-32 relative">
+    <section className="py-24 sm:py-32 relative bg-background">
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/[0.02] to-background" />
       <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:50px_50px]" />

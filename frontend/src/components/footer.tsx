@@ -2,9 +2,11 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Twitter, Github, MessageCircle } from 'lucide-react';
+import { Github, MessageCircle } from 'lucide-react';
+import { useThemeStore } from '@/store/themeStore';
 
 export function Footer() {
+  const { theme } = useThemeStore();
   return (
     <footer className="relative z-10 border-t border-border/40 bg-background/95 backdrop-blur-sm">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -26,14 +28,25 @@ export function Footer() {
             <p className="text-sm text-muted-foreground font-sans">
               The future of decentralized trading on Solana.
             </p>
-            <div className="mt-4 flex space-x-4">
+            <div className="mt-4 flex space-x-4 items-center">
               <Link
                 href="https://twitter.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-muted-foreground transition-colors hover:text-primary"
+                className="text-muted-foreground transition-all hover:text-primary hover:scale-110 flex items-center justify-center"
               >
-                <Twitter className="h-5 w-5" />
+                <Image 
+                  src="/x logo.svg" 
+                  alt="X (Twitter)"
+                  width={20}
+                  height={20}
+                  className={`transition-all duration-300 hover:brightness-125 ${
+                    theme === 'dark' 
+                      ? 'invert brightness-90 hover:brightness-110' 
+                      : 'brightness-50 hover:brightness-30'
+                  }`}
+                  style={{ filter: theme === 'dark' ? 'invert(1) brightness(0.9)' : 'brightness(0.5)' }}
+                />
               </Link>
               <Link
                 href="https://github.com"
@@ -68,18 +81,18 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/pools"
-                  className="text-muted-foreground transition-colors hover:text-primary"
-                >
-                  Liquidity Pools
-                </Link>
-              </li>
-              <li>
-                <Link
                   href="/dashboard"
                   className="text-muted-foreground transition-colors hover:text-primary"
                 >
                   Dashboard
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/strategies"
+                  className="text-muted-foreground transition-colors hover:text-primary"
+                >
+                  Strategies
                 </Link>
               </li>
             </ul>
