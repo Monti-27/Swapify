@@ -10,11 +10,11 @@ import { TextHoverEffect } from '@/components/ui/text-hover-effect';
 
 export default function Home() {
   return (
-    <div className="min-h-screen relative">
+    <div className="min-h-screen relative bg-background">
       <div className="absolute inset-0 gradient-purple-radial pointer-events-none" />
       <div className="relative z-10">
         <Navbar />
-        <main className="relative -mt-16">
+        <main className="relative">
           <Hero />
           <HowItWorks />
           <FeaturesEnhanced />
@@ -24,9 +24,9 @@ export default function Home() {
         </main>
         
         {/* Layered Footer Section */}
-        <div className="relative w-full">
+        <div className="relative w-full bg-background">
           {/* Large WeSwap Text - Behind Footer */}
-          <div className="relative w-full h-[70vh] min-h-[650px] flex items-end justify-center overflow-hidden pb-20">
+          <div className="relative w-full h-[70vh] min-h-[650px] flex items-end justify-center overflow-hidden pb-20 bg-background">
             <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:50px_50px]" />
             {/* Stronger fade from bottom gradient overlay for better masking */}
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
