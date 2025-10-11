@@ -1,0 +1,197 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // User wallet information
+  wallets   Wallet[]
+  
+  // Trading data
+  strategies Strategy[]
+  trades     Trade[]
+  
+  // Settings
+  settings  Json?
+  
+  @@map("users")
+}
+
+model Wallet {
+  id             String   @id @default(uuid())
+  publicKey      String   @unique
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name           String?  // Optional wallet name
+  isActive       Boolean  @default(true)
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  // Relations
+  strategies     Strategy[]
+  trades         Trade[]
+  
+  @@map("wallets")
+}
+
+model Strategy {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  walletId    String
+  wallet      Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  
+  // Strategy details
+  name        String
+  description String?
+  
+  // Token information
+  fromToken   String   // Token address to sell
+  toToken     String   // Token address to buy
+  
+  // Trigger conditions
+  triggerType String   // 'price' | 'marketCap'
+  triggerValue Float    // Target price or market cap
+  
+  // Amount to trade
+  amountType  String   // 'percentage' | 'fixed'
+  amount      Float
+  
+  // Stop loss & Take profit (optional)
+  stopLoss    Float?
+  takeProfit  Float?
+  
+  // Multi-step configuration (optional)
+  nextStrategyId String?
+  nextStrategy   Strategy? @relation("StrategyChain", fields: [nextStrategyId], references: [id])
+  previousStrategy Strategy[] @relation("StrategyChain")
+  
+  // Status
+  status      String   @default("active") // 'active' | 'triggered' | 'completed' | 'cancelled' | 'failed'
+  
+  // Execution
+  triggeredAt DateTime?
+  completedAt DateTime?
+  
+  // Metadata
+  metadata    Json?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  trades      Trade[]
+  logs        StrategyLog[]
+  
+  @@index([userId])
+  @@index([walletId])
+  @@index([status])
+  @@map("strategies")
+}
+
+model Trade {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  walletId        String
+  wallet          Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  strategyId      String?
+  strategy        Strategy? @relation(fields: [strategyId], references: [id], onDelete: SetNull)
+  
+  // Trade details
+  type            String   // 'buy' | 'sell' | 'swap'
+  fromToken       String
+  toToken         String
+  fromAmount      Float
+  toAmount        Float
+  
+  // Price information
+  executionPrice  Float
+  slippage        Float?
+  
+  // Transaction details
+  txSignature     String?  @unique
+  status          String   @default("pending") // 'pending' | 'completed' | 'failed'
+  
+  // Timestamps
+  executedAt      DateTime @default(now())
+  completedAt     DateTime?
+  
+  // Error handling
+  error           String?
+  
+  // Metadata
+  metadata        Json?
+  
+  @@index([userId])
+  @@index([walletId])
+  @@index([strategyId])
+  @@index([status])
+  @@index([executedAt])
+  @@map("trades")
+}
+
+model StrategyLog {
+  id          String   @id @default(uuid())
+  strategyId  String
+  strategy    Strategy @relation(fields: [strategyId], references: [id], onDelete: Cascade)
+  
+  // Log details
+  level       String   // 'info' | 'warning' | 'error'
+  message     String
+  data        Json?
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([strategyId])
+  @@index([createdAt])
+  @@map("strategy_logs")
+}
+
+model PriceCache {
+  id          String   @id @default(uuid())
+  
+  tokenAddress String  @unique
+  price       Float
+  marketCap   Float?
+  volume24h   Float?
+  
+  source      String   // 'pyth' | 'dexscreener' | 'jupiter'
+  
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+  
+  @@index([tokenAddress])
+  @@index([updatedAt])
+  @@map("price_cache")
+}
+
+model SystemLog {
+  id          String   @id @default(uuid())
+  
+  level       String   // 'info' | 'warning' | 'error' | 'critical'
+  service     String   // 'auth' | 'trade' | 'strategy' | 'monitoring' | 'system'
+  message     String
+  data        Json?
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([service])
+  @@index([level])
+  @@index([createdAt])
+  @@map("system_logs")
+}
+
