@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 
 export interface Token {
   id?: string; // Jupiter API V2 uses 'id'
-  address?: string; // Normalized field
+  address: string; // Required - normalized field
   name: string;
   symbol: string;
   decimals: number;
@@ -12,6 +12,15 @@ export interface Token {
   logoURI?: string; // Normalized field
   tags?: string[];
   daily_volume?: number;
+}
+
+// Normalize token to ensure address field exists
+function normalizeToken(token: any): Token {
+  return {
+    ...token,
+    address: token.address || token.id || token.mint || '',
+    logoURI: token.logoURI || token.icon,
+  };
 }
 
 export function useTokens() {
@@ -31,14 +40,14 @@ export function useTokens() {
 
       // Fetch popular tokens for quick access
       const popular = await apiClient.getPopularTokens();
-      setPopularTokens(popular || []);
+      setPopularTokens((popular || []).map(normalizeToken));
 
       // Optionally load all tokens (can be large)
       // For better UX, we'll fetch all tokens in background
       setTimeout(async () => {
         try {
           const all = await apiClient.getAllTokens();
-          setTokens(all || []);
+          setTokens((all || []).map(normalizeToken));
         } catch (err) {
           console.log('Error loading all tokens:', err);
           toast.error('Failed to load token list', {
@@ -91,7 +100,7 @@ export function useTokens() {
   const searchTokens = useCallback(async (query: string, limit = 50): Promise<Token[]> => {
     try {
       const results = await apiClient.searchTokens(query, limit);
-      return results || [];
+      return (results || []).map(normalizeToken);
     } catch (err) {
       console.log('Error searching tokens:', err);
       
@@ -116,7 +125,7 @@ export function useTokens() {
 
       // If not found, fetch from API
       const token = await apiClient.getTokenByMint(address);
-      return token || null;
+      return token ? normalizeToken(token) : null;
     } catch (err) {
       console.log('Error getting token by address:', err);
       return null;
