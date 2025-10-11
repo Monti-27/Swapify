@@ -12,6 +12,7 @@ import { MonitoringModule } from './monitoring/monitoring.module';
 import { WebsocketModule } from './websocket/websocket.module';
 import { LoggerModule } from './logger/logger.module';
 import { TokenModule } from './token/token.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { TokenModule } from './token/token.module';
     // Core modules
     PrismaModule,
     LoggerModule,
+    HealthModule,
     
     // Feature modules
     AuthModule,

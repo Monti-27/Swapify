@@ -7,8 +7,21 @@ import { AppModule } from './app.module';
 import { PrismaService } from './prisma/prisma.service';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  console.log('🚀 Starting OrderSwap Backend...');
+  console.log('📍 Node Environment:', process.env.NODE_ENV || 'development');
+  console.log('📍 Port:', process.env.PORT || 3000);
+  
+  const app = await NestFactory.create(AppModule, {
+    logger: ['error', 'warn', 'log', 'debug', 'verbose'],
+  });
   const configService = app.get(ConfigService);
+  
+  // Log important config (without sensitive data)
+  console.log('🔧 Configuration loaded:');
+  console.log('   - CORS Origins:', configService.get('CORS_ORIGINS') || 'Not set');
+  console.log('   - Database:', configService.get('DATABASE_URL') ? '✅ Set' : '❌ Missing');
+  console.log('   - JWT Secret:', configService.get('JWT_SECRET') ? '✅ Set' : '❌ Missing');
+  console.log('   - Solana RPC:', configService.get('SOLANA_RPC_URL') ? '✅ Set' : '❌ Missing');
 
   // Security
   app.use(helmet());
@@ -50,11 +63,21 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   const port = configService.get('PORT') || 3000;
-  await app.listen(port, '0.0.0.0');
   
-  console.log(`🚀 OrderSwap Backend running on port: ${port}`);
-  console.log(`📚 API Documentation available at: /api/docs`);
+  try {
+    await app.listen(port, '0.0.0.0');
+    console.log('✅ Server started successfully!');
+    console.log(`🚀 OrderSwap Backend running on port: ${port}`);
+    console.log(`📚 API Documentation available at: /api/docs`);
+    console.log(`🏥 Healthcheck endpoint: /`);
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
 }
 
-bootstrap();
+bootstrap().catch((error) => {
+  console.error('❌ Fatal error during bootstrap:', error);
+  process.exit(1);
+});
 
