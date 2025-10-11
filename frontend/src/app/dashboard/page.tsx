@@ -64,11 +64,11 @@ export default function DashboardPage() {
   const activeStrategies = strategies.filter(s => s.status === 'active');
 
   return (
-    <div className="min-h-screen relative">
+    <div className="min-h-screen relative bg-background">
       <div className="absolute inset-0 gradient-purple-radial pointer-events-none" />
       <div className="relative z-10">
         <Navbar />
-        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-32">
         {/* Wallet Overview */}
         <div className="mb-8">
           <h1 className="mb-2 text-3xl font-bold">

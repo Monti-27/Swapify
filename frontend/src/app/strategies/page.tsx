@@ -210,11 +210,11 @@ export default function StrategiesPage() {
   const completedStrategies = strategies.filter(s => s.status === 'completed');
 
   return (
-    <div className="min-h-screen flex flex-col relative">
+    <div className="min-h-screen flex flex-col relative bg-background">
       <div className="absolute inset-0 gradient-purple-radial pointer-events-none" />
       <div className="relative z-10 flex-1 flex flex-col">
         <Navbar />
-        <main className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 max-w-7xl">
+        <main className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 pt-32 max-w-7xl">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
           <div>
