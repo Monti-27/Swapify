@@ -1,0 +1,365 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Custom Fonts */
+@font-face {
+  font-family: 'Dazzle Unicase';
+  src: url('/fonts/DazzleUnicase-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Dazzle Unicase';
+  src: url('/fonts/DazzleUnicase-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Dazzle Unicase';
+  src: url('/fonts/DazzleUnicase-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Dazzle Unicase';
+  src: url('/fonts/DazzleUnicase-Thin.woff2') format('woff2');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SF Pro Rounded';
+  src: url('/fonts/SFProRounded-Black.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SF Pro Rounded';
+  src: url('/fonts/SFProRounded-Heavy.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SF Pro Rounded';
+  src: url('/fonts/SFProRounded-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SF Pro Rounded';
+  src: url('/fonts/SFProRounded-Semibold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SF Pro Rounded';
+  src: url('/fonts/SFProRounded-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SF Pro Rounded';
+  src: url('/fonts/SFProRounded-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SF Pro Rounded';
+  src: url('/fonts/SFProRounded-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SF Pro Rounded';
+  src: url('/fonts/SFProRounded-Thin.woff2') format('woff2');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SF Pro Rounded';
+  src: url('/fonts/SFProRounded-Ultralight.woff2') format('woff2');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: 'SF Pro Rounded', system-ui, -apple-system, sans-serif;
+  --font-display: 'Dazzle Unicase', system-ui, sans-serif;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 0.75rem;
+  --background: oklch(0.99 0.008 295);
+  --foreground: oklch(0.15 0.02 295);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.15 0.02 295);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0.02 295);
+  --primary: oklch(0.48 0.22 295);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.96 0.015 295);
+  --secondary-foreground: oklch(0.15 0.02 295);
+  --muted: oklch(0.97 0.01 295);
+  --muted-foreground: oklch(0.48 0.02 295);
+  --accent: oklch(0.45 0.20 295);
+  --accent-foreground: oklch(1 0 0);
+  --destructive: oklch(0.6 0.25 25);
+  --border: oklch(0.93 0.012 295);
+  --input: oklch(0.93 0.012 295);
+  --ring: oklch(0.48 0.22 295);
+  --chart-1: oklch(0.48 0.22 295);
+  --chart-2: oklch(0.52 0.20 285);
+  --chart-3: oklch(0.55 0.18 275);
+  --chart-4: oklch(0.58 0.16 265);
+  --chart-5: oklch(0.60 0.14 255);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.15 0.02 295);
+  --sidebar-primary: oklch(0.48 0.22 295);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.96 0.015 295);
+  --sidebar-accent-foreground: oklch(0.15 0.02 295);
+  --sidebar-border: oklch(0.93 0.012 295);
+  --sidebar-ring: oklch(0.48 0.22 295);
+}
+
+.dark {
+  --background: oklch(0.10 0.03 295);
+  --foreground: oklch(0.96 0.005 295);
+  --card: oklch(0.18 0.04 295);
+  --card-foreground: oklch(0.96 0.005 295);
+  --popover: oklch(0.18 0.04 295);
+  --popover-foreground: oklch(0.96 0.005 295);
+  --primary: oklch(0.58 0.24 295);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.28 0.06 295);
+  --secondary-foreground: oklch(0.96 0.005 295);
+  --muted: oklch(0.25 0.05 295);
+  --muted-foreground: oklch(0.65 0.02 295);
+  --accent: oklch(0.55 0.22 295);
+  --accent-foreground: oklch(0.98 0 0);
+  --destructive: oklch(0.65 0.25 25);
+  --border: oklch(0.30 0.06 295);
+  --input: oklch(0.30 0.06 295);
+  --ring: oklch(0.58 0.24 295);
+  --chart-1: oklch(0.58 0.24 295);
+  --chart-2: oklch(0.62 0.22 285);
+  --chart-3: oklch(0.66 0.20 275);
+  --chart-4: oklch(0.70 0.18 265);
+  --chart-5: oklch(0.74 0.16 255);
+  --sidebar: oklch(0.15 0.04 295);
+  --sidebar-foreground: oklch(0.96 0.005 295);
+  --sidebar-primary: oklch(0.58 0.24 295);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.28 0.06 295);
+  --sidebar-accent-foreground: oklch(0.96 0.005 295);
+  --sidebar-border: oklch(0.30 0.06 295);
+  --sidebar-ring: oklch(0.58 0.24 295);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 700;
+  }
+}
+
+/* Font Utility Classes */
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-sans {
+  font-family: var(--font-sans);
+}
+
+/* Solana Wallet Adapter Styles */
+.wallet-adapter-modal-wrapper {
+  background: rgba(0, 0, 0, 0.8) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.wallet-adapter-modal {
+  background: hsl(var(--card)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+}
+
+.wallet-adapter-modal-title {
+  color: hsl(var(--foreground)) !important;
+  font-weight: 600 !important;
+}
+
+.wallet-adapter-modal-list {
+  margin-top: 1rem !important;
+}
+
+.wallet-adapter-button {
+  background: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+  border-radius: var(--radius-lg) !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+}
+
+.wallet-adapter-button:hover:not([disabled]) {
+  background: hsl(var(--primary) / 0.9) !important;
+  transform: translateY(-1px) !important;
+}
+
+.wallet-adapter-button[disabled] {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}
+
+.wallet-adapter-modal-list-more {
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+.wallet-adapter-modal-button-close {
+  color: hsl(var(--muted-foreground)) !important;
+  transition: color 0.2s ease !important;
+}
+
+.wallet-adapter-modal-button-close:hover {
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Purple Gradient Utilities */
+.gradient-purple-hero {
+  background: linear-gradient(135deg, #6a329f 0%, #601f9e 50%, #522081 100%);
+}
+
+.gradient-purple-radial {
+  background: radial-gradient(circle at top center, rgba(106, 50, 159, 0.15) 0%, transparent 70%);
+}
+
+.gradient-purple-subtle {
+  background: linear-gradient(180deg, rgba(106, 50, 159, 0.08) 0%, rgba(96, 31, 158, 0.03) 100%);
+}
+
+.gradient-purple-card {
+  background: linear-gradient(145deg, rgba(106, 50, 159, 0.05) 0%, rgba(82, 32, 129, 0.02) 100%);
+}
+
+.text-gradient-purple {
+  background: linear-gradient(135deg, #6a329f 0%, #601f9e 50%, #8b5bcf 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Purple Glow Effects */
+.shadow-purple-glow {
+  box-shadow: 0 0 30px rgba(106, 50, 159, 0.3);
+}
+
+.shadow-purple-soft {
+  box-shadow: 0 8px 32px rgba(106, 50, 159, 0.12);
+}
+
+.shadow-purple-card {
+  box-shadow: 0 4px 20px rgba(106, 50, 159, 0.08);
+}
+
+.hover-glow-purple {
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.hover-glow-purple:hover {
+  box-shadow: 0 8px 40px rgba(106, 50, 159, 0.25);
+  transform: translateY(-2px);
+}
+
+/* Border Gradients */
+.border-gradient-purple {
+  border: 2px solid transparent;
+  background-image: linear-gradient(var(--background), var(--background)), 
+                    linear-gradient(135deg, #6a329f, #601f9e, #522081);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
+/* Dark mode enhancements */
+.dark .gradient-purple-radial {
+  background: radial-gradient(circle at top center, rgba(106, 50, 159, 0.25) 0%, transparent 60%);
+}
+
+.dark .gradient-purple-subtle {
+  background: linear-gradient(180deg, rgba(106, 50, 159, 0.15) 0%, rgba(96, 31, 158, 0.05) 100%);
+}
+
+.dark .shadow-purple-glow {
+  box-shadow: 0 0 40px rgba(106, 50, 159, 0.5);
+}
+
+.dark .shadow-purple-card {
+  box-shadow: 0 4px 24px rgba(106, 50, 159, 0.2);
+}
