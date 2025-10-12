@@ -214,11 +214,11 @@ export default function StrategiesPage() {
       <div className="absolute inset-0 gradient-purple-radial pointer-events-none" />
       <div className="relative z-10 flex-1 flex flex-col">
         <Navbar />
-        <main className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 pt-32 max-w-7xl">
+        <main className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 pt-24 sm:pt-28 lg:pt-32 pb-12 sm:pb-16 max-w-7xl">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">Trading Strategies</h1>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8 mt-4">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-1 sm:mb-2 truncate">Trading Strategies</h1>
             <p className="text-sm sm:text-base text-muted-foreground">
               Automate your trades with smart triggers
             </p>
@@ -227,7 +227,7 @@ export default function StrategiesPage() {
             onClick={() => setShowBuilderModal(true)}
             disabled={!connected}
             size="default"
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto shrink-0"
           >
             <Plus className="w-4 h-4 mr-2" />
             Create Strategy
@@ -317,65 +317,69 @@ export default function StrategiesPage() {
             ) : (
               <div className="space-y-3 sm:space-y-4">
                 {strategies.map((strategy) => (
-                  <Card key={strategy.id} className="hover:shadow-md transition-shadow">
+                  <Card key={strategy.id} className="hover:shadow-md transition-shadow overflow-hidden">
                     <CardHeader className="pb-3 sm:pb-6">
-                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-wrap items-center gap-2 mb-1 sm:mb-2">
-                            <CardTitle className="text-base sm:text-lg truncate">{strategy.name}</CardTitle>
-                            {getStatusBadge(strategy.status)}
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-wrap items-center gap-2 mb-1 sm:mb-2">
+                              <CardTitle className="text-base sm:text-lg break-words">{strategy.name}</CardTitle>
+                              {getStatusBadge(strategy.status)}
+                            </div>
                           </div>
-                          {strategy.description && (
-                            <CardDescription className="text-xs sm:text-sm line-clamp-2">{strategy.description}</CardDescription>
-                          )}
-                        </div>
-                        <div className="flex gap-2 self-start sm:self-auto">
-                          {strategy.status === 'active' && (
+                          <div className="flex gap-2 shrink-0">
+                            {strategy.status === 'active' && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleCancelStrategy(strategy.id, strategy.name)}
+                                className="h-8 w-8 p-0"
+                                title="Pause strategy"
+                              >
+                                <Pause className="w-4 h-4" />
+                              </Button>
+                            )}
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleCancelStrategy(strategy.id, strategy.name)}
-                              className="h-8"
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8 p-0"
+                              onClick={() => handleDeleteStrategy(strategy.id, strategy.name)}
+                              title="Delete strategy"
                             >
-                              <Pause className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                              <Trash2 className="w-4 h-4" />
                             </Button>
-                          )}
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8"
-                            onClick={() => handleDeleteStrategy(strategy.id, strategy.name)}
-                          >
-                            <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                          </Button>
+                          </div>
                         </div>
+                        {strategy.description && (
+                          <CardDescription className="text-xs sm:text-sm line-clamp-2">{strategy.description}</CardDescription>
+                        )}
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-3 sm:space-y-4 pt-0">
-                      <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
-                        <div>
+                      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+                        <div className="min-w-0">
                           <div className="text-xs text-muted-foreground mb-1">Pair</div>
-                          <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                            <Badge variant="outline" className="text-xs">{getTokenSymbol(strategy.fromToken)}</Badge>
+                          <div className="flex items-center gap-1 flex-wrap">
+                            <Badge variant="outline" className="text-[10px] sm:text-xs">{getTokenSymbol(strategy.fromToken)}</Badge>
                             <span className="text-muted-foreground text-xs">→</span>
-                            <Badge variant="outline" className="text-xs">{getTokenSymbol(strategy.toToken)}</Badge>
+                            <Badge variant="outline" className="text-[10px] sm:text-xs">{getTokenSymbol(strategy.toToken)}</Badge>
                           </div>
                         </div>
-                        <div>
+                        <div className="min-w-0">
                           <div className="text-xs text-muted-foreground mb-1">Trigger</div>
-                          <div className="font-medium text-sm capitalize truncate" title={`${strategy.triggerType} @ $${strategy.triggerValue}`}>
+                          <div className="font-medium text-xs sm:text-sm capitalize truncate" title={`${strategy.triggerType} @ $${strategy.triggerValue}`}>
                             {strategy.triggerType} @ ${strategy.triggerValue}
                           </div>
                         </div>
-                        <div>
+                        <div className="min-w-0">
                           <div className="text-xs text-muted-foreground mb-1">Amount</div>
-                          <div className="font-medium text-sm">
+                          <div className="font-medium text-xs sm:text-sm truncate">
                             {strategy.amount}{strategy.amountType === 'percentage' ? '%' : ''}
                           </div>
                         </div>
-                        <div>
+                        <div className="min-w-0">
                           <div className="text-xs text-muted-foreground mb-1">Created</div>
-                          <div className="font-medium text-sm">
+                          <div className="font-medium text-xs sm:text-sm truncate">
                             {new Date(strategy.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                           </div>
                         </div>
