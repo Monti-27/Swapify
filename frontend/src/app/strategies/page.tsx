@@ -15,12 +15,12 @@ import type { Strategy, CreateStrategyDto } from '@/types/api';
 import { toast } from 'sonner';
 import { POPULAR_TOKENS } from '@/lib/tokens';
 import { wsClient, WS_EVENTS } from '@/lib/websocket';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { useStrategyExecutor } from '@/hooks/useStrategyExecutor';
 
 export default function StrategiesPage() {
   const { connected, publicKey } = useWallet();
-  const { isAuthenticated, isAuthenticating } = useAuth();
+  const { isAuthenticated, isAuthenticating } = useAuthContext();
   
   // CRITICAL: Listen for strategy triggers and execute swaps automatically
   useStrategyExecutor();

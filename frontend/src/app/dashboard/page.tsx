@@ -14,7 +14,7 @@ import { Wallet, TrendingUp, Clock, CheckCircle2, XCircle, ArrowUpRight, ArrowDo
 import { redirect } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { api as apiClient } from '@/lib/api';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/contexts/AuthContext';
 import type { Strategy } from '@/types/api';
 import Link from 'next/link';
 import { POPULAR_TOKENS } from '@/lib/tokens';
@@ -23,7 +23,7 @@ import { toast } from 'sonner';
 export default function DashboardPage() {
   const { balance } = useWalletStore();
   const { publicKey, connected } = useWallet();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuthContext();
   const { orders, trades } = useOrderStore();
   const { transactions } = useTransactionStore();
   const [strategies, setStrategies] = useState<Strategy[]>([]);

@@ -3,6 +3,7 @@ import { Kanit } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SolanaWalletProvider } from "@/components/wallet-provider";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -54,8 +55,10 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <SolanaWalletProvider>
-            {children}
-            <Toaster richColors position="bottom-right" />
+            <AuthProvider>
+              {children}
+              <Toaster richColors position="bottom-right" />
+            </AuthProvider>
           </SolanaWalletProvider>
         </ThemeProvider>
         <Analytics />
