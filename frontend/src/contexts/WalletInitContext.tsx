@@ -15,7 +15,18 @@ export function WalletInitProvider({ children }: { children: ReactNode }) {
   const [isInitializing, setIsInitializing] = useState(true);
   const [isReady, setIsReady] = useState(false);
   const hasInitialized = useRef(false);
+  
+  // Instance tracking
+  const instanceId = useRef(Math.random().toString(36).substr(2, 9));
 
+  useEffect(() => {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('🔄 [WALLET INIT PROVIDER MOUNT]');
+    console.log('🆔 Instance ID:', instanceId.current);
+    console.log('📍 Path:', typeof window !== 'undefined' ? window.location.pathname : 'SSR');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  }, []);
+  
   useEffect(() => {
     console.log('🔄 WalletInitProvider - connected:', connected, 'connecting:', connecting, 'hasWallet:', !!wallet);
   }, [connected, connecting, wallet]);

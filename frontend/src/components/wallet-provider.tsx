@@ -1,6 +1,6 @@
 'use client';
 
-import { FC, ReactNode, useMemo, useCallback } from 'react';
+import React, { FC, ReactNode, useMemo, useCallback } from 'react';
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
 import { WalletAdapterNetwork, WalletError } from '@solana/wallet-adapter-base';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
@@ -17,6 +17,17 @@ import { toast } from 'sonner';
 import '@solana/wallet-adapter-react-ui/styles.css';
 
 export const SolanaWalletProvider: FC<{ children: ReactNode }> = ({ children }) => {
+  // Instance tracking
+  const instanceIdRef = React.useRef(Math.random().toString(36).substr(2, 9));
+  
+  React.useEffect(() => {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('🔄 [SOLANA WALLET PROVIDER MOUNT]');
+    console.log('🆔 Instance ID:', instanceIdRef.current);
+    console.log('📍 Path:', typeof window !== 'undefined' ? window.location.pathname : 'SSR');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  }, []);
+  
   // Set to 'devnet', 'testnet', or 'mainnet-beta'
   // ⚠️ MAINNET-BETA - USING REAL SOL!
   const network = WalletAdapterNetwork.Mainnet;
