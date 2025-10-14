@@ -24,7 +24,7 @@ interface AuthSession {
 const getAuthSession = (): AuthSession | null => {
   if (typeof window === 'undefined') return null;
   try {
-    const sessionData = sessionStorage.getItem('auth_session');
+    const sessionData = localStorage.getItem('auth_session');
     return sessionData ? JSON.parse(sessionData) : null;
   } catch {
     return null;
@@ -34,15 +34,15 @@ const getAuthSession = (): AuthSession | null => {
 const setAuthSession = (session: AuthSession | null) => {
   if (typeof window === 'undefined') return;
   if (session) {
-    sessionStorage.setItem('auth_session', JSON.stringify(session));
+    localStorage.setItem('auth_session', JSON.stringify(session));
   } else {
-    sessionStorage.removeItem('auth_session');
+    localStorage.removeItem('auth_session');
   }
 };
 
 const clearAuthSession = () => {
   if (typeof window === 'undefined') return;
-  sessionStorage.removeItem('auth_session');
+  localStorage.removeItem('auth_session');
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -112,6 +112,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.removeItem('last_wallet_address');
       api.clearToken();
       clearAuthSession();
+    }
+    
+    // Production debug logging
+    if (process.env.NODE_ENV === 'production') {
+      console.log('🔍 [Auth Debug] Initialized:', {
+        hasToken: !!existingToken,
+        isTokenValid: existingToken ? isTokenValid(existingToken) : false,
+        hasSession: !!authSession,
+        walletMatch: authSession?.walletAddress === lastWallet
+      });
     }
     
     setIsInitialized(true);
