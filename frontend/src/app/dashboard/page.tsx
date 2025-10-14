@@ -6,28 +6,32 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { RecentTransactions } from '@/components/recent-transactions';
-import { useWalletStore } from '@/store/walletStore';
 import { useOrderStore } from '@/store/orderStore';
 import { useTransactionStore } from '@/store/transactionStore';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { Wallet, TrendingUp, Clock, CheckCircle2, XCircle, ArrowUpRight, ArrowDownRight, Target, Plus } from 'lucide-react';
 import { redirect } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { api as apiClient } from '@/lib/api';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { useWalletInit } from '@/contexts/WalletInitContext';
+import { useBalance } from '@/contexts/BalanceContext';
 import type { Strategy } from '@/types/api';
 import Link from 'next/link';
 import { POPULAR_TOKENS } from '@/lib/tokens';
 import { toast } from 'sonner';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function DashboardPage() {
-  const { balance } = useWalletStore();
-  const { publicKey, connected } = useWallet();
-  const { isAuthenticated } = useAuthContext();
+  const { balance } = useBalance(); // Use BalanceContext instead of walletStore
+  const { publicKey, connected, connecting } = useWallet();
+  const { isAuthenticated, isAuthenticating } = useAuthContext();
+  const { isInitializing } = useWalletInit();
   const { orders, trades } = useOrderStore();
   const { transactions } = useTransactionStore();
   const [strategies, setStrategies] = useState<Strategy[]>([]);
-  const [loadingStrategies, setLoadingStrategies] = useState(true);
+  const [loadingStrategies, setLoadingStrategies] = useState(false);
+  const hasLoadedRef = useRef(false);
 
   const formatAddress = (addr: string) => {
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
@@ -38,28 +42,34 @@ export default function DashboardPage() {
     return token?.symbol || address.slice(0, 6);
   };
 
-  // Load strategies
+  // Load strategies (with cache to prevent duplicate calls)
   useEffect(() => {
     if (connected && isAuthenticated) {
-      const loadStrategies = async () => {
-        try {
-          const data = await apiClient.getStrategies();
-          setStrategies(data);
-        } catch (error) {
-          console.log('Failed to load strategies:', error);
-          toast.error('Failed to load strategies', {
-            description: 'Please try again later'
-          });
-        } finally {
-          setLoadingStrategies(false);
-        }
-      };
-      loadStrategies();
+      // Only load if not already loaded
+      if (!hasLoadedRef.current) {
+        const loadStrategies = async () => {
+          setLoadingStrategies(true);
+          try {
+            const data = await apiClient.getStrategies();
+            setStrategies(data);
+            hasLoadedRef.current = true;
+          } catch (error) {
+            console.log('Failed to load strategies:', error);
+            toast.error('Failed to load strategies', {
+              description: 'Please try again later'
+            });
+          } finally {
+            setLoadingStrategies(false);
+          }
+        };
+        loadStrategies();
+      }
     } else {
       setStrategies([]);
       setLoadingStrategies(false);
+      hasLoadedRef.current = false; // Reset on disconnect
     }
-  }, [connected, publicKey, isAuthenticated]);
+  }, [connected, isAuthenticated]);
 
   const activeStrategies = strategies.filter(s => s.status === 'active');
 
@@ -157,10 +167,26 @@ export default function DashboardPage() {
               <div className="text-center py-8 text-muted-foreground">
                 Connect your wallet to view strategies
               </div>
-            ) : loadingStrategies ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                <p className="mt-2 text-sm text-muted-foreground">Loading strategies...</p>
+            ) : (isInitializing || connecting || isAuthenticating || loadingStrategies) ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between p-4 rounded-xl border bg-card/50"
+                  >
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-5 w-48" />
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="h-5 w-12" />
+                        <Skeleton className="h-3 w-3" />
+                        <Skeleton className="h-5 w-12" />
+                        <Skeleton className="h-3 w-3" />
+                        <Skeleton className="h-4 w-32" />
+                      </div>
+                    </div>
+                    <Skeleton className="h-6 w-16" />
+                  </div>
+                ))}
               </div>
             ) : activeStrategies.length === 0 ? (
               <div className="text-center py-8">

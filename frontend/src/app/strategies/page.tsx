@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
 import { Button } from '@/components/ui/button';
@@ -17,28 +17,37 @@ import { POPULAR_TOKENS } from '@/lib/tokens';
 import { wsClient, WS_EVENTS } from '@/lib/websocket';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useStrategyExecutor } from '@/hooks/useStrategyExecutor';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useWalletInit } from '@/contexts/WalletInitContext';
 
 export default function StrategiesPage() {
-  const { connected, publicKey } = useWallet();
+  const { connected, publicKey, connecting } = useWallet();
   const { isAuthenticated, isAuthenticating } = useAuthContext();
+  const { isInitializing } = useWalletInit();
   
   // CRITICAL: Listen for strategy triggers and execute swaps automatically
   useStrategyExecutor();
   const [strategies, setStrategies] = useState<Strategy[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const hasLoadedRef = useRef(false);
   const [showBuilderModal, setShowBuilderModal] = useState(false);
   
   // Confirmation modal states
   const [cancelConfirmation, setCancelConfirmation] = useState<{ id: string; name: string } | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<{ id: string; name: string } | null>(null);
 
-  // Load strategies
+  // Load strategies (with cache to prevent duplicate calls)
   useEffect(() => {
     if (connected && isAuthenticated) {
-      loadStrategies();
+      // Only load if not already loaded
+      if (!hasLoadedRef.current) {
+        loadStrategies();
+        hasLoadedRef.current = true;
+      }
     } else {
       setStrategies([]);
       setIsLoading(false);
+      hasLoadedRef.current = false; // Reset on disconnect
     }
   }, [connected, isAuthenticated]);
 
@@ -234,7 +243,59 @@ export default function StrategiesPage() {
           </Button>
         </div>
 
-        {!connected ? (
+        {/* Show loading skeleton while initializing, connecting, authenticating, or loading strategies */}
+        {(isInitializing || connecting || isAuthenticating || (connected && isAuthenticated && isLoading)) ? (
+          <>
+            {/* Stats Grid Skeleton */}
+            <div className="grid gap-3 sm:gap-6 grid-cols-3 mb-6 sm:mb-8">
+              {[1, 2, 3].map((i) => (
+                <Card key={i}>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
+                    <Skeleton className="h-4 w-16" />
+                    <Skeleton className="h-4 w-4 rounded" />
+                  </CardHeader>
+                  <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+                    <Skeleton className="h-8 w-12 mb-2" />
+                    <Skeleton className="h-3 w-20 hidden sm:block" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Strategy Cards Skeleton */}
+            <div className="space-y-3 sm:space-y-4">
+              {[1, 2, 3].map((i) => (
+                <Card key={i}>
+                  <CardHeader className="pb-3 sm:pb-6">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Skeleton className="h-6 w-48" />
+                          <Skeleton className="h-5 w-16" />
+                        </div>
+                        <Skeleton className="h-4 w-full max-w-md" />
+                      </div>
+                      <div className="flex gap-2">
+                        <Skeleton className="h-8 w-8" />
+                        <Skeleton className="h-8 w-8" />
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3 pt-0">
+                    <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+                      {[1, 2, 3, 4].map((j) => (
+                        <div key={j}>
+                          <Skeleton className="h-3 w-12 mb-2" />
+                          <Skeleton className="h-5 w-24" />
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </>
+        ) : !connected ? (
           <Card className="text-center py-8 sm:py-12">
             <CardContent className="pt-6">
               <div className="flex flex-col items-center gap-4 max-w-md mx-auto">
@@ -250,11 +311,6 @@ export default function StrategiesPage() {
               </div>
             </CardContent>
           </Card>
-        ) : isLoading ? (
-          <div className="text-center py-8 sm:py-12">
-            <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-sm sm:text-base text-muted-foreground">Loading strategies...</p>
-          </div>
         ) : (
           <>
             {/* Stats Grid */}

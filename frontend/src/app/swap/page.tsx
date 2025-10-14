@@ -9,7 +9,7 @@ import { TokenSelectModal } from '@/components/token-select-modal';
 import { SlippageSettingsModal } from '@/components/slippage-settings-modal';
 import { RecentTransactions } from '@/components/recent-transactions';
 import { ArrowDownUp, Settings, ChevronDown, BarChart3, Loader2, AlertCircle } from 'lucide-react';
-import { useWalletStore } from '@/store/walletStore';
+import { useBalance } from '@/contexts/BalanceContext';
 import { useTransactionStore } from '@/store/transactionStore';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { useState, useEffect, useCallback } from 'react';
@@ -29,7 +29,7 @@ type Token = (LibToken | HookToken) & {
 };
 
 export default function SwapPage() {
-  const { balance } = useWalletStore();
+  const { balance } = useBalance(); // Use BalanceContext instead of walletStore
   const { publicKey, connected, sendTransaction } = useWallet();
   const { connection } = useConnection();
   const { addTransaction, updateTransaction } = useTransactionStore();
