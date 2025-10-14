@@ -15,21 +15,6 @@ export function WalletInitProvider({ children }: { children: ReactNode }) {
   const [isInitializing, setIsInitializing] = useState(true);
   const [isReady, setIsReady] = useState(false);
   const hasInitialized = useRef(false);
-  
-  // Instance tracking
-  const instanceId = useRef(Math.random().toString(36).substr(2, 9));
-
-  useEffect(() => {
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('🔄 [WALLET INIT PROVIDER MOUNT]');
-    console.log('🆔 Instance ID:', instanceId.current);
-    console.log('📍 Path:', typeof window !== 'undefined' ? window.location.pathname : 'SSR');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  }, []);
-  
-  useEffect(() => {
-    console.log('🔄 WalletInitProvider - connected:', connected, 'connecting:', connecting, 'hasWallet:', !!wallet);
-  }, [connected, connecting, wallet]);
 
   // Initial check on mount
   useEffect(() => {
@@ -40,28 +25,23 @@ export function WalletInitProvider({ children }: { children: ReactNode }) {
       
       // Solana wallet adapter stores the last used wallet
       const walletName = localStorage.getItem('walletName');
-      console.log('🔍 Checking previous wallet connection:', walletName);
       return !!walletName;
     };
 
     const hadPreviousConnection = checkPreviousConnection();
 
     if (hadPreviousConnection) {
-      console.log('⏳ Previous wallet detected, waiting for autoConnect...');
       // If there was a previous connection, give autoConnect time to work
-      // Set a maximum wait time
       const timer = setTimeout(() => {
-        console.log('⏰ AutoConnect timeout reached');
         if (!hasInitialized.current) {
           setIsInitializing(false);
           setIsReady(true);
           hasInitialized.current = true;
         }
-      }, 1500); // Reduced from 2s to 1.5s for faster UX
+      }, 1500);
 
       return () => clearTimeout(timer);
     } else {
-      console.log('✅ No previous wallet, ready immediately');
       // No previous connection, we're ready immediately
       setIsInitializing(false);
       setIsReady(true);
@@ -76,7 +56,6 @@ export function WalletInitProvider({ children }: { children: ReactNode }) {
 
     // If connected successfully, we're ready
     if (connected) {
-      console.log('✅ Wallet connected, initialization complete');
       setIsInitializing(false);
       setIsReady(true);
       hasInitialized.current = true;
@@ -85,7 +64,6 @@ export function WalletInitProvider({ children }: { children: ReactNode }) {
 
     // If not connecting and no wallet selected, we're ready (user hasn't connected)
     if (!connecting && wallet === null) {
-      console.log('✅ No wallet connection in progress, initialization complete');
       setIsInitializing(false);
       setIsReady(true);
       hasInitialized.current = true;
