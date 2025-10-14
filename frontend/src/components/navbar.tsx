@@ -6,12 +6,11 @@ import { Moon, Sun, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useThemeStore } from '@/store/themeStore';
-import { useWalletStore } from '@/store/walletStore';
 import { useWalletModal } from '@solana/wallet-adapter-react-ui';
-import { useWallet, useConnection } from '@solana/wallet-adapter-react';
-import { useEffect, useState } from 'react';
-import { LAMPORTS_PER_SOL } from '@solana/web3.js';
-import { toast } from 'sonner';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { useState } from 'react';
+import { useWalletInit } from '@/contexts/WalletInitContext';
+import { useBalance } from '@/contexts/BalanceContext';
 import {
   Navbar as AceternityNavbar,
   NavBody,
@@ -31,65 +30,11 @@ const navItems = [
 
 export function Navbar() {
   const { theme, toggleTheme } = useThemeStore();
-  const { balance, connect, disconnect: storeDisconnect, updateBalance } = useWalletStore();
+  const { balance } = useBalance(); // READ-ONLY: No fetching in navbar
   const { publicKey, connected, disconnect: solanaDisconnect } = useWallet();
-  const { connection } = useConnection();
   const { setVisible } = useWalletModal();
+  const { isInitializing } = useWalletInit();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  // Sync wallet state and fetch balance
-  useEffect(() => {
-    if (connected && publicKey) {
-      const address = publicKey.toBase58();
-      connect(address, address);
-      
-      // Fetch balance with retry logic
-      const fetchBalance = async (retryCount = 0) => {
-        try {
-          console.log('Fetching balance for:', publicKey.toBase58());
-          const balance = await connection.getBalance(publicKey);
-          const solBalance = (balance / LAMPORTS_PER_SOL).toFixed(4);
-          console.log('Balance fetched successfully:', solBalance, 'SOL');
-          updateBalance(solBalance);
-        } catch (error: any) {
-          console.log('Failed to fetch balance:', {
-            message: error.message,
-            code: error.code,
-            statusCode: error.statusCode,
-            retryCount
-          });
-          
-          // If rate limited (403/429) or unauthorized (401), retry with backoff
-          if (retryCount < 3 && (
-            error.message?.includes('403') || 
-            error.message?.includes('429') ||
-            error.message?.includes('401')
-          )) {
-            const delay = Math.min(1000 * Math.pow(2, retryCount), 5000);
-            console.log(`Retrying balance fetch in ${delay}ms...`);
-            setTimeout(() => fetchBalance(retryCount + 1), delay);
-          } else {
-            // Show "..." instead of 0.00 when RPC is having issues
-            console.log('Max retries reached or unrecoverable error');
-            updateBalance('...');
-            toast.error('Failed to fetch balance', {
-              description: 'Using RPC fallback'
-            });
-          }
-        }
-      };
-
-      // Initial fetch with small delay to avoid immediate rate limit
-      setTimeout(() => fetchBalance(), 500);
-
-      // Set up balance polling every 60 seconds (increased from 30s to reduce rate limit hits)
-      const interval = setInterval(() => fetchBalance(), 60000);
-
-      return () => clearInterval(interval);
-    } else {
-      storeDisconnect();
-    }
-  }, [connected, publicKey, connection, connect, storeDisconnect, updateBalance]);
 
   const handleWalletClick = () => {
     if (!connected) {
@@ -159,7 +104,10 @@ export function Navbar() {
 
       <Separator orientation="vertical" className="h-6 mx-1 hidden md:block" />
 
-      {connected && publicKey ? (
+      {/* Show placeholder during initialization to prevent flash */}
+      {isInitializing ? (
+        <div className="w-[140px] h-9 bg-muted/20 animate-pulse rounded-md" />
+      ) : connected && publicKey ? (
         <div className="flex items-center gap-2">
           <div className="hidden lg:flex flex-col items-end text-xs px-2">
             <span className="font-semibold text-primary">{balance} SOL</span>
@@ -261,7 +209,10 @@ export function Navbar() {
           
           <Separator className="my-2" />
           
-          {connected && publicKey ? (
+          {/* Show placeholder during initialization to prevent flash */}
+          {isInitializing ? (
+            <div className="w-full h-10 bg-muted/20 animate-pulse rounded-md" />
+          ) : connected && publicKey ? (
             <div className="space-y-3">
               <div className="flex flex-col gap-1">
                 <span className="text-sm text-muted-foreground">Balance</span>
