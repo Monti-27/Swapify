@@ -220,13 +220,13 @@ export function StrategyBuilderModal({ open, onClose, onSubmit }: StrategyBuilde
         return (
           <div className="space-y-4">
             <div>
-              <Label htmlFor="name">Strategy Name *</Label>
+              <Label htmlFor="name" className="text-sm font-medium">Strategy Name *</Label>
               <Input
                 id="name"
                 placeholder="e.g., SOL Buy the Dip"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="mt-1.5"
+                className="mt-1.5 h-11"
                 autoFocus
               />
               <p className="text-xs text-muted-foreground mt-1">
@@ -235,13 +235,13 @@ export function StrategyBuilderModal({ open, onClose, onSubmit }: StrategyBuilde
             </div>
 
             <div>
-              <Label htmlFor="description">Description (Optional)</Label>
+              <Label htmlFor="description" className="text-sm font-medium">Description (Optional)</Label>
               <Textarea
                 id="description"
                 placeholder="Describe your strategy goals..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="mt-1.5 min-h-[80px] resize-none"
+                className="mt-1.5 min-h-[100px] resize-none"
               />
             </div>
           </div>
@@ -251,11 +251,11 @@ export function StrategyBuilderModal({ open, onClose, onSubmit }: StrategyBuilde
         return (
           <div className="space-y-4">
             <div>
-              <Label>From (Sell)</Label>
+              <Label className="text-sm font-medium">From (Sell)</Label>
               <button
                 onClick={() => setShowFromTokenModal(true)}
                 type="button"
-                className="w-full mt-1.5 flex items-center justify-between p-3 rounded-lg border bg-background hover:bg-accent transition-colors"
+                className="w-full mt-1.5 flex items-center justify-between p-3 sm:p-3 h-auto min-h-[3.5rem] rounded-lg border bg-background hover:bg-accent transition-colors"
               >
                 {fromToken ? (
                   <div className="flex items-center gap-3">
@@ -312,11 +312,11 @@ export function StrategyBuilderModal({ open, onClose, onSubmit }: StrategyBuilde
             </div>
 
             <div>
-              <Label>To (Buy)</Label>
+              <Label className="text-sm font-medium">To (Buy)</Label>
               <button
                 onClick={() => setShowToTokenModal(true)}
                 type="button"
-                className="w-full mt-1.5 flex items-center justify-between p-3 rounded-lg border bg-background hover:bg-accent transition-colors"
+                className="w-full mt-1.5 flex items-center justify-between p-3 sm:p-3 h-auto min-h-[3.5rem] rounded-lg border bg-background hover:bg-accent transition-colors"
               >
                 {toToken ? (
                   <div className="flex items-center gap-3">
@@ -367,31 +367,31 @@ export function StrategyBuilderModal({ open, onClose, onSubmit }: StrategyBuilde
         return (
           <div className="space-y-4">
             <div>
-              <Label>Trigger Type</Label>
+              <Label className="text-sm font-medium">Trigger Type</Label>
               <div className="grid grid-cols-2 gap-2 mt-1.5">
                 <Button
                   type="button"
                   variant={triggerType === 'price' ? 'default' : 'outline'}
                   onClick={() => setTriggerType('price')}
-                  className="h-auto py-3 flex flex-col gap-1"
+                  className="h-auto py-3 sm:py-3 flex flex-col gap-1 min-h-[3.5rem]"
                 >
-                  <DollarSign className="w-4 h-4" />
+                  <DollarSign className="w-5 h-5 sm:w-4 sm:h-4" />
                   <span className="text-sm">Price</span>
                 </Button>
                 <Button
                   type="button"
                   variant={triggerType === 'marketCap' ? 'default' : 'outline'}
                   onClick={() => setTriggerType('marketCap')}
-                  className="h-auto py-3 flex flex-col gap-1"
+                  className="h-auto py-3 sm:py-3 flex flex-col gap-1 min-h-[3.5rem]"
                 >
-                  <TrendingUp className="w-4 h-4" />
+                  <TrendingUp className="w-5 h-5 sm:w-4 sm:h-4" />
                   <span className="text-sm">Market Cap</span>
                 </Button>
               </div>
             </div>
 
             <div>
-              <Label htmlFor="triggerValue">
+              <Label htmlFor="triggerValue" className="text-sm font-medium">
                 Target {triggerType === 'price' ? 'Price' : 'Market Cap'} (USD) *
               </Label>
               <div className="relative mt-1.5">
@@ -402,7 +402,7 @@ export function StrategyBuilderModal({ open, onClose, onSubmit }: StrategyBuilde
                   placeholder="0.00"
                   value={triggerValue}
                   onChange={(e) => setTriggerValue(e.target.value)}
-                  className="pl-7"
+                  className="pl-7 h-11"
                   step="any"
                 />
               </div>
@@ -412,7 +412,7 @@ export function StrategyBuilderModal({ open, onClose, onSubmit }: StrategyBuilde
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label htmlFor="stopLoss" className="text-xs">Stop Loss (Optional)</Label>
+                <Label htmlFor="stopLoss" className="text-xs font-medium">Stop Loss (Optional)</Label>
                 <div className="relative mt-1.5">
                   <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">$</span>
                   <Input
@@ -421,14 +421,14 @@ export function StrategyBuilderModal({ open, onClose, onSubmit }: StrategyBuilde
                     placeholder="0.00"
                     value={stopLoss}
                     onChange={(e) => setStopLoss(e.target.value)}
-                    className="pl-6 text-sm h-9"
+                    className="pl-6 text-sm h-10"
                     step="any"
                   />
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="takeProfit" className="text-xs">Take Profit (Optional)</Label>
+                <Label htmlFor="takeProfit" className="text-xs font-medium">Take Profit (Optional)</Label>
                 <div className="relative mt-1.5">
                   <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">$</span>
                   <Input
@@ -437,7 +437,7 @@ export function StrategyBuilderModal({ open, onClose, onSubmit }: StrategyBuilde
                     placeholder="0.00"
                     value={takeProfit}
                     onChange={(e) => setTakeProfit(e.target.value)}
-                    className="pl-6 text-sm h-9"
+                    className="pl-6 text-sm h-10"
                     step="any"
                   />
                 </div>
@@ -455,31 +455,31 @@ export function StrategyBuilderModal({ open, onClose, onSubmit }: StrategyBuilde
         return (
           <div className="space-y-4">
             <div>
-              <Label>Amount Type</Label>
+              <Label className="text-sm font-medium">Amount Type</Label>
               <div className="grid grid-cols-2 gap-2 mt-1.5">
                 <Button
                   type="button"
                   variant={amountType === 'percentage' ? 'default' : 'outline'}
                   onClick={() => setAmountType('percentage')}
-                  className="h-auto py-3 flex flex-col gap-1"
+                  className="h-auto py-3 sm:py-3 flex flex-col gap-1 min-h-[3.5rem]"
                 >
-                  <Percent className="w-4 h-4" />
+                  <Percent className="w-5 h-5 sm:w-4 sm:h-4" />
                   <span className="text-sm">Percentage</span>
                 </Button>
                 <Button
                   type="button"
                   variant={amountType === 'fixed' ? 'default' : 'outline'}
                   onClick={() => setAmountType('fixed')}
-                  className="h-auto py-3 flex flex-col gap-1"
+                  className="h-auto py-3 sm:py-3 flex flex-col gap-1 min-h-[3.5rem]"
                 >
-                  <DollarSign className="w-4 h-4" />
+                  <DollarSign className="w-5 h-5 sm:w-4 sm:h-4" />
                   <span className="text-sm">Fixed</span>
                 </Button>
               </div>
             </div>
 
             <div>
-              <Label htmlFor="amount">Amount *</Label>
+              <Label htmlFor="amount" className="text-sm font-medium">Amount *</Label>
               
               {amountType === 'percentage' && (
                 <div className="flex gap-2 mt-1.5 mb-2">
@@ -559,7 +559,7 @@ export function StrategyBuilderModal({ open, onClose, onSubmit }: StrategyBuilde
                         }
                       }
                     }}
-                    className="pr-14"
+                    className="pr-14 h-10"
                     step={amountType === 'percentage' ? '1' : 'any'}
                     min="0"
                     max={amountType === 'percentage' ? '100' : undefined}
@@ -709,10 +709,10 @@ export function StrategyBuilderModal({ open, onClose, onSubmit }: StrategyBuilde
   return (
     <>
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col p-0 gap-0">
+        <DialogContent className="w-[calc(100vw-2rem)] sm:w-full sm:max-w-[540px] max-h-[90vh] flex flex-col p-0 gap-0">
           <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6">
             <DialogTitle className="text-lg sm:text-xl">Create Strategy</DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-sm">
               Step {currentStep} of {steps.length}: {steps[currentStep - 1].name}
             </DialogDescription>
           </DialogHeader>
@@ -734,7 +734,7 @@ export function StrategyBuilderModal({ open, onClose, onSubmit }: StrategyBuilde
           <Separator />
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4">
+          <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 max-h-[calc(90vh-180px)]">
             {renderStep()}
           </div>
 
@@ -748,7 +748,7 @@ export function StrategyBuilderModal({ open, onClose, onSubmit }: StrategyBuilde
                 variant="outline"
                 onClick={currentStep === 1 ? handleClose : handleBack}
                 disabled={isSubmitting}
-                className="flex-1 sm:flex-none"
+                className="flex-1 sm:flex-none h-11 sm:h-10"
               >
                 {currentStep === 1 ? 'Cancel' : 'Back'}
               </Button>
@@ -756,7 +756,7 @@ export function StrategyBuilderModal({ open, onClose, onSubmit }: StrategyBuilde
                 type="button"
                 onClick={currentStep === steps.length ? handleSubmit : handleNext}
                 disabled={!canProceed() || isSubmitting}
-                className="flex-1 sm:flex-none"
+                className="flex-1 sm:flex-none h-11 sm:h-10"
               >
                 {isSubmitting ? (
                   'Creating...'

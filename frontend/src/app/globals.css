@@ -654,9 +654,11 @@ html {
 
 /* GPU acceleration for body and main containers */
 body {
-  transform: translateZ(0);
+  /* Removed transform to prevent fixed positioning issues with modals */
+  /* transform: translateZ(0); */
   backface-visibility: hidden;
-  perspective: 1000px;
+  /* Removed perspective as it also creates a containing block */
+  /* perspective: 1000px; */
 }
 
 /* Layout containment for performance - prevents unnecessary reflows */

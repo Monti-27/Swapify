@@ -219,11 +219,11 @@ export default function StrategiesPage() {
   const completedStrategies = strategies.filter(s => s.status === 'completed');
 
   return (
-    <div className="min-h-screen flex flex-col relative bg-background" style={{ willChange: 'auto', transform: 'translateZ(0)' }}>
-      <div className="absolute inset-0 gradient-purple-radial pointer-events-none" style={{ willChange: 'auto' }} />
-      <div className="relative z-10 flex-1 flex flex-col" style={{ willChange: 'auto' }}>
+    <div className="min-h-screen flex flex-col relative bg-background">
+      <div className="absolute inset-0 gradient-purple-radial pointer-events-none" />
+      <div className="relative z-10 flex-1 flex flex-col">
         <Navbar />
-        <main className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 pt-24 sm:pt-28 lg:pt-32 pb-12 sm:pb-16 max-w-7xl" style={{ willChange: 'auto' }}>
+        <main className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 pt-24 sm:pt-28 lg:pt-32 pb-12 sm:pb-16 max-w-7xl">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8 mt-4">
           <div className="flex-1 min-w-0">
