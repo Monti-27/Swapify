@@ -485,3 +485,169 @@ html.light {
 .dark .shadow-purple-card {
   box-shadow: 0 4px 24px rgba(106, 50, 159, 0.2);
 }
+
+/* Token Burn Section Custom Animations */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 30px rgba(168, 85, 247, 0.4), 0 0 60px rgba(168, 85, 247, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 50px rgba(168, 85, 247, 0.6), 0 0 100px rgba(168, 85, 247, 0.3);
+  }
+}
+
+@keyframes ember-float {
+  0% {
+    transform: translateY(0) translateX(0) scale(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(-10%) translateX(0) scale(1);
+  }
+  90% {
+    opacity: 1;
+    transform: translateY(-90%) translateX(10px) scale(1);
+  }
+  100% {
+    transform: translateY(-100%) translateX(20px) scale(0);
+    opacity: 0;
+  }
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    filter: brightness(1) drop-shadow(0 0 10px rgba(168, 85, 247, 0.5));
+  }
+  50% {
+    filter: brightness(1.2) drop-shadow(0 0 20px rgba(168, 85, 247, 0.8));
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* Advanced Fire/Burn Effect Animations */
+@keyframes fire-shimmer {
+  0%, 100% {
+    filter: brightness(1) hue-rotate(0deg);
+  }
+  25% {
+    filter: brightness(1.1) hue-rotate(5deg);
+  }
+  50% {
+    filter: brightness(0.9) hue-rotate(-5deg);
+  }
+  75% {
+    filter: brightness(1.05) hue-rotate(3deg);
+  }
+}
+
+@keyframes flame-flicker {
+  0%, 100% {
+    opacity: 1;
+    transform: scaleY(1) scaleX(1);
+  }
+  20% {
+    opacity: 0.95;
+    transform: scaleY(1.05) scaleX(0.98);
+  }
+  40% {
+    opacity: 1;
+    transform: scaleY(0.97) scaleX(1.02);
+  }
+  60% {
+    opacity: 0.98;
+    transform: scaleY(1.02) scaleX(0.99);
+  }
+  80% {
+    opacity: 0.96;
+    transform: scaleY(0.99) scaleX(1.01);
+  }
+}
+
+@keyframes burn-edge {
+  0% {
+    box-shadow: 
+      inset 0 -50px 50px -20px rgba(168, 85, 247, 0.2),
+      inset 0 -30px 30px -15px rgba(147, 51, 234, 0.3);
+  }
+  50% {
+    box-shadow: 
+      inset 0 -60px 60px -25px rgba(168, 85, 247, 0.3),
+      inset 0 -40px 40px -20px rgba(147, 51, 234, 0.4);
+  }
+  100% {
+    box-shadow: 
+      inset 0 -50px 50px -20px rgba(168, 85, 247, 0.2),
+      inset 0 -30px 30px -15px rgba(147, 51, 234, 0.3);
+  }
+}
+
+@keyframes heat-wave {
+  0%, 100% {
+    transform: translateY(0) scaleX(1);
+    opacity: 0.4;
+  }
+  33% {
+    transform: translateY(-5px) scaleX(1.02);
+    opacity: 0.5;
+  }
+  66% {
+    transform: translateY(-3px) scaleX(0.98);
+    opacity: 0.45;
+  }
+}
+
+.animate-fire-shimmer {
+  animation: fire-shimmer 3s ease-in-out infinite;
+}
+
+.animate-flame-flicker {
+  animation: flame-flicker 2s ease-in-out infinite;
+}
+
+.animate-burn-edge {
+  animation: burn-edge 4s ease-in-out infinite;
+}
+
+.animate-heat-wave {
+  animation: heat-wave 2.5s ease-in-out infinite;
+}
+
+/* High-quality video rendering */
+video {
+  image-rendering: high-quality;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+  will-change: transform;
+}
+
+/* Buttery smooth animations */
+@media (prefers-reduced-motion: no-preference) {
+  * {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Hardware acceleration for smooth performance */
+.backdrop-blur-sm,
+.backdrop-blur-md,
+.backdrop-blur-lg,
+.backdrop-blur-xl {
+  transform: translateZ(0);
+  will-change: backdrop-filter;
+}
+
+/* Smooth transitions */
+.transition-all {
+  transition-timing-function: cubic-bezier(0.43, 0.13, 0.23, 0.96);
+}

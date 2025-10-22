@@ -1,6 +1,7 @@
 import { Navbar } from '@/components/navbar';
 import { Hero } from '@/components/hero';
 import { HowItWorks } from '@/components/how-it-works';
+import { TokenBurnSection } from '@/components/token-burn-section';
 import { FeaturesEnhanced } from '@/components/features-enhanced';
 import { UseCases } from '@/components/use-cases';
 import { TrustSection } from '@/components/trust-section';
@@ -17,6 +18,7 @@ export default function Home() {
         <main className="relative">
           <Hero />
           <HowItWorks />
+          <TokenBurnSection />
           <FeaturesEnhanced />
           <UseCases />
           <TrustSection />
