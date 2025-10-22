@@ -1,7 +1,11 @@
 'use client';
 
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Wallet, ArrowRightLeft, Zap, CheckCircle } from 'lucide-react';
+
+// GPU-friendly easing
+const smoothEase = [0.43, 0.13, 0.23, 0.96] as const;
 
 const steps = [
   {
@@ -30,7 +34,7 @@ const steps = [
   },
 ];
 
-export function HowItWorks() {
+export const HowItWorks = React.memo(function HowItWorks() {
   return (
     <section className="py-24 sm:py-32 relative overflow-hidden bg-background">
       {/* Background Effects */}
@@ -43,8 +47,12 @@ export function HowItWorks() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
+            transition={{ duration: 0.5, ease: smoothEase }}
+            viewport={{ once: true, margin: "-50px" }}
+            style={{
+              willChange: 'transform, opacity',
+              transform: 'translateZ(0)',
+            }}
           >
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
               Start Trading in <span className="text-gradient-purple">4 Simple Steps</span>
@@ -64,8 +72,12 @@ export function HowItWorks() {
                 key={step.number}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1, ease: smoothEase }}
+                viewport={{ once: true, margin: "-50px" }}
+                style={{
+                  willChange: 'transform, opacity',
+                  transform: 'translateZ(0)',
+                }}
                 className="relative group"
               >
                 {/* Connecting Line (hidden on last item) */}
@@ -102,5 +114,5 @@ export function HowItWorks() {
       </div>
     </section>
   );
-}
+});
 

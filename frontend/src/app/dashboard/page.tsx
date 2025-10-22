@@ -74,11 +74,11 @@ export default function DashboardPage() {
   const activeStrategies = strategies.filter(s => s.status === 'active');
 
   return (
-    <div className="min-h-screen relative bg-background">
-      <div className="absolute inset-0 gradient-purple-radial pointer-events-none" />
-      <div className="relative z-10">
+    <div className="min-h-screen relative bg-background" style={{ willChange: 'auto', transform: 'translateZ(0)' }}>
+      <div className="absolute inset-0 gradient-purple-radial pointer-events-none" style={{ willChange: 'auto' }} />
+      <div className="relative z-10" style={{ willChange: 'auto' }}>
         <Navbar />
-        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-32">
+        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-32" style={{ willChange: 'auto' }}>
         {/* Wallet Overview */}
         <div className="mb-8">
           <h1 className="mb-2 text-3xl font-bold">

@@ -1,5 +1,6 @@
 'use client';
 
+import React, { useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Moon, Sun, Wallet } from 'lucide-react';
@@ -28,7 +29,12 @@ const navItems = [
   { name: 'Strategies', link: '/strategies' },
 ];
 
-export function Navbar() {
+// Memoize helper function outside component
+const formatAddress = (addr: string) => {
+  return `${addr.slice(0, 4)}...${addr.slice(-4)}`;
+};
+
+export const Navbar = React.memo(function Navbar() {
   const { theme, toggleTheme } = useThemeStore();
   const { balance } = useBalance(); // READ-ONLY: No fetching in navbar
   const { publicKey, connected, disconnect: solanaDisconnect } = useWallet();
@@ -36,21 +42,39 @@ export function Navbar() {
   const { isInitializing } = useWalletInit();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleWalletClick = () => {
+  // Memoize event handlers
+  const handleWalletClick = useCallback(() => {
     if (!connected) {
       setVisible(true);
     }
-  };
+  }, [connected, setVisible]);
 
-  const handleDisconnect = async () => {
+  const handleDisconnect = useCallback(async () => {
     await solanaDisconnect();
-  };
+  }, [solanaDisconnect]);
+  
+  const handleCloseMobileMenu = useCallback(() => setMobileMenuOpen(false), []);
+  const handleToggleMobileMenu = useCallback(() => setMobileMenuOpen(!mobileMenuOpen), [mobileMenuOpen]);
+  
+  // Handlers for mobile menu actions
+  const handleDisconnectAndClose = useCallback(() => {
+    handleDisconnect();
+    handleCloseMobileMenu();
+  }, [handleDisconnect, handleCloseMobileMenu]);
+  
+  const handleWalletClickAndClose = useCallback(() => {
+    handleWalletClick();
+    handleCloseMobileMenu();
+  }, [handleWalletClick, handleCloseMobileMenu]);
 
-  const formatAddress = (addr: string) => {
-    return `${addr.slice(0, 4)}...${addr.slice(-4)}`;
-  };
+  // Memoize formatted address
+  const formattedAddress = useMemo(() => 
+    publicKey ? formatAddress(publicKey.toBase58()) : '',
+    [publicKey]
+  );
 
-  const LogoSection = () => (
+  // Memoize sub-components for better performance
+  const LogoSection = useMemo(() => (
     <Link href="/" className="relative z-20 flex items-center gap-2.5 group px-2 py-1">
       <div className="relative">
         <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -60,15 +84,17 @@ export function Navbar() {
           width={36}
           height={36}
           className="relative transition-all duration-300 group-hover:scale-110 drop-shadow-lg"
+          priority
+          style={{ transform: 'translateZ(0)' }}
         />
       </div>
       <span className="text-xl font-bold text-gradient-purple transition-all duration-300 group-hover:tracking-wide font-display">
         WeSwap
       </span>
     </Link>
-  );
+  ), []);
 
-  const ActionButtons = () => (
+  const ActionButtons = useMemo(() => (
     <div className="relative z-20 flex items-center gap-2">
       <Button
         variant="ghost"
@@ -112,7 +138,7 @@ export function Navbar() {
           <div className="hidden lg:flex flex-col items-end text-xs px-2">
             <span className="font-semibold text-primary">{balance} SOL</span>
             <span className="text-xs text-muted-foreground">
-              {formatAddress(publicKey.toBase58())}
+              {formattedAddress}
             </span>
           </div>
           <Button
@@ -123,7 +149,7 @@ export function Navbar() {
           >
             <Wallet className="h-4 w-4" />
             <span className="hidden sm:inline lg:hidden">
-              {formatAddress(publicKey.toBase58())}
+              {formattedAddress}
             </span>
             <span className="hidden lg:inline">Disconnect</span>
           </Button>
@@ -139,21 +165,21 @@ export function Navbar() {
         </Button>
       )}
     </div>
-  );
+  ), [balance, connected, formattedAddress, handleDisconnect, handleWalletClick, isInitializing, publicKey, theme, toggleTheme]);
 
   return (
     <AceternityNavbar className="top-0">
       {/* Desktop Navigation */}
       <NavBody className="border border-border/40">
-        <LogoSection />
+        {LogoSection}
         <NavItems items={navItems} />
-        <ActionButtons />
+        {ActionButtons}
       </NavBody>
 
       {/* Mobile Navigation */}
       <MobileNav className="border border-border/40">
         <MobileNavHeader>
-          <LogoSection />
+          {LogoSection}
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
@@ -187,20 +213,20 @@ export function Navbar() {
             </Button>
             <MobileNavToggle 
               isOpen={mobileMenuOpen} 
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
+              onClick={handleToggleMobileMenu} 
             />
           </div>
         </MobileNavHeader>
 
         <MobileNavMenu 
           isOpen={mobileMenuOpen} 
-          onClose={() => setMobileMenuOpen(false)}
+          onClose={handleCloseMobileMenu}
         >
           {navItems.map((item, idx) => (
             <Link
               key={idx}
               href={item.link}
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={handleCloseMobileMenu}
               className="block w-full text-left text-lg font-medium text-neutral-600 hover:text-primary dark:text-neutral-300 dark:hover:text-primary transition-colors"
             >
               {item.name}
@@ -218,15 +244,12 @@ export function Navbar() {
                 <span className="text-sm text-muted-foreground">Balance</span>
                 <span className="font-semibold text-primary">{balance} SOL</span>
                 <span className="text-xs text-muted-foreground">
-                  {formatAddress(publicKey.toBase58())}
+                  {formattedAddress}
                 </span>
               </div>
               <Button
                 variant="outline"
-                onClick={() => {
-                  handleDisconnect();
-                  setMobileMenuOpen(false);
-                }}
+                onClick={handleDisconnectAndClose}
                 className="w-full gap-2 border-primary/30 hover:bg-primary/10"
               >
                 <Wallet className="h-4 w-4" />
@@ -235,10 +258,7 @@ export function Navbar() {
             </div>
           ) : (
             <Button
-              onClick={() => {
-                handleWalletClick();
-                setMobileMenuOpen(false);
-              }}
+              onClick={handleWalletClickAndClose}
               className="w-full gap-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white"
             >
               <Wallet className="h-4 w-4" />
@@ -249,4 +269,4 @@ export function Navbar() {
       </MobileNav>
     </AceternityNavbar>
   );
-}
+});

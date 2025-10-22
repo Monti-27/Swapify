@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { motion } from 'framer-motion';
 import {
   Zap,
@@ -12,6 +13,9 @@ import {
   Layers,
   Target,
 } from 'lucide-react';
+
+// GPU-friendly easing
+const smoothEase = [0.43, 0.13, 0.23, 0.96] as const;
 
 const features = [
   {
@@ -64,7 +68,7 @@ const features = [
   },
 ];
 
-export function FeaturesEnhanced() {
+export const FeaturesEnhanced = React.memo(function FeaturesEnhanced() {
   return (
     <section id="features" className="py-24 sm:py-32 relative bg-background">
       {/* Background Pattern */}
@@ -76,8 +80,12 @@ export function FeaturesEnhanced() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
+            transition={{ duration: 0.5, ease: smoothEase }}
+            viewport={{ once: true, margin: "-50px" }}
+            style={{
+              willChange: 'transform, opacity',
+              transform: 'translateZ(0)',
+            }}
           >
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4 font-display">
               Why Choose <span className="text-gradient-purple">WeSwap</span>?
@@ -99,8 +107,12 @@ export function FeaturesEnhanced() {
                 key={feature.title}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1, ease: smoothEase }}
+                viewport={{ once: true, margin: "-50px" }}
+                style={{
+                  willChange: 'transform, opacity',
+                  transform: 'translateZ(0)',
+                }}
                 className={`
                   group relative overflow-hidden rounded-2xl border border-primary/20 
                   bg-gradient-purple-card backdrop-blur-sm p-8
@@ -141,5 +153,5 @@ export function FeaturesEnhanced() {
       </div>
     </section>
   );
-}
+});
 

@@ -631,23 +631,116 @@ video {
   will-change: transform;
 }
 
-/* Buttery smooth animations */
+/* ========================================
+   SCROLL PERFORMANCE OPTIMIZATIONS
+   ======================================== */
+
+/* Smooth scrolling with hardware acceleration */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  /* Enable smooth scrolling for modern browsers */
+  scroll-behavior: smooth;
+  /* Optimize for high-refresh-rate displays (120Hz+) */
+  -webkit-overflow-scrolling: touch;
+}
+
 @media (prefers-reduced-motion: no-preference) {
-  * {
+  html {
     scroll-behavior: smooth;
   }
 }
 
-/* Hardware acceleration for smooth performance */
+/* GPU acceleration for body and main containers */
+body {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Layout containment for performance - prevents unnecessary reflows */
+section {
+  contain: layout style paint;
+}
+
+main {
+  contain: layout style;
+}
+
+.container {
+  contain: layout style;
+}
+
+/* Hardware acceleration for all animated elements */
+[class*="motion-"],
+[class*="animate-"],
+[style*="animation"],
+[data-framer-motion] {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Optimize backdrop-blur elements */
 .backdrop-blur-sm,
 .backdrop-blur-md,
 .backdrop-blur-lg,
-.backdrop-blur-xl {
+.backdrop-blur-xl,
+[class*="backdrop-blur"] {
   transform: translateZ(0);
   will-change: backdrop-filter;
+  backface-visibility: hidden;
+  /* Force GPU layer */
+  -webkit-transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
 }
 
-/* Smooth transitions */
+/* Smooth transitions with custom easing */
 .transition-all {
   transition-timing-function: cubic-bezier(0.43, 0.13, 0.23, 0.96);
+}
+
+/* Optimize fixed/sticky positioned elements */
+[class*="fixed"],
+[class*="sticky"],
+.fixed,
+.sticky {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Optimize gradient backgrounds for smooth rendering */
+[class*="gradient-"],
+[style*="gradient"] {
+  will-change: auto;
+  backface-visibility: hidden;
+}
+
+/* Image optimization for smooth loading */
+img {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  transform: translateZ(0);
+}
+
+/* Card hover effects - optimize for 60fps */
+.hover-glow-purple,
+[class*="hover:"] {
+  will-change: transform, box-shadow;
+  transition-property: transform, box-shadow;
+  transition-timing-function: cubic-bezier(0.43, 0.13, 0.23, 0.96);
+}
+
+/* Optimize SVG rendering */
+svg {
+  transform: translateZ(0);
+  shape-rendering: geometricPrecision;
+}
+
+/* Prevent layout shift from skeleton loaders */
+[class*="skeleton"] {
+  contain: layout paint;
 }

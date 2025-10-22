@@ -383,11 +383,11 @@ export default function SwapPage() {
   const usdValue = fromPrice > 0 ? (parseFloat(fromAmount || '0') * fromPrice).toFixed(2) : '0.00';
 
   return (
-    <div className="min-h-screen relative bg-background">
-      <div className="absolute inset-0 gradient-purple-radial pointer-events-none" />
-      <div className="relative z-10">
+    <div className="min-h-screen relative bg-background" style={{ willChange: 'auto', transform: 'translateZ(0)' }}>
+      <div className="absolute inset-0 gradient-purple-radial pointer-events-none" style={{ willChange: 'auto' }} />
+      <div className="relative z-10" style={{ willChange: 'auto' }}>
       <Navbar />
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-32">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-32" style={{ willChange: 'auto' }}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
           {/* Main Swap Card */}
           <div className="lg:col-span-2">

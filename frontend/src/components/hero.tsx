@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, Zap, Shield, TrendingUp } from 'lucide-react';
@@ -7,16 +8,24 @@ import { Button } from '@/components/ui/button';
 import { LampContainer } from '@/components/ui/lamp';
 import { motion } from 'framer-motion';
 
-export function Hero() {
+// GPU-friendly easing for buttery-smooth animations
+const smoothEase = [0.43, 0.13, 0.23, 0.96] as const;
+
+export const Hero = React.memo(function Hero() {
   return (
     <LampContainer className="!bg-background !min-h-screen">
       <motion.div
         initial={{ opacity: 0, y: 100 }}
         whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
         transition={{
           delay: 0.3,
           duration: 0.8,
-          ease: "easeInOut",
+          ease: smoothEase,
+        }}
+        style={{
+          willChange: 'transform, opacity',
+          transform: 'translateZ(0)',
         }}
         className="w-full pt-24"
       >
@@ -26,7 +35,12 @@ export function Hero() {
             <motion.div
               initial={{ opacity: 0, scale: 0.5 }}
               whileInView={{ opacity: 0.03, scale: 1 }}
-              transition={{ duration: 1.2, ease: "easeOut" }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.2, ease: smoothEase }}
+              style={{
+                willChange: 'transform, opacity',
+                transform: 'translateZ(0)',
+              }}
               className="absolute inset-0 flex items-center justify-center pointer-events-none"
             >
               <Image 
@@ -35,6 +49,8 @@ export function Hero() {
                 width={400}
                 height={400}
                 className="select-none"
+                loading="lazy"
+                style={{ transform: 'translateZ(0)' }}
               />
             </motion.div>
 
@@ -78,5 +94,5 @@ export function Hero() {
       </motion.div>
     </LampContainer>
   );
-}
+});
 

@@ -3,6 +3,9 @@ import React from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
+// GPU-friendly easing
+const smoothEase = [0.43, 0.13, 0.23, 0.96] as const;
+
 export default function LampDemo() {
   return (
     <LampContainer>
@@ -22,7 +25,7 @@ export default function LampDemo() {
   );
 }
 
-export const LampContainer = ({
+export const LampContainer = React.memo(({
   children,
   className,
 }: {
@@ -35,18 +38,26 @@ export const LampContainer = ({
         "relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background w-full z-0",
         className
       )}
+      style={{
+        willChange: 'auto',
+        transform: 'translateZ(0)',
+      }}
     >
       <div className="relative flex w-full flex-1 scale-y-125 items-center justify-center isolate z-0 ">
         <motion.div
           initial={{ opacity: 0.3, width: "15rem" }}
           whileInView={{ opacity: 0.6, width: "30rem" }}
+          viewport={{ once: true }}
           transition={{
             delay: 0.3,
             duration: 0.8,
-            ease: "easeInOut",
+            ease: smoothEase,
           }}
           style={{
             backgroundImage: `conic-gradient(var(--conic-position), var(--tw-gradient-stops))`,
+            willChange: 'opacity, width',
+            transform: 'translateZ(0)',
+            backfaceVisibility: 'hidden',
           }}
           className="absolute inset-auto right-1/2 h-64 overflow-visible w-[30rem] bg-gradient-conic from-primary/70 via-transparent to-transparent text-white [--conic-position:from_70deg_at_center_top]"
         >
@@ -56,13 +67,17 @@ export const LampContainer = ({
         <motion.div
           initial={{ opacity: 0.3, width: "15rem" }}
           whileInView={{ opacity: 0.6, width: "30rem" }}
+          viewport={{ once: true }}
           transition={{
             delay: 0.3,
             duration: 0.8,
-            ease: "easeInOut",
+            ease: smoothEase,
           }}
           style={{
             backgroundImage: `conic-gradient(var(--conic-position), var(--tw-gradient-stops))`,
+            willChange: 'opacity, width',
+            transform: 'translateZ(0)',
+            backfaceVisibility: 'hidden',
           }}
           className="absolute inset-auto left-1/2 h-64 w-[30rem] bg-gradient-conic from-transparent via-transparent to-primary/70 text-white [--conic-position:from_290deg_at_center_top]"
         >
@@ -75,20 +90,30 @@ export const LampContainer = ({
         <motion.div
           initial={{ width: "10rem" }}
           whileInView={{ width: "20rem" }}
+          viewport={{ once: true }}
           transition={{
             delay: 0.3,
             duration: 0.8,
-            ease: "easeInOut",
+            ease: smoothEase,
+          }}
+          style={{
+            willChange: 'width',
+            transform: 'translateZ(0)',
           }}
           className="absolute inset-auto z-30 h-48 w-80 translate-y-0 rounded-full bg-primary/50 blur-[80px]"
         ></motion.div>
         <motion.div
           initial={{ width: "15rem" }}
           whileInView={{ width: "30rem" }}
+          viewport={{ once: true }}
           transition={{
             delay: 0.3,
             duration: 0.8,
-            ease: "easeInOut",
+            ease: smoothEase,
+          }}
+          style={{
+            willChange: 'width',
+            transform: 'translateZ(0)',
           }}
           className="absolute inset-auto z-50 h-0.5 w-[30rem] -translate-y-[1rem] bg-primary/80 "
         ></motion.div>
@@ -101,4 +126,4 @@ export const LampContainer = ({
       </div>
     </div>
   );
-};
+});

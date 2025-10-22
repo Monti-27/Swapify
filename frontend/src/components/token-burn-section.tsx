@@ -1,5 +1,6 @@
 'use client';
 
+import React, { useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Flame, ExternalLink, TrendingDown, Clock } from 'lucide-react';
 import { useBurnStore } from '@/store/burnStore';
@@ -8,8 +9,14 @@ import { useEffect, useRef, useState } from 'react';
 // Smooth buttery easing
 const smoothEase = [0.43, 0.13, 0.23, 0.96] as const;
 
-// Animated counter component
-function AnimatedCounter({ value, duration = 2 }: { value: number; duration?: number }) {
+// Animated counter component - optimized with React.memo
+const AnimatedCounter = React.memo(function AnimatedCounter({ 
+  value, 
+  duration = 2 
+}: { 
+  value: number; 
+  duration?: number 
+}) {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
@@ -38,14 +45,14 @@ function AnimatedCounter({ value, duration = 2 }: { value: number; duration?: nu
   }, [value, duration]);
 
   return <>{count.toLocaleString()}</>;
-}
+});
 
-export function TokenBurnSection() {
+export const TokenBurnSection = React.memo(function TokenBurnSection() {
   const { totalBurned, burnRate, lastTx } = useBurnStore();
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    // Ensure video plays smoothly
+    // Ensure video plays smoothly with GPU acceleration
     if (videoRef.current) {
       videoRef.current.play().catch(err => console.log('Video autoplay prevented:', err));
     }
@@ -72,7 +79,11 @@ export function TokenBurnSection() {
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, ease: smoothEase }}
-            viewport={{ once: true }}
+            viewport={{ once: true, margin: "-50px" }}
+            style={{
+              willChange: 'transform, opacity',
+              transform: 'translateZ(0)',
+            }}
             className="relative"
           >
             {/* Outer glow effect */}
@@ -102,9 +113,13 @@ export function TokenBurnSection() {
                   loop
                   muted
                   playsInline
+                  preload="auto"
                   className="w-full h-full object-cover"
                   style={{
                     mixBlendMode: 'screen',
+                    transform: 'translateZ(0)',
+                    backfaceVisibility: 'hidden',
+                    willChange: 'auto',
                   }}
                 >
                   <source src="/videos/token-burn.mp4.mp4" type="video/mp4" />
@@ -122,9 +137,11 @@ export function TokenBurnSection() {
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, ease: smoothEase }}
-                    viewport={{ once: true }}
+                    viewport={{ once: true, margin: "-50px" }}
                     className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-6 font-display text-white"
                     style={{
+                      willChange: 'transform, opacity',
+                      transform: 'translateZ(0)',
                       textShadow: '0 0 40px rgba(168, 85, 247, 0.6), 0 0 80px rgba(168, 85, 247, 0.3), 0 2px 4px rgba(0,0,0,0.5)',
                     }}
                   >
@@ -136,9 +153,11 @@ export function TokenBurnSection() {
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.2, ease: smoothEase }}
-                    viewport={{ once: true }}
+                    viewport={{ once: true, margin: "-50px" }}
                     className="text-lg sm:text-xl text-white/90 max-w-2xl font-sans"
                     style={{
+                      willChange: 'transform, opacity',
+                      transform: 'translateZ(0)',
                       textShadow: '0 2px 4px rgba(0,0,0,0.5)',
                     }}
                   >
@@ -153,11 +172,15 @@ export function TokenBurnSection() {
                     initial={{ opacity: 0, scale: 0.9 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.7, delay: 0.4, ease: smoothEase }}
-                    viewport={{ once: true }}
+                    viewport={{ once: true, margin: "-50px" }}
                     whileHover={{ 
                       scale: 1.05, 
                       y: -8,
                       transition: { duration: 0.3, ease: smoothEase }
+                    }}
+                    style={{
+                      willChange: 'transform, opacity',
+                      transform: 'translateZ(0)',
                     }}
                     className="relative group"
                   >
@@ -184,11 +207,15 @@ export function TokenBurnSection() {
                     initial={{ opacity: 0, scale: 0.9 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.7, delay: 0.5, ease: smoothEase }}
-                    viewport={{ once: true }}
+                    viewport={{ once: true, margin: "-50px" }}
                     whileHover={{ 
                       scale: 1.05, 
                       y: -8,
                       transition: { duration: 0.3, ease: smoothEase }
+                    }}
+                    style={{
+                      willChange: 'transform, opacity',
+                      transform: 'translateZ(0)',
                     }}
                     className="relative group"
                   >
@@ -215,11 +242,15 @@ export function TokenBurnSection() {
                     initial={{ opacity: 0, scale: 0.9 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.7, delay: 0.6, ease: smoothEase }}
-                    viewport={{ once: true }}
+                    viewport={{ once: true, margin: "-50px" }}
                     whileHover={{ 
                       scale: 1.05, 
                       y: -8,
                       transition: { duration: 0.3, ease: smoothEase }
+                    }}
+                    style={{
+                      willChange: 'transform, opacity',
+                      transform: 'translateZ(0)',
                     }}
                     className="relative group"
                   >
@@ -247,7 +278,11 @@ export function TokenBurnSection() {
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.7, ease: smoothEase }}
-                  viewport={{ once: true }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  style={{
+                    willChange: 'transform, opacity',
+                    transform: 'translateZ(0)',
+                  }}
                   className="flex justify-center"
                 >
                   <motion.a
@@ -293,4 +328,4 @@ export function TokenBurnSection() {
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-64 bg-purple-600/20 rounded-full blur-[100px] pointer-events-none" />
     </section>
   );
-}
+});
