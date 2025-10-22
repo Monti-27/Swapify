@@ -6,7 +6,7 @@ import { useBurnStore } from '@/store/burnStore';
 import { useEffect, useRef, useState } from 'react';
 
 // Smooth buttery easing
-const smoothEase = [0.43, 0.13, 0.23, 0.96];
+const smoothEase = [0.43, 0.13, 0.23, 0.96] as const;
 
 // Animated counter component
 function AnimatedCounter({ value, duration = 2 }: { value: number; duration?: number }) {
