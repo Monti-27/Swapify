@@ -117,9 +117,10 @@ export const TokenBurnSection = React.memo(function TokenBurnSection() {
                   className="w-full h-full object-cover"
                   style={{
                     mixBlendMode: 'screen',
-                    transform: 'translateZ(0)',
+                    transform: 'translateZ(0) scale(1.05) translateY(-3%)',
                     backfaceVisibility: 'hidden',
                     willChange: 'auto',
+                    objectPosition: 'center 45%',
                   }}
                 >
                   <source src="/videos/token-burn.mp4.mp4" type="video/mp4" />
@@ -145,8 +146,7 @@ export const TokenBurnSection = React.memo(function TokenBurnSection() {
                       textShadow: '0 0 40px rgba(168, 85, 247, 0.6), 0 0 80px rgba(168, 85, 247, 0.3), 0 2px 4px rgba(0,0,0,0.5)',
                     }}
                   >
-                    Token Burn{' '}
-                    <span className="text-gradient-purple">Mechanism</span>
+                    Burned tokens
                   </motion.h2>
 
                   <motion.p
@@ -185,10 +185,10 @@ export const TokenBurnSection = React.memo(function TokenBurnSection() {
                     className="relative group"
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-purple-500/30 to-pink-500/20 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-500" />
-                    <div className="relative bg-black/60 backdrop-blur-md border border-primary/40 rounded-2xl p-6 group-hover:border-primary/60 transition-all duration-500">
+                    <div className="relative bg-black/70 dark:bg-black/60 backdrop-blur-md border border-primary/40 rounded-2xl p-6 group-hover:border-primary/60 transition-all duration-500">
                       <div className="flex items-center gap-3 mb-2">
-                        <TrendingDown className="w-5 h-5 text-purple-300" />
-                        <p className="text-sm text-white/80 font-sans">Total Burned</p>
+                        <TrendingDown className="w-5 h-5 text-purple-300 dark:text-purple-300" />
+                        <p className="text-sm text-white/90 dark:text-white/80 font-sans">Total Burned</p>
                       </div>
                       <p 
                         className="text-3xl font-bold text-white font-display"
@@ -198,7 +198,7 @@ export const TokenBurnSection = React.memo(function TokenBurnSection() {
                       >
                         <AnimatedCounter value={totalBurned} />
                       </p>
-                      <p className="text-xs text-white/70 mt-1 font-sans">WESWAP tokens</p>
+                      <p className="text-xs text-white/80 dark:text-white/70 mt-1 font-sans">WESWAP tokens</p>
                     </div>
                   </motion.div>
 
@@ -220,10 +220,10 @@ export const TokenBurnSection = React.memo(function TokenBurnSection() {
                     className="relative group"
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-purple-500/30 to-violet-500/20 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-500" />
-                    <div className="relative bg-black/60 backdrop-blur-md border border-primary/40 rounded-2xl p-6 group-hover:border-primary/60 transition-all duration-500">
+                    <div className="relative bg-black/70 dark:bg-black/60 backdrop-blur-md border border-primary/40 rounded-2xl p-6 group-hover:border-primary/60 transition-all duration-500">
                       <div className="flex items-center gap-3 mb-2">
-                        <Flame className="w-5 h-5 text-purple-300" />
-                        <p className="text-sm text-white/80 font-sans">Burn Rate</p>
+                        <Flame className="w-5 h-5 text-purple-300 dark:text-purple-300" />
+                        <p className="text-sm text-white/90 dark:text-white/80 font-sans">Burn Rate</p>
                       </div>
                       <p 
                         className="text-3xl font-bold text-white font-display"
@@ -233,7 +233,7 @@ export const TokenBurnSection = React.memo(function TokenBurnSection() {
                       >
                         {burnRate}%
                       </p>
-                      <p className="text-xs text-white/70 mt-1 font-sans">per transaction</p>
+                      <p className="text-xs text-white/80 dark:text-white/70 mt-1 font-sans">per transaction</p>
                     </div>
                   </motion.div>
 
@@ -255,10 +255,10 @@ export const TokenBurnSection = React.memo(function TokenBurnSection() {
                     className="relative group"
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-purple-500/30 to-indigo-500/20 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-500" />
-                    <div className="relative bg-black/60 backdrop-blur-md border border-primary/40 rounded-2xl p-6 group-hover:border-primary/60 transition-all duration-500">
+                    <div className="relative bg-black/70 dark:bg-black/60 backdrop-blur-md border border-primary/40 rounded-2xl p-6 group-hover:border-primary/60 transition-all duration-500">
                       <div className="flex items-center gap-3 mb-2">
-                        <Clock className="w-5 h-5 text-purple-300" />
-                        <p className="text-sm text-white/80 font-sans">Last Burn</p>
+                        <Clock className="w-5 h-5 text-purple-300 dark:text-purple-300" />
+                        <p className="text-sm text-white/90 dark:text-white/80 font-sans">Last Burn</p>
                       </div>
                       <p 
                         className="text-3xl font-bold text-white font-display tracking-wide"
@@ -268,7 +268,7 @@ export const TokenBurnSection = React.memo(function TokenBurnSection() {
                       >
                         {lastTx}
                       </p>
-                      <p className="text-xs text-white/70 mt-1 font-sans">2 minutes ago</p>
+                      <p className="text-xs text-white/80 dark:text-white/70 mt-1 font-sans">2 minutes ago</p>
                     </div>
                   </motion.div>
                 </div>

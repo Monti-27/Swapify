@@ -89,7 +89,7 @@ export const HowItWorks = React.memo(function HowItWorks() {
                   {/* Card */}
                   <div className="h-full p-6 rounded-2xl border border-primary/20 bg-gradient-purple-card backdrop-blur-sm transition-all duration-300 hover-glow-purple">
                     {/* Step Number */}
-                    <div className="absolute -top-4 -left-4 w-12 h-12 rounded-full bg-gradient-purple-hero flex items-center justify-center text-white font-bold text-lg shadow-purple-glow">
+                    <div className="absolute -top-4 -left-4 w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 dark:from-purple-600 dark:to-purple-900 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-purple-500/50">
                       {step.number}
                     </div>
 

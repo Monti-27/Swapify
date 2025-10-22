@@ -29,18 +29,18 @@ export default function Home() {
         {/* Layered Footer Section */}
         <div className="relative w-full bg-background" style={{ willChange: 'auto' }}>
           {/* Large WeSwap Text - Behind Footer */}
-          <div className="relative w-full h-[70vh] min-h-[650px] flex items-end justify-center overflow-hidden pb-20 bg-background" style={{ willChange: 'auto' }}>
+          <div className="relative w-full h-[50vh] sm:h-[60vh] md:h-[70vh] min-h-[400px] sm:min-h-[500px] md:min-h-[650px] flex items-end justify-center overflow-hidden pb-12 sm:pb-16 md:pb-20 bg-background" style={{ willChange: 'auto' }}>
             <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:50px_50px]" />
             {/* Stronger fade from bottom gradient overlay for better masking */}
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-background via-background/60 to-transparent z-10" />
-            <div className="relative w-full h-full flex items-center justify-center px-4 z-0 translate-y-16" style={{ willChange: 'transform', transform: 'translateZ(0)' }}>
+            <div className="relative w-full h-full flex items-center justify-center px-2 sm:px-4 z-0 translate-y-8 sm:translate-y-12 md:translate-y-16" style={{ willChange: 'transform', transform: 'translateZ(0)' }}>
               <TextHoverEffect text="Weswap" duration={0.3} automatic={true} />
             </div>
           </div>
           
           {/* Footer - In Front, overlapping bottom of WeSwap text */}
-          <div className="relative -mt-[45vh]" style={{ willChange: 'auto' }}>
+          <div className="relative -mt-[35vh] sm:-mt-[40vh] md:-mt-[45vh]" style={{ willChange: 'auto' }}>
             <Footer />
           </div>
         </div>
