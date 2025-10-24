@@ -1,6 +1,6 @@
 'use client';
 
-import React, { ReactNode, useEffect } from 'react';
+import React, { ReactNode, useEffect, useRef } from 'react';
 import { ThemeProvider } from '@/components/theme-provider';
 import { SolanaWalletProvider } from '@/components/wallet-provider';
 import { WalletInitProvider } from '@/contexts/WalletInitContext';
@@ -13,9 +13,16 @@ interface ProvidersProps {
 }
 
 export function Providers({ children }: ProvidersProps) {
+  const mountTimeRef = useRef<number>(Date.now());
+  const isInitialMountRef = useRef<boolean>(true);
+  
   // Log provider mounting for debugging
   useEffect(() => {
-    console.log('🏗️ Providers component mounted');
+    console.log('🏗️ Providers component mounted', {
+      timestamp: new Date().toISOString(),
+      mountTime: mountTimeRef.current,
+      isInitialMount: isInitialMountRef.current
+    });
     
     // Log environment info
     console.log('🌍 Environment:', {
@@ -25,8 +32,18 @@ export function Providers({ children }: ProvidersProps) {
       userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : 'SSR'
     });
     
+    // Mark as no longer initial mount after a short delay
+    const timer = setTimeout(() => {
+      isInitialMountRef.current = false;
+      console.log('🏗️ Providers initialization period ended');
+    }, 1000);
+    
     return () => {
-      console.log('🏗️ Providers component unmounting');
+      clearTimeout(timer);
+      console.log('🏗️ Providers component unmounting', {
+        timestamp: new Date().toISOString(),
+        wasInitialMount: isInitialMountRef.current
+      });
     };
   }, []);
 
@@ -34,7 +51,7 @@ export function Providers({ children }: ProvidersProps) {
     <ThemeProvider>
       <SolanaWalletProvider>
         <WalletInitProvider>
-          <AuthProvider>
+          <AuthProvider mountTime={mountTimeRef.current} isInitialMount={isInitialMountRef}>
             <BalanceProvider>
               {children}
               <Toaster richColors position="bottom-right" />

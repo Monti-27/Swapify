@@ -46,7 +46,13 @@ const clearAuthSession = () => {
   localStorage.removeItem('auth_session');
 };
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+interface AuthProviderProps {
+  children: ReactNode;
+  mountTime: number;
+  isInitialMount: React.MutableRefObject<boolean>;
+}
+
+export function AuthProvider({ children, mountTime, isInitialMount }: AuthProviderProps) {
   const { publicKey, signMessage, connected } = useWallet();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
@@ -59,11 +65,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const hasAuthenticatedThisSession = useRef<boolean>(false);
   const currentWalletRef = useRef<string | null>(null);
   
+  // Track connection state for debouncing
+  const disconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const wasEverConnectedRef = useRef<boolean>(false);
+  const lastConnectedTimeRef = useRef<number>(0);
+  
   // Log AuthProvider mounting for debugging
   useEffect(() => {
     console.log('🔐 AuthProvider mounted', {
       environment: process.env.NODE_ENV,
       timestamp: new Date().toISOString(),
+      mountTime,
       hasWindow: typeof window !== 'undefined'
     });
     
@@ -71,8 +83,66 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log('🔐 AuthProvider unmounting', {
         timestamp: new Date().toISOString()
       });
+      
+      // Clear any pending disconnect timeout
+      if (disconnectTimeoutRef.current) {
+        clearTimeout(disconnectTimeoutRef.current);
+      }
     };
-  }, []);
+  }, [mountTime]);
+
+  // Debounced disconnect handler to filter out false disconnects
+  const handleDisconnect = useCallback((reason: string) => {
+    console.log('🔌 Disconnect event received', {
+      reason,
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV,
+      wasEverConnected: wasEverConnectedRef.current,
+      isInitialMount: isInitialMount.current,
+      timeSinceMount: Date.now() - mountTime,
+      timeSinceLastConnect: Date.now() - lastConnectedTimeRef.current
+    });
+
+    // Clear any existing timeout
+    if (disconnectTimeoutRef.current) {
+      clearTimeout(disconnectTimeoutRef.current);
+    }
+
+    // If this is during initial mount or very soon after mount, ignore
+    if (isInitialMount.current || (Date.now() - mountTime) < 2000) {
+      console.log('🚫 Ignoring disconnect during initialization');
+      return;
+    }
+
+    // If wallet was never actually connected, ignore
+    if (!wasEverConnectedRef.current) {
+      console.log('🚫 Ignoring disconnect - wallet was never connected');
+      return;
+    }
+
+    // Debounce the actual disconnect handling
+    disconnectTimeoutRef.current = setTimeout(() => {
+      console.log('🔌 Processing debounced disconnect', {
+        reason,
+        timestamp: new Date().toISOString(),
+        wasAuthenticated: isAuthenticated,
+        hadSession: hasAuthenticatedThisSession.current
+      });
+
+      setIsAuthenticated(false);
+      api.clearToken();
+      clearAuthSession();
+      lastAuthAttempt.current = null;
+      hasAuthenticatedThisSession.current = false;
+      currentWalletRef.current = null;
+      wasEverConnectedRef.current = false;
+      
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('last_wallet_address');
+      }
+    }, 200); // 200ms debounce
+  }, [mountTime, isInitialMount, isAuthenticated]);
 
   // Helper function to check if token is valid
   const isTokenValid = useCallback((token: string): boolean => {
@@ -319,26 +389,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Don't run until initialization is complete
     if (!isInitialized) return;
     
-    if (!connected) {
-      // Wallet disconnected - clear everything
-      console.log('🔌 Wallet disconnected, clearing auth state', {
-        reason: 'wallet_disconnected',
+    // Track connection state
+    if (connected) {
+      wasEverConnectedRef.current = true;
+      lastConnectedTimeRef.current = Date.now();
+      
+      // Clear any pending disconnect timeout
+      if (disconnectTimeoutRef.current) {
+        clearTimeout(disconnectTimeoutRef.current);
+        disconnectTimeoutRef.current = null;
+      }
+      
+      console.log('🔌 Wallet connected', {
         timestamp: new Date().toISOString(),
         environment: process.env.NODE_ENV,
-        wasAuthenticated: isAuthenticated,
-        hadSession: hasAuthenticatedThisSession.current
+        publicKey: publicKey?.toString().slice(0, 8) + '...'
       });
-      setIsAuthenticated(false);
-      api.clearToken();
-      clearAuthSession();
-      lastAuthAttempt.current = null;
-      hasAuthenticatedThisSession.current = false;
-      currentWalletRef.current = null;
-      
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('last_wallet_address');
-      }
+    } else {
+      // Use debounced disconnect handler
+      handleDisconnect('wallet_disconnected');
       return;
     }
 
@@ -392,7 +461,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         authenticate();
       }
     }
-  }, [connected, publicKey, signMessage, isAuthenticated, isAuthenticating, isTokenValid, isInitialized]);
+  }, [connected, publicKey, signMessage, isAuthenticated, isAuthenticating, isTokenValid, isInitialized, handleDisconnect]);
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, isAuthenticating, authenticate, logout }}>
