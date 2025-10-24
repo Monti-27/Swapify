@@ -1,12 +1,5 @@
 import * as React from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { AnimatedModal } from "@/components/ui/animated-modal";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -40,38 +33,47 @@ export function ConfirmationModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <div className="flex items-start gap-4">
-            <div
-              className={cn(
-                "flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
-                variant === "destructive"
-                  ? "bg-red-500/10 text-red-500"
-                  : "bg-yellow-500/10 text-yellow-500"
-              )}
-            >
-              {variant === "destructive" ? (
-                <AlertCircle className="h-5 w-5" />
-              ) : (
-                <AlertTriangle className="h-5 w-5" />
-              )}
-            </div>
-            <div className="flex-1 space-y-2">
-              <DialogTitle className="text-left">{title}</DialogTitle>
-              <DialogDescription className="text-left">
-                {description}
-              </DialogDescription>
-            </div>
+    <AnimatedModal
+      isOpen={open}
+      onClose={onClose}
+      maxWidth="sm"
+      className="p-6"
+    >
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-start gap-4">
+          <div
+            className={cn(
+              "flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
+              variant === "destructive"
+                ? "bg-red-500/10 text-red-500"
+                : "bg-yellow-500/10 text-yellow-500"
+            )}
+          >
+            {variant === "destructive" ? (
+              <AlertCircle className="h-5 w-5" />
+            ) : (
+              <AlertTriangle className="h-5 w-5" />
+            )}
           </div>
-        </DialogHeader>
-        <DialogFooter className="gap-2 sm:gap-0">
+          <div className="flex-1 space-y-2">
+            <h2 className="text-lg font-semibold leading-none tracking-tight text-left">
+              {title}
+            </h2>
+            <p className="text-sm text-muted-foreground text-left">
+              {description}
+            </p>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-2 sm:gap-0 sm:flex-row-reverse sm:justify-end sm:space-x-2">
           <Button
             type="button"
             variant="outline"
             onClick={onClose}
             disabled={isLoading}
+            className="flex-1 sm:flex-none"
           >
             {cancelText}
           </Button>
@@ -80,12 +82,13 @@ export function ConfirmationModal({
             variant={variant === "destructive" ? "destructive" : "default"}
             onClick={handleConfirm}
             disabled={isLoading}
+            className="flex-1 sm:flex-none"
           >
             {confirmText}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </div>
+    </AnimatedModal>
   );
 }
 

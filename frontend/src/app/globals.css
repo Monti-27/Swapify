@@ -261,6 +261,7 @@ html.light {
   background: rgba(0, 0, 0, 0.8) !important;
   backdrop-filter: blur(8px) !important;
   z-index: 9999 !important;
+  animation: fadeIn 0.2s ease-out;
 }
 
 /* Modal Wrapper - Light Mode */
@@ -276,6 +277,7 @@ html.light {
   border-radius: var(--radius-xl) !important;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
   color: hsl(var(--foreground)) !important;
+  animation: modalFadeIn 0.2s ease-out;
 }
 
 /* Glass Effect Modal - Light Mode */
@@ -412,6 +414,38 @@ html.light {
   width: 24px !important;
   height: 24px !important;
   border-radius: 4px !important;
+}
+
+/* Custom Modal Animations */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes modalFadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Purple Gradient Utilities */

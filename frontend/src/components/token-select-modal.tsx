@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AnimatedModal } from '@/components/ui/animated-modal';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -81,11 +81,19 @@ export function TokenSelectModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Select Token</DialogTitle>
-        </DialogHeader>
+    <AnimatedModal
+      isOpen={open}
+      onClose={onClose}
+      maxWidth="md"
+      className="p-6"
+    >
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="space-y-2">
+          <h2 className="text-lg font-semibold leading-none tracking-tight">
+            Select Token
+          </h2>
+        </div>
 
         <div className="space-y-4">
           {/* Search Input */}
@@ -165,8 +173,8 @@ export function TokenSelectModal({
             )}
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </AnimatedModal>
   );
 }
 
