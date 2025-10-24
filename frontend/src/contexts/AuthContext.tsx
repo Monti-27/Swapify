@@ -10,6 +10,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isAuthenticating: boolean;
   authenticate: () => Promise<void>;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -53,6 +54,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   // Use ref to track last authentication to prevent rapid re-auth
   const lastAuthAttempt = useRef<{ wallet: string; timestamp: number } | null>(null);
+  
+  // Track if we've authenticated this session to prevent re-auth on navigation
+  const hasAuthenticatedThisSession = useRef<boolean>(false);
+  const currentWalletRef = useRef<string | null>(null);
 
   // Helper function to check if token is valid
   const isTokenValid = useCallback((token: string): boolean => {
@@ -63,8 +68,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const timeUntilExpiry = expirationTime - currentTime;
       
       // Token is valid if it expires more than 5 minutes from now
+      // Backend JWT expires in 7 days, so this gives us a good buffer
       return timeUntilExpiry > 5 * 60 * 1000;
     } catch (error) {
+      console.warn('Token validation failed:', error);
       return false;
     }
   }, []);
@@ -94,6 +101,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       api.setToken(existingToken);
       setIsAuthenticated(true);
       
+      // Mark as authenticated this session to prevent re-auth
+      hasAuthenticatedThisSession.current = true;
+      currentWalletRef.current = lastWallet;
+      
       // Update session if wallet address is available
       if (lastWallet) {
         setAuthSession({
@@ -107,7 +118,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           timestamp: Date.now()
         };
       }
+      
+      console.log('✅ Restored authentication session for wallet:', lastWallet?.slice(0, 8) + '...');
     } else if (existingToken) {
+      console.log('❌ Token expired, clearing auth state');
       localStorage.removeItem('auth_token');
       localStorage.removeItem('last_wallet_address');
       api.clearToken();
@@ -117,7 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsInitialized(true);
   }, [isTokenValid, getTokenExpiry]);
 
-  // Authenticate function with guard and cooldown
+  // Authenticate function with enhanced guards
   const authenticate = useCallback(async () => {
     if (!publicKey || !signMessage) return;
     if (isAuthenticating) return;
@@ -125,16 +139,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const currentWallet = publicKey.toString();
     const authSession = getAuthSession();
     
-    // GUARD 1: Check if already authenticated for this wallet
-    if (isAuthenticated && authSession?.walletAddress === currentWallet) {
-      const timeSinceAuth = Date.now() - authSession.timestamp;
-      if (timeSinceAuth < 5 * 60 * 1000) return; // 5 minutes
+    // GUARD 1: Check if already authenticated for this wallet in this session
+    if (isAuthenticated && hasAuthenticatedThisSession.current && currentWalletRef.current === currentWallet) {
+      console.log('🔒 Already authenticated this session, skipping');
+      return;
     }
     
-    // GUARD 2: Cooldown - prevent rapid re-authentication attempts
+    // GUARD 2: Check if already authenticated for this wallet with valid session
+    if (isAuthenticated && authSession?.walletAddress === currentWallet) {
+      const timeSinceAuth = Date.now() - authSession.timestamp;
+      if (timeSinceAuth < 5 * 60 * 1000) {
+        console.log('🔒 Recently authenticated, skipping');
+        return;
+      }
+    }
+    
+    // GUARD 3: Cooldown - prevent rapid re-authentication attempts
     if (lastAuthAttempt.current?.wallet === currentWallet) {
       const timeSinceLastAttempt = Date.now() - lastAuthAttempt.current.timestamp;
-      if (timeSinceLastAttempt < 5 * 60 * 1000) return; // 5 minutes cooldown
+      if (timeSinceLastAttempt < 5 * 60 * 1000) {
+        console.log('🔒 Cooldown active, skipping');
+        return;
+      }
     }
 
     try {
@@ -203,17 +229,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         timestamp: Date.now()
       };
       
+      // Mark as authenticated this session
+      hasAuthenticatedThisSession.current = true;
+      currentWalletRef.current = walletAddress;
+      
       setIsAuthenticated(true);
+      
+      console.log('✅ Authentication successful for wallet:', walletAddress.slice(0, 8) + '...');
       
       toast.success('Wallet Connected', {
         description: 'Authentication successful!',
         duration: 3000
       });
     } catch (error: any) {
+      console.error('❌ Authentication failed:', error.message);
       
       setIsAuthenticated(false);
       api.clearToken();
       clearAuthSession();
+      
+      // Clear session tracking
+      hasAuthenticatedThisSession.current = false;
+      currentWalletRef.current = null;
       
       if (typeof window !== 'undefined') {
         localStorage.removeItem('auth_token');
@@ -239,6 +276,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [publicKey, signMessage, isAuthenticating, isAuthenticated, getTokenExpiry]);
 
+  // Explicit logout function
+  const logout = useCallback(() => {
+    console.log('🚪 Logging out user');
+    
+    setIsAuthenticated(false);
+    api.clearToken();
+    clearAuthSession();
+    
+    // Clear session tracking
+    hasAuthenticatedThisSession.current = false;
+    currentWalletRef.current = null;
+    lastAuthAttempt.current = null;
+    
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('last_wallet_address');
+    }
+    
+    toast.info('Logged out', {
+      description: 'Authentication cleared'
+    });
+  }, []);
+
   // Handle wallet connection/disconnection with improved change detection
   useEffect(() => {
     // Don't run until initialization is complete
@@ -246,10 +306,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     if (!connected) {
       // Wallet disconnected - clear everything
+      console.log('🔌 Wallet disconnected, clearing auth state');
       setIsAuthenticated(false);
       api.clearToken();
       clearAuthSession();
       lastAuthAttempt.current = null;
+      hasAuthenticatedThisSession.current = false;
+      currentWalletRef.current = null;
       
       if (typeof window !== 'undefined') {
         localStorage.removeItem('auth_token');
@@ -265,35 +328,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const existingToken = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
     
     // CRITICAL: If already authenticated with valid session, DO NOTHING
-    if (isAuthenticated && authSession?.walletAddress === currentAddress) {
-      const timeSinceAuth = Date.now() - authSession.timestamp;
-      if (timeSinceAuth < 5 * 60 * 1000) return; // 5 minutes
+    if (isAuthenticated && hasAuthenticatedThisSession.current && currentWalletRef.current === currentAddress) {
+      console.log('🔒 Already authenticated this session, skipping re-auth');
+      return;
     }
     
     // Check if wallet changed
-    const walletChanged = authSession?.walletAddress && currentAddress !== authSession.walletAddress;
+    const walletChanged = currentWalletRef.current && currentAddress !== currentWalletRef.current;
     
     if (walletChanged) {
+      console.log('🔄 Wallet changed, clearing previous auth');
       setIsAuthenticated(false);
       api.clearToken();
       clearAuthSession();
       lastAuthAttempt.current = null;
+      hasAuthenticatedThisSession.current = false;
       
       if (typeof window !== 'undefined') {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('last_wallet_address');
       }
-      
-      authenticate();
-      return;
     }
 
     // Check if we need to authenticate (only if not already authenticated)
     if (!isAuthenticated && !isAuthenticating) {
       // BULLETPROOF CHECK: Verify both token AND session match current wallet
       if (existingToken && isTokenValid(existingToken) && authSession?.walletAddress === currentAddress) {
+        console.log('✅ Restoring valid authentication from storage');
         api.setToken(existingToken);
         setIsAuthenticated(true);
+        hasAuthenticatedThisSession.current = true;
+        currentWalletRef.current = currentAddress;
         
         // Update last auth attempt to prevent immediate re-auth
         lastAuthAttempt.current = {
@@ -302,13 +367,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
       } else {
         // No valid auth - trigger authentication
+        console.log('🔐 No valid auth found, triggering authentication');
         authenticate();
       }
     }
-  }, [connected, publicKey, signMessage, isAuthenticated, isAuthenticating, authenticate, isTokenValid, isInitialized]);
+  }, [connected, publicKey, signMessage, isAuthenticated, isAuthenticating, isTokenValid, isInitialized]);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isAuthenticating, authenticate }}>
+    <AuthContext.Provider value={{ isAuthenticated, isAuthenticating, authenticate, logout }}>
       {children}
     </AuthContext.Provider>
   );
