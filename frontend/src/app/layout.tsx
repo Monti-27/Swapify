@@ -1,12 +1,7 @@
 import type { Metadata } from "next";
 import { Kanit } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
-import { SolanaWalletProvider } from "@/components/wallet-provider";
-import { WalletInitProvider } from "@/contexts/WalletInitContext";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { BalanceProvider } from "@/contexts/BalanceContext";
-import { Toaster } from "sonner";
+import { Providers } from "@/components/providers";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -55,18 +50,9 @@ export default function RootLayout({
         className={`${kanit.variable} font-sans antialiased`}
         style={{ backgroundColor: 'transparent' }}
       >
-        <ThemeProvider>
-          <SolanaWalletProvider>
-            <WalletInitProvider>
-              <AuthProvider>
-                <BalanceProvider>
-                  {children}
-                  <Toaster richColors position="bottom-right" />
-                </BalanceProvider>
-              </AuthProvider>
-            </WalletInitProvider>
-          </SolanaWalletProvider>
-        </ThemeProvider>
+        <Providers>
+          {children}
+        </Providers>
         <Analytics />
         <SpeedInsights />
       </body>

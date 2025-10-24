@@ -58,6 +58,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Track if we've authenticated this session to prevent re-auth on navigation
   const hasAuthenticatedThisSession = useRef<boolean>(false);
   const currentWalletRef = useRef<string | null>(null);
+  
+  // Log AuthProvider mounting for debugging
+  useEffect(() => {
+    console.log('🔐 AuthProvider mounted', {
+      environment: process.env.NODE_ENV,
+      timestamp: new Date().toISOString(),
+      hasWindow: typeof window !== 'undefined'
+    });
+    
+    return () => {
+      console.log('🔐 AuthProvider unmounting', {
+        timestamp: new Date().toISOString()
+      });
+    };
+  }, []);
 
   // Helper function to check if token is valid
   const isTokenValid = useCallback((token: string): boolean => {
@@ -306,7 +321,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     if (!connected) {
       // Wallet disconnected - clear everything
-      console.log('🔌 Wallet disconnected, clearing auth state');
+      console.log('🔌 Wallet disconnected, clearing auth state', {
+        reason: 'wallet_disconnected',
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV,
+        wasAuthenticated: isAuthenticated,
+        hadSession: hasAuthenticatedThisSession.current
+      });
       setIsAuthenticated(false);
       api.clearToken();
       clearAuthSession();
