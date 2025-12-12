@@ -19,13 +19,14 @@ export default function Home() {
         <main className="relative">
           <Hero />
           <HowItWorks />
+
           <TokenBurnSection />
           <FeaturesEnhanced />
           <UseCases />
           <TrustSection />
           <CTASection />
         </main>
-        
+
         {/* Layered Footer Section */}
         <div className="relative w-full bg-background" style={{ willChange: 'auto' }}>
           {/* Large WeSwap Text - Behind Footer */}
@@ -38,7 +39,7 @@ export default function Home() {
               <TextHoverEffect text="Weswap" duration={0.3} automatic={true} />
             </div>
           </div>
-          
+
           {/* Footer - In Front, overlapping bottom of WeSwap text */}
           <div className="relative -mt-[35vh] sm:-mt-[40vh] md:-mt-[45vh]" style={{ willChange: 'auto' }}>
             <Footer />

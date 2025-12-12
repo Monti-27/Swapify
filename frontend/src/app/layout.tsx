@@ -14,6 +14,9 @@ const kanit = Kanit({
 export const metadata: Metadata = {
   title: "WeSwap - Crypto Trading Platform",
   description: "Modern crypto swap and trading platform powered by Solana",
+  icons: {
+    icon: "/favicon/favi.ico",
+  },
 };
 
 export default function RootLayout({
@@ -22,34 +25,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning style={{ colorScheme: 'dark' }}>
+    <html lang="en" suppressHydrationWarning>
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var stored = localStorage.getItem('theme-storage');
-                  var theme = stored ? JSON.parse(stored).state.theme : 'dark';
-                  var html = document.documentElement;
-                  html.classList.add(theme);
-                  html.style.colorScheme = theme;
-                  html.style.backgroundColor = theme === 'dark' ? '#0a0a0a' : '#ffffff';
-                } catch (e) {
-                  document.documentElement.classList.add('dark');
-                  document.documentElement.style.colorScheme = 'dark';
-                  document.documentElement.style.backgroundColor = '#0a0a0a';
-                }
-              })();
-            `,
-          }}
-        />
         <meta name="color-scheme" content="dark light" />
       </head>
-      <body
-        className={`${kanit.variable} font-sans antialiased`}
-        style={{ backgroundColor: 'transparent' }}
-      >
+      <body className={`${kanit.variable} font-sans antialiased`}>
         <Providers>
           {children}
         </Providers>

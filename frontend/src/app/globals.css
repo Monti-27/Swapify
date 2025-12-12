@@ -1,5 +1,139 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "sonner/dist/styles.css";
+
+/* Sonner Toast Styles with Rich Colors */
+[data-sonner-toaster] {
+  font-family: var(--font-sans);
+  z-index: 999999 !important;
+}
+
+[data-sonner-toast] {
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  color: hsl(var(--card-foreground));
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 16px;
+}
+
+/* Success Toast - Using site colors */
+[data-sonner-toast][data-type="success"] {
+  background-color: hsl(var(--primary));
+  border-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+[data-sonner-toast][data-type="success"] [data-icon] {
+  color: hsl(var(--primary-foreground));
+}
+
+[data-sonner-toast][data-type="success"] [data-content] {
+  color: hsl(var(--primary-foreground));
+  opacity: 0.95;
+}
+
+/* Error Toast - Using site colors */
+[data-sonner-toast][data-type="error"] {
+  background-color: hsl(var(--destructive));
+  border-color: hsl(var(--destructive));
+  color: hsl(var(--destructive-foreground, var(--primary-foreground)));
+}
+
+[data-sonner-toast][data-type="error"] [data-icon] {
+  color: hsl(var(--destructive-foreground, var(--primary-foreground)));
+}
+
+[data-sonner-toast][data-type="error"] [data-content] {
+  color: hsl(var(--destructive-foreground, var(--primary-foreground)));
+  opacity: 0.95;
+}
+
+/* Warning Toast - Using accent colors */
+[data-sonner-toast][data-type="warning"] {
+  background-color: hsl(var(--accent));
+  border-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+
+[data-sonner-toast][data-type="warning"] [data-icon] {
+  color: hsl(var(--accent-foreground));
+}
+
+[data-sonner-toast][data-type="warning"] [data-content] {
+  color: hsl(var(--accent-foreground));
+  opacity: 0.95;
+}
+
+/* Info Toast - Using secondary colors */
+[data-sonner-toast][data-type="info"] {
+  background-color: hsl(var(--secondary));
+  border-color: hsl(var(--border));
+  color: hsl(var(--secondary-foreground));
+}
+
+[data-sonner-toast][data-type="info"] [data-icon] {
+  color: hsl(var(--secondary-foreground));
+}
+
+[data-sonner-toast][data-type="info"] [data-content] {
+  color: hsl(var(--secondary-foreground));
+  opacity: 0.95;
+}
+
+/* Default/Loading Toast */
+[data-sonner-toast][data-type="loading"] {
+  background: hsl(var(--card));
+  border-color: hsl(var(--primary));
+}
+
+/* Close Button Styling */
+[data-sonner-toast] [data-close-button] {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: currentColor;
+}
+
+[data-sonner-toast] [data-close-button]:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Toast Title and Description */
+[data-sonner-toast] [data-title] {
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+[data-sonner-toast] [data-description] {
+  font-size: 13px;
+  opacity: 0.9;
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+/* Toast Animation */
+[data-sonner-toast] {
+  animation: slideIn 0.3s cubic-bezier(0.21, 1.02, 0.73, 1);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Stacking Effect */
+[data-sonner-toast][data-expanded="false"] {
+  transform: scale(var(--scale));
+  opacity: var(--opacity);
+}
 
 @custom-variant dark (&:is(.dark *));
 
@@ -150,6 +284,9 @@
 
 /* Default to dark theme to prevent white flash */
 :root {
+  view-transition-name: root;
+  --expo-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --expo-in: cubic-bezier(0.7, 0, 0.84, 0);
   --radius: 0.75rem;
   --background: oklch(0.10 0.03 295);
   --foreground: oklch(0.96 0.005 295);
@@ -697,15 +834,15 @@ body {
 
 /* Layout containment for performance - prevents unnecessary reflows */
 section {
-  contain: layout style paint;
+  contain: style;
 }
 
 main {
-  contain: layout style;
+  contain: style;
 }
 
 .container {
-  contain: layout style;
+  contain: style;
 }
 
 /* Hardware acceleration for all animated elements */
@@ -778,5 +915,5 @@ svg {
 
 /* Prevent layout shift from skeleton loaders */
 [class*="skeleton"] {
-  contain: layout paint;
+  contain: paint;
 }
