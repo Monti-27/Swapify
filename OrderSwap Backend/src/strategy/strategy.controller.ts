@@ -9,7 +9,7 @@ import { CreateStrategyDto, UpdateStrategyDto } from './dto/strategy.dto';
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class StrategyController {
-  constructor(private strategyService: StrategyService) {}
+  constructor(private strategyService: StrategyService) { }
 
   @Post()
   @ApiOperation({ summary: 'Create a new trading strategy' })
@@ -47,6 +47,16 @@ export class StrategyController {
   @ApiParam({ name: 'id', description: 'Strategy ID' })
   async getStrategy(@Request() req, @Param('id') id: string) {
     return this.strategyService.getStrategy(id, req.user.userId);
+  }
+
+  @Patch(':address/metadata')
+  @ApiOperation({ summary: 'Update strategy metadata by PDA address' })
+  @ApiParam({ name: 'address', description: 'Strategy PDA address' })
+  async updateMetadata(
+    @Param('address') address: string,
+    @Body() body: { name: string; description?: string },
+  ) {
+    return this.strategyService.updateMetadata(address, body.name, body.description);
   }
 
   @Patch(':id')

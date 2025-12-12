@@ -6,11 +6,11 @@ import { PriceService } from '../price/price.service';
 @Injectable()
 export class StrategyService {
   private readonly logger = new Logger(StrategyService.name);
-  
+
   constructor(
     private prisma: PrismaService,
     private priceService: PriceService,
-  ) {}
+  ) { }
 
   /**
    * Create a new trading strategy
@@ -152,6 +152,31 @@ export class StrategyService {
   }
 
   /**
+   * Update strategy metadata (name/description) by PDA address
+   */
+  async updateMetadata(pdaStrategy: string, name: string, description?: string) {
+    const strategy = await this.prisma.strategy.findUnique({
+      where: { pdaStrategy },
+    });
+
+    if (!strategy) {
+      throw new NotFoundException(`Strategy with address ${pdaStrategy} not found`);
+    }
+
+    const updated = await this.prisma.strategy.update({
+      where: { pdaStrategy },
+      data: {
+        name,
+        ...(description !== undefined && { description }),
+      },
+    });
+
+    await this.createLog(strategy.id, 'info', 'Strategy metadata updated', { name, description });
+
+    return updated;
+  }
+
+  /**
    * Cancel strategy
    */
   async cancelStrategy(strategyId: string, userId: string) {
@@ -195,14 +220,14 @@ export class StrategyService {
     }
 
     const tokenShort = `${strategy.toToken.slice(0, 8)}...${strategy.toToken.slice(-8)}`;
-    
+
     try {
       const currentPrice = await this.priceService.getTokenPrice(strategy.toToken);
 
       switch (strategy.triggerType) {
         case 'price':
           const shouldTrigger = currentPrice >= strategy.triggerValue;
-          
+
           if (currentPrice === 0) {
             this.logger.warn(
               `⚠️  Strategy ${strategy.name} (${strategyId.slice(0, 8)}...): ` +
@@ -215,22 +240,22 @@ export class StrategyService {
               `(target: $${strategy.triggerValue})`
             );
           }
-          
+
           return shouldTrigger;
-        
+
         case 'marketCap':
           const marketCap = await this.priceService.getTokenMarketCap(strategy.toToken);
           const mcTrigger = marketCap >= strategy.triggerValue;
-          
+
           if (marketCap === 0) {
             this.logger.warn(
               `⚠️  Strategy ${strategy.name} (${strategyId.slice(0, 8)}...): ` +
               `Cannot check trigger - market cap is 0 for token ${tokenShort}`
             );
           }
-          
+
           return mcTrigger;
-        
+
         default:
           return false;
       }
@@ -238,11 +263,63 @@ export class StrategyService {
       this.logger.error(
         `❌ Error checking trigger for strategy ${strategy.name} (${strategyId.slice(0, 8)}...): ${error.message}`
       );
-      
+
       await this.createLog(strategyId, 'error', 'Error checking trigger', {
         error: error.message,
       });
       return false;
+    }
+  }
+
+  /**
+   * Check if strategy conditions are met using pre-fetched price (for batch operations)
+   */
+  checkStrategyTriggerWithPrice(
+    strategy: any,
+    priceMap: Map<string, number>,
+    marketCapMap?: Map<string, number>,
+  ): boolean {
+    if (!strategy || strategy.status !== 'active') {
+      return false;
+    }
+
+    const tokenShort = `${strategy.toToken.slice(0, 8)}...${strategy.toToken.slice(-8)}`;
+
+    switch (strategy.triggerType) {
+      case 'price':
+        const currentPrice = priceMap.get(strategy.toToken) || 0;
+        const shouldTrigger = currentPrice >= strategy.triggerValue;
+
+        if (currentPrice === 0) {
+          this.logger.warn(
+            `⚠️  Strategy ${strategy.name} (${strategy.id.slice(0, 8)}...): ` +
+            `Cannot check trigger - price is 0 for token ${tokenShort}`
+          );
+        } else {
+          this.logger.debug(
+            `📊 Strategy ${strategy.name}: Current price $${currentPrice} ` +
+            `${shouldTrigger ? '✅ TRIGGERS' : '❌ does not trigger'} ` +
+            `(target: $${strategy.triggerValue})`
+          );
+        }
+
+        return shouldTrigger;
+
+      case 'marketCap':
+        const marketCap = marketCapMap?.get(strategy.toToken) || 0;
+        const mcTrigger = marketCap >= strategy.triggerValue;
+
+        if (marketCap === 0) {
+          this.logger.warn(
+            `⚠️  Strategy ${strategy.name} (${strategy.id.slice(0, 8)}...): ` +
+            `Cannot check trigger - market cap is 0 for token ${tokenShort}`
+          );
+        }
+
+        return mcTrigger;
+
+      default:
+        return false;
     }
   }
 
@@ -277,7 +354,7 @@ export class StrategyService {
    */
   async markStrategyFailed(strategyId: string, error: string) {
     await this.createLog(strategyId, 'error', 'Strategy execution failed', { error });
-    
+
     return this.prisma.strategy.update({
       where: { id: strategyId },
       data: { status: 'failed' },
