@@ -38,7 +38,13 @@ export interface Strategy {
   metadata?: Record<string, any>;
   createdAt: string;
   updatedAt: string;
+  // On-chain fields (populated by indexer)
+  pdaStrategy?: string;     // On-chain address of the Strategy Account
+  pdaEscrow?: string;       // On-chain address of the Escrow Account
+  programId?: string;       // Which contract version
+  strategyIndex?: number;   // The 0-9 index used in the contract
 }
+
 
 export interface Trade {
   id: string;
@@ -150,5 +156,47 @@ export interface StrategyStats {
   triggeredStrategies: number;
   completedStrategies: number;
   totalProfit: number;
+}
+
+// Chart Data Types
+export enum ChartTimeframe {
+  ONE_MINUTE = '1m',
+  FIVE_MINUTES = '5m',
+  FIFTEEN_MINUTES = '15m',
+  ONE_HOUR = '1h',
+  FOUR_HOURS = '4h',
+  ONE_DAY = '1d',
+  ONE_WEEK = '1w',
+}
+
+export interface OHLCVCandle {
+  timestamp: number; // Unix timestamp in seconds
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
+
+export interface PriceHistoryData {
+  tokenAddress: string;
+  timeframe: ChartTimeframe;
+  candles: OHLCVCandle[];
+  currentPrice?: number;
+  priceChange24h?: number;
+  priceChange24hPercent?: number;
+}
+
+export interface PriceHistoryResponse {
+  success: boolean;
+  data?: PriceHistoryData;
+  error?: string;
+  message?: string;
+}
+
+export interface ChartUpdateEvent {
+  tokenAddress: string;
+  candle: OHLCVCandle;
+  timestamp: number;
 }
 
