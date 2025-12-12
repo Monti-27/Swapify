@@ -10,12 +10,14 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { TokenSelectModal } from '@/components/token-select-modal';
+import { ChartPlaceholder } from '@/components/chart-placeholder';
 import { useTokens, type Token } from '@/hooks/useTokens';
+import { useCreateStrategy } from '@/hooks/useCreateStrategy';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { getAssociatedTokenAddress, getAccount } from '@solana/spl-token';
 import { toast } from 'sonner';
-import { 
+import {
   ChevronDown,
   TrendingUp,
   Target,
@@ -26,14 +28,16 @@ import {
   Shield,
   DollarSign,
   Percent,
-  ArrowDownUp
+  ArrowDownUp,
+  BarChart3,
+  X
 } from 'lucide-react';
-import type { CreateStrategyDto } from '@/types/api';
+// Smart contract integration - no longer using API types
 
 interface StrategyBuilderModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (strategy: CreateStrategyDto) => Promise<void>;
+  onSuccess?: () => void;
 }
 
 const steps = [
@@ -44,13 +48,14 @@ const steps = [
   { id: 5, name: 'Review', icon: Check },
 ];
 
-export function StrategyBuilderModal({ open, onClose, onSubmit }: StrategyBuilderModalProps) {
+export function StrategyBuilderModal({ open, onClose, onSuccess }: StrategyBuilderModalProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { popularTokens } = useTokens();
   const { publicKey } = useWallet();
   const { connection } = useConnection();
-  
+  const { createStrategy, isLoading: isCreatingStrategy } = useCreateStrategy();
+
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [fromToken, setFromToken] = useState<Token | null>(null);
@@ -63,9 +68,11 @@ export function StrategyBuilderModal({ open, onClose, onSubmit }: StrategyBuilde
   const [takeProfit, setTakeProfit] = useState('');
   const [tokenBalance, setTokenBalance] = useState<number | null>(null);
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
-  
+
   const [showFromTokenModal, setShowFromTokenModal] = useState(false);
   const [showToTokenModal, setShowToTokenModal] = useState(false);
+  const [showChartsOverlay, setShowChartsOverlay] = useState(false);
+  const [activeChartTab, setActiveChartTab] = useState<'sell' | 'buy'>('sell');
 
   // Initialize tokens when popularTokens are loaded
   useEffect(() => {
@@ -90,15 +97,15 @@ export function StrategyBuilderModal({ open, onClose, onSubmit }: StrategyBuilde
     setIsLoadingBalance(true);
     try {
       const tokenAddress = fromToken.address || fromToken.id;
-      
+
       if (!tokenAddress) {
         setTokenBalance(null);
         return;
       }
-      
+
       // Check if it's native SOL
       const solAddresses = ['So11111111111111111111111111111111111111112', 'SOL', 'sol'];
-      
+
       if (solAddresses.includes(tokenAddress)) {
         // Fetch SOL balance
         const balance = await connection.getBalance(publicKey);
@@ -181,29 +188,41 @@ export function StrategyBuilderModal({ open, onClose, onSubmit }: StrategyBuilde
       return;
     }
 
+    if (!publicKey) {
+      toast.error('Please connect your wallet');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      const strategyDto: CreateStrategyDto = {
-        name,
-        description: description || undefined,
-        fromToken: fromToken.address || fromToken.id || '',
-        toToken: toToken.address || toToken.id || '',
-        triggerType,
-        triggerValue: parseFloat(triggerValue),
-        amountType,
+      // Call smart contract directly via the hook
+      await createStrategy({
+        sellToken: fromToken,
+        buyToken: toToken,
+        triggerPrice: parseFloat(triggerValue),
         amount: parseFloat(amount),
+        amountType,
         stopLoss: stopLoss ? parseFloat(stopLoss) : undefined,
         takeProfit: takeProfit ? parseFloat(takeProfit) : undefined,
-      };
+        name: name,
+        description: description || undefined,
+        onMetadataSynced: onSuccess, // Refresh list after name is synced
+      });
 
-      await onSubmit(strategyDto);
+      // Show indexing toast and wait for backend to sync
+      toast.info('Strategy created! Indexing...');
       resetForm();
       onClose();
+
+      // Wait 2 seconds for the indexer to save to DB, then refresh the list
+      setTimeout(() => {
+        if (onSuccess) {
+          onSuccess();
+        }
+      }, 2000);
     } catch (error) {
-      console.log('Failed to create strategy:', error);
-      toast.error('Failed to create strategy', {
-        description: 'Please try again'
-      });
+      // Error handling is done in the hook
+      console.log('Strategy creation failed:', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -448,10 +467,10 @@ export function StrategyBuilderModal({ open, onClose, onSubmit }: StrategyBuilde
 
       case 4:
         const calculatedAmount = getCalculatedAmount();
-        const hasInsufficientBalance = amountType === 'percentage' 
+        const hasInsufficientBalance = amountType === 'percentage'
           ? (tokenBalance !== null && calculatedAmount !== null && calculatedAmount > tokenBalance)
           : (tokenBalance !== null && parseFloat(amount || '0') > tokenBalance);
-        
+
         return (
           <div className="space-y-4">
             <div>
@@ -480,7 +499,7 @@ export function StrategyBuilderModal({ open, onClose, onSubmit }: StrategyBuilde
 
             <div>
               <Label htmlFor="amount" className="text-sm font-medium">Amount *</Label>
-              
+
               {amountType === 'percentage' && (
                 <div className="flex gap-2 mt-1.5 mb-2">
                   <Button
@@ -521,7 +540,7 @@ export function StrategyBuilderModal({ open, onClose, onSubmit }: StrategyBuilde
                   </Button>
                 </div>
               )}
-              
+
               <div className="flex gap-2 items-center">
                 <Button
                   type="button"
@@ -537,7 +556,7 @@ export function StrategyBuilderModal({ open, onClose, onSubmit }: StrategyBuilde
                 >
                   <span className="text-lg">−</span>
                 </Button>
-                
+
                 <div className="relative flex-1">
                   <Input
                     id="amount"
@@ -568,14 +587,14 @@ export function StrategyBuilderModal({ open, onClose, onSubmit }: StrategyBuilde
                     {amountType === 'percentage' ? '%' : (fromToken?.symbol || 'tokens')}
                   </span>
                 </div>
-                
+
                 <Button
                   type="button"
                   variant="outline"
                   size="icon"
                   onClick={() => {
                     const currentValue = parseFloat(amount || '0');
-                    const newValue = amountType === 'percentage' 
+                    const newValue = amountType === 'percentage'
                       ? Math.min(100, currentValue + 1)
                       : currentValue + 1;
                     setAmount(newValue.toString());
@@ -586,7 +605,7 @@ export function StrategyBuilderModal({ open, onClose, onSubmit }: StrategyBuilde
                   <span className="text-lg">+</span>
                 </Button>
               </div>
-              
+
               <p className="text-xs text-muted-foreground mt-1.5">
                 {amountType === 'percentage' ? (
                   <>
@@ -709,46 +728,101 @@ export function StrategyBuilderModal({ open, onClose, onSubmit }: StrategyBuilde
   return (
     <>
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="w-[calc(100vw-2rem)] sm:w-full sm:max-w-[540px] max-h-[90vh] flex flex-col p-0 gap-0">
-          <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6">
-            <DialogTitle className="text-lg sm:text-xl">Create Strategy</DialogTitle>
-            <DialogDescription className="text-sm">
-              Step {currentStep} of {steps.length}: {steps[currentStep - 1].name}
-            </DialogDescription>
+        <DialogContent
+          className="w-[calc(100vw-1.5rem)] sm:w-full sm:max-w-[620px] max-h-[92vh] flex flex-col p-0 gap-0 rounded-xl border border-border/60 bg-gradient-to-br from-background/95 via-background/90 to-background/80 backdrop-blur-xl shadow-2xl shadow-black/30 dark:shadow-black/40"
+        >
+          {/* Header */}
+          <DialogHeader className="px-5 sm:px-8 pt-5 sm:pt-7 pb-4 relative">
+            <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+            <div className="flex items-center justify-between gap-2">
+              <div className="space-y-1">
+                <DialogTitle className="text-lg sm:text-2xl font-bold tracking-tight flex items-center gap-2">
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-primary/15 text-primary shadow-inner shadow-primary/30">
+                    {currentStep}
+                  </span>
+                  Create Strategy
+                </DialogTitle>
+                <DialogDescription className="text-xs sm:text-sm flex items-center gap-1">
+                  <span className="text-muted-foreground">Step {currentStep} of {steps.length}</span>
+                  <span className="hidden sm:inline text-muted-foreground">• {steps[currentStep - 1].name}</span>
+                </DialogDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowChartsOverlay(true)}
+                  className="hidden sm:inline-flex items-center gap-2 text-xs hover:bg-accent/60"
+                >
+                  <BarChart3 className="w-4 h-4" />
+                  Charts
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClose}
+                  className="sm:hidden px-2 text-muted-foreground hover:text-foreground"
+                  aria-label="Close"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+            </div>
           </DialogHeader>
 
-          {/* Progress Bar */}
-          <div className="px-4 sm:px-6 pb-4">
-            <div className="flex gap-1">
-              {steps.map((step) => (
-                <div
-                  key={step.id}
-                  className={`h-1 flex-1 rounded-full transition-colors ${
-                    currentStep >= step.id ? 'bg-primary' : 'bg-muted'
-                  }`}
-                />
-              ))}
-            </div>
+          {/* Progress Steps */}
+          <div className="px-5 sm:px-8 pb-3">
+            <ol className="flex items-center justify-between gap-1">
+              {steps.map((step) => {
+                const isActive = currentStep === step.id;
+                const isCompleted = currentStep > step.id;
+                return (
+                  <li key={step.id} className="flex-1 group flex flex-col items-center">
+                    <button
+                      type="button"
+                      disabled={step.id > currentStep || isSubmitting}
+                      onClick={() => step.id < currentStep && setCurrentStep(step.id)}
+                      className={`relative flex items-center justify-center h-9 w-9 rounded-full border transition-all duration-300 text-xs font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:cursor-not-allowed ${isCompleted
+                        ? 'bg-primary text-primary-foreground border-primary shadow-primary/40'
+                        : isActive
+                          ? 'bg-gradient-to-br from-primary/90 to-primary border-primary text-primary-foreground ring-4 ring-primary/20'
+                          : 'bg-muted/40 text-muted-foreground border-border hover:border-primary/40 hover:text-foreground'
+                        }`}
+                      aria-label={`Step ${step.id}: ${step.name}`}
+                    >
+                      {isCompleted ? <Check className="w-4 h-4" /> : <step.icon className="w-4 h-4" />}
+                    </button>
+                    <span
+                      className={`mt-2 text-[10px] sm:text-xs font-medium tracking-wide ${isActive || isCompleted ? 'text-foreground' : 'text-muted-foreground'
+                        }`}
+                    >
+                      {step.name}
+                    </span>
+                  </li>
+                );
+              })}
+            </ol>
+            <div className="mt-3 h-px w-full bg-gradient-to-r from-transparent via-border to-transparent" />
           </div>
 
-          <Separator />
+          <Separator className="opacity-60" />
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 max-h-[calc(90vh-180px)]">
+          <div className="flex-1 overflow-y-auto px-5 sm:px-8 py-5 sm:py-6 space-y-6 max-h-[calc(92vh-220px)] custom-scrollbar">
             {renderStep()}
           </div>
 
-          <Separator />
+          <Separator className="opacity-60" />
 
           {/* Footer */}
-          <DialogFooter className="px-4 sm:px-6 py-3 sm:py-4">
-            <div className="flex gap-2 w-full sm:w-auto">
+          <DialogFooter className="px-5 sm:px-8 py-4 sm:py-5 bg-gradient-to-b from-background/40 to-background/70 backdrop-blur-md">
+            <div className="flex flex-col sm:flex-row gap-3 w-full">
               <Button
                 type="button"
                 variant="outline"
                 onClick={currentStep === 1 ? handleClose : handleBack}
                 disabled={isSubmitting}
-                className="flex-1 sm:flex-none h-11 sm:h-10"
+                className="h-11 sm:h-12 flex-1 sm:flex-[0.4] border-border/70 hover:border-primary/50"
               >
                 {currentStep === 1 ? 'Cancel' : 'Back'}
               </Button>
@@ -756,14 +830,18 @@ export function StrategyBuilderModal({ open, onClose, onSubmit }: StrategyBuilde
                 type="button"
                 onClick={currentStep === steps.length ? handleSubmit : handleNext}
                 disabled={!canProceed() || isSubmitting}
-                className="flex-1 sm:flex-none h-11 sm:h-10"
+                className="relative h-11 sm:h-12 flex-1 sm:flex-[0.6] font-semibold bg-gradient-to-r from-primary/90 via-primary to-indigo-600 hover:from-primary hover:to-indigo-500 shadow-lg shadow-primary/30 hover:shadow-primary/40 group"
               >
+                <span className="absolute inset-0 rounded-md bg-gradient-to-r from-primary/30 to-indigo-500/30 opacity-0 group-hover:opacity-100 transition-opacity" />
                 {isSubmitting ? (
-                  'Creating...'
+                  <span className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Creating...
+                  </span>
                 ) : currentStep === steps.length ? (
-                  'Create Strategy'
+                  'Launch Strategy'
                 ) : (
-                  'Next'
+                  'Next Step'
                 )}
               </Button>
             </div>
@@ -789,7 +867,56 @@ export function StrategyBuilderModal({ open, onClose, onSubmit }: StrategyBuilde
         }}
         selectedToken={toToken ?? undefined}
       />
+
+      {/* Charts Overlay for Mobile */}
+      {showChartsOverlay && (
+        <div className="fixed inset-0 z-[60] bg-background">
+          {/* Header */}
+          <div className="sticky top-0 z-10 backdrop-blur-lg bg-background/80 border-b border-border/50">
+            <div className="flex items-center justify-between p-4">
+              <h2 className="text-lg font-bold font-display">Charts</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowChartsOverlay(false)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex border-b border-border/50">
+              <button
+                onClick={() => setActiveChartTab('sell')}
+                className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${activeChartTab === 'sell'
+                  ? 'text-primary border-b-2 border-primary'
+                  : 'text-muted-foreground hover:text-foreground'
+                  }`}
+              >
+                Sell Chart ({fromToken?.symbol || 'SOL'})
+              </button>
+              <button
+                onClick={() => setActiveChartTab('buy')}
+                className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${activeChartTab === 'buy'
+                  ? 'text-primary border-b-2 border-primary'
+                  : 'text-muted-foreground hover:text-foreground'
+                  }`}
+              >
+                Buy Chart ({toToken?.symbol || 'USDC'})
+              </button>
+            </div>
+          </div>
+
+          {/* Chart Content */}
+          <div className="p-4">
+            <ChartPlaceholder
+              type={activeChartTab}
+              token={activeChartTab === 'sell' ? fromToken : toToken}
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 }
-
