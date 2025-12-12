@@ -24,7 +24,7 @@ export class MonitoringService implements OnModuleInit {
     private prisma: PrismaService,
     private walletService: WalletService,
     private tokenService: TokenService,
-  ) {}
+  ) { }
 
   onModuleInit() {
     // Start monitoring on module initialization
@@ -65,7 +65,7 @@ export class MonitoringService implements OnModuleInit {
   }
 
   /**
-   * Check all active strategies for triggers
+   * Check all active strategies for triggers (batch optimized)
    */
   async checkStrategies() {
     try {
@@ -77,12 +77,24 @@ export class MonitoringService implements OnModuleInit {
 
       this.logger.debug(`Checking ${activeStrategies.length} active strategies`);
 
-      // Process strategies in batches
-      const batchSize = this.configService.get<number>('PRICE_CHECK_BATCH_SIZE') || 10;
-      
-      for (let i = 0; i < activeStrategies.length; i += batchSize) {
-        const batch = activeStrategies.slice(i, i + batchSize);
-        await Promise.all(batch.map(strategy => this.checkStrategy(strategy)));
+      // Extract unique tokens needing price checks
+      const uniqueTokens = new Set<string>();
+      for (const strategy of activeStrategies) {
+        if (strategy.triggerType === 'price') {
+          uniqueTokens.add(strategy.toToken);
+        }
+      }
+
+      // Batch fetch all prices in one API call
+      const priceMap = await this.priceService.getMultipleTokenPrices(
+        Array.from(uniqueTokens)
+      );
+
+      this.logger.debug(`Fetched prices for ${uniqueTokens.size} unique tokens`);
+
+      // Evaluate strategies in memory
+      for (const strategy of activeStrategies) {
+        await this.checkStrategyWithPrice(strategy, priceMap);
       }
     } catch (error) {
       this.logger.error('Error checking strategies:', error);
@@ -91,11 +103,17 @@ export class MonitoringService implements OnModuleInit {
   }
 
   /**
-   * Check individual strategy for trigger
+   * Check individual strategy using pre-fetched price data
    */
-  private async checkStrategy(strategy: any) {
+  private async checkStrategyWithPrice(
+    strategy: any,
+    priceMap: Map<string, number>,
+  ) {
     try {
-      const isTriggered = await this.strategyService.checkStrategyTrigger(strategy.id);
+      const isTriggered = this.strategyService.checkStrategyTriggerWithPrice(
+        strategy,
+        priceMap,
+      );
 
       if (isTriggered) {
         this.logger.log(`Strategy ${strategy.id} triggered!`);
@@ -129,7 +147,7 @@ export class MonitoringService implements OnModuleInit {
             `Stop loss triggered at $${currentPrice}. Strategy cancelled.`,
             { stopLoss: strategy.stopLoss, currentPrice }
           );
-          
+
           // Notify user
           this.websocketGateway.notifyUser(strategy.userId, {
             type: 'strategy_cancelled',
@@ -138,7 +156,7 @@ export class MonitoringService implements OnModuleInit {
             reason: 'stop_loss',
             message: `Strategy "${strategy.name}" cancelled due to stop loss at $${currentPrice}`,
           });
-          
+
           return; // Don't execute the trade
         }
       }
@@ -155,7 +173,7 @@ export class MonitoringService implements OnModuleInit {
           strategy.fromToken,
         );
         humanAmount = (balance * strategy.amount) / 100;
-        
+
         this.logger.log(`Calculated amount: ${humanAmount} from ${balance} balance (${strategy.amount}%)`);
       } else {
         humanAmount = strategy.amount;
@@ -163,10 +181,10 @@ export class MonitoringService implements OnModuleInit {
 
       // Get token decimals for conversion
       const decimals = await this.tokenService.getTokenDecimals(strategy.fromToken);
-      
+
       // Convert to smallest unit (lamports for SOL, base units for other tokens)
       const amountInSmallestUnit = Math.floor(humanAmount * Math.pow(10, decimals));
-      
+
       this.logger.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
       this.logger.log(`💰 AMOUNT CONVERSION FOR STRATEGY ${strategy.id}`);
       this.logger.log(`   Token: ${strategy.fromToken.slice(0, 8)}...`);
@@ -198,7 +216,7 @@ export class MonitoringService implements OnModuleInit {
         amountInSmallestUnit: amountInSmallestUnit,  // Also send for reference
         message: `Strategy "${strategy.name}" has been triggered. Please sign the transaction.`,
       });
-      
+
       this.logger.log(`Notification sent to user ${strategy.userId} for strategy ${strategy.id}`);
 
       // Log execution
@@ -206,8 +224,8 @@ export class MonitoringService implements OnModuleInit {
         strategy.id,
         'info',
         'Strategy triggered and trade prepared',
-        { 
-          tradeId: trade.id, 
+        {
+          tradeId: trade.id,
           humanAmount,
           amountInSmallestUnit,
           decimals,
@@ -222,7 +240,7 @@ export class MonitoringService implements OnModuleInit {
     } catch (error) {
       this.logger.error(`Error executing strategy ${strategy.id}:`, error);
       await this.strategyService.markStrategyFailed(strategy.id, error.message);
-      
+
       // Notify user of failure
       this.websocketGateway.notifyUser(strategy.userId, {
         type: 'strategy_failed',
@@ -259,7 +277,7 @@ export class MonitoringService implements OnModuleInit {
         'SOL',
         'sol',
       ];
-      
+
       if (solAddresses.includes(tokenAddress)) {
         const balance = await this.walletService.getSolBalance(walletPublicKey);
         this.logger.debug(`SOL balance for ${walletPublicKey.slice(0, 8)}...: ${balance}`);
