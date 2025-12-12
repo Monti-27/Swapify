@@ -13,7 +13,7 @@ export function CTASection() {
       <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:50px_50px]" />
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[150px] pointer-events-none" />
-      
+
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -33,12 +33,12 @@ export function CTASection() {
               borderWidth={2}
               className="rounded-3xl"
             />
-            
+
             <div className="relative rounded-3xl border border-primary/30 bg-gradient-to-br from-background via-primary/[0.03] to-background backdrop-blur-xl p-12 md:p-16 shadow-purple-glow overflow-hidden">
               {/* Decorative Elements */}
               <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
               <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
-              
+
               {/* Content */}
               <div className="relative z-10 text-center">
                 {/* Badge */}
@@ -93,14 +93,7 @@ export function CTASection() {
                       <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                     </Link>
                   </Button>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="text-base px-8 py-6 border-primary/30 hover:bg-gradient-purple-subtle"
-                    asChild
-                  >
-                    <Link href="/swap">Try Demo</Link>
-                  </Button>
+
                 </motion.div>
 
                 {/* Trust Indicators */}
