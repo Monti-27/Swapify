@@ -3,11 +3,13 @@
 
 generator client {
   provider = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -36,6 +38,7 @@ model Wallet {
   
   name           String?  // Optional wallet name
   isActive       Boolean  @default(true)
+  type           String   @default("user") // 'user' | 'keeper' | 'admin'
   
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -54,6 +57,13 @@ model Strategy {
   walletId    String
   wallet      Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
   
+  // --- NEW FIELDS FOR SMART CONTRACT ---
+  pdaStrategy String?  @unique // On-chain address of the Strategy Account
+  pdaEscrow   String?  // On-chain address of the Escrow Account
+  programId   String?  // Which contract version (e.g. "AyFdzip...")
+  strategyIndex Int?   // The 0-9 index used in the contract
+  // -------------------------------------
+
   // Strategy details
   name        String
   description String?
@@ -80,9 +90,11 @@ model Strategy {
   previousStrategy Strategy[] @relation("StrategyChain")
   
   // Status
-  status      String   @default("active") // 'active' | 'triggered' | 'completed' | 'cancelled' | 'failed'
+  // Added 'deposited' to track when funds are locked
+  status      String   @default("created") // 'created' | 'deposited' | 'active' | 'triggered' | 'completed' | 'cancelled' | 'failed'
   
   // Execution
+  depositedAt DateTime? // When user signed the deposit tx
   triggeredAt DateTime?
   completedAt DateTime?
   
@@ -99,6 +111,7 @@ model Strategy {
   @@index([userId])
   @@index([walletId])
   @@index([status])
+  @@index([pdaStrategy]) // Critical for Indexer lookup
   @@map("strategies")
 }
 
@@ -113,6 +126,8 @@ model Trade {
   
   // Trade details
   type            String   // 'buy' | 'sell' | 'swap'
+  txType          String   @default("execution") // 'deposit' | 'withdraw' | 'execution'
+  
   fromToken       String
   toToken         String
   fromAmount      Float
@@ -194,4 +209,3 @@ model SystemLog {
   @@index([createdAt])
   @@map("system_logs")
 }
-
