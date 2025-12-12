@@ -15,35 +15,15 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
   const mountTimeRef = useRef<number>(Date.now());
   const isInitialMountRef = useRef<boolean>(true);
-  
-  // Log provider mounting for debugging
+
   useEffect(() => {
-    console.log('🏗️ Providers component mounted', {
-      timestamp: new Date().toISOString(),
-      mountTime: mountTimeRef.current,
-      isInitialMount: isInitialMountRef.current
-    });
-    
-    // Log environment info
-    console.log('🌍 Environment:', {
-      isProduction: process.env.NODE_ENV === 'production',
-      isDevelopment: process.env.NODE_ENV === 'development',
-      hasWindow: typeof window !== 'undefined',
-      userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : 'SSR'
-    });
-    
     // Mark as no longer initial mount after a short delay
     const timer = setTimeout(() => {
       isInitialMountRef.current = false;
-      console.log('🏗️ Providers initialization period ended');
     }, 1000);
-    
+
     return () => {
       clearTimeout(timer);
-      console.log('🏗️ Providers component unmounting', {
-        timestamp: new Date().toISOString(),
-        wasInitialMount: isInitialMountRef.current
-      });
     };
   }, []);
 
@@ -54,11 +34,18 @@ export function Providers({ children }: ProvidersProps) {
           <AuthProvider mountTime={mountTimeRef.current} isInitialMount={isInitialMountRef}>
             <BalanceProvider>
               {children}
-              <Toaster richColors position="bottom-right" />
             </BalanceProvider>
           </AuthProvider>
         </WalletInitProvider>
       </SolanaWalletProvider>
+      <Toaster
+        position="bottom-right"
+        richColors
+        closeButton
+        theme="dark"
+        gap={12}
+        offset={24}
+      />
     </ThemeProvider>
   );
 }

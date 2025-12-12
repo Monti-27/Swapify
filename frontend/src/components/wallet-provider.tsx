@@ -4,7 +4,7 @@ import React, { FC, ReactNode, useMemo, useCallback, useEffect } from 'react';
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
 import { WalletAdapterNetwork, WalletError } from '@solana/wallet-adapter-base';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
-import { 
+import {
   PhantomWalletAdapter,
   SolflareWalletAdapter,
   TorusWalletAdapter,
@@ -24,7 +24,7 @@ export const SolanaWalletProvider: FC<{ children: ReactNode }> = ({ children }) 
       timestamp: new Date().toISOString(),
       endpoint: process.env.NEXT_PUBLIC_SOLANA_RPC_URL ? 'custom' : 'default'
     });
-    
+
     return () => {
       console.log('💰 SolanaWalletProvider unmounting', {
         timestamp: new Date().toISOString()
@@ -33,26 +33,20 @@ export const SolanaWalletProvider: FC<{ children: ReactNode }> = ({ children }) 
   }, []);
 
   // Set to 'devnet', 'testnet', or 'mainnet-beta'
-  // ⚠️ MAINNET-BETA - USING REAL SOL!
-  const network = WalletAdapterNetwork.Mainnet;
+  // ⚠️ DEVNET - FOR TESTING ONLY!
+  const network = WalletAdapterNetwork.Devnet;
 
-  // Use Alchemy RPC endpoint for better reliability and higher rate limits
+  // Use Devnet RPC endpoint for testing
   const endpoint = useMemo(() => {
-    // Priority 1: Use Alchemy RPC from environment variable
-    const alchemyRpc = process.env.NEXT_PUBLIC_SOLANA_RPC_URL;
-    const alchemyKey = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;
-    
-    if (alchemyRpc && alchemyKey) {
-      return alchemyRpc;
-    }
-    
-    // Fallback: Try alternative Alchemy URL formats
-    if (alchemyKey) {
-      return `https://solana-mainnet.g.alchemy.com/v2/${alchemyKey}`;
-    }
-    
-    // Last resort: Solana Foundation public RPC (if Alchemy not configured)
-    return 'https://api.mainnet-beta.solana.com';
+    // FORCE DEVNET - ignore environment variable for testing
+    const devnetUrl = clusterApiUrl('devnet');
+
+    console.log('🌐 RPC ENDPOINT CONFIG:');
+    console.log('   Network:', network);
+    console.log('   ENV RPC:', process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'not set');
+    console.log('   Using:', devnetUrl);
+
+    return devnetUrl;
   }, [network]);
 
   const wallets = useMemo(
@@ -68,11 +62,11 @@ export const SolanaWalletProvider: FC<{ children: ReactNode }> = ({ children }) 
   // Handle wallet errors (connection rejections, etc.)
   const onError = useCallback((error: WalletError) => {
     // Check if user rejected the connection
-    const isUserRejection = error.message?.toLowerCase().includes('user rejected') || 
-                            error.message?.toLowerCase().includes('user denied') ||
-                            error.message?.toLowerCase().includes('user cancelled') ||
-                            error.name === 'WalletConnectionError';
-    
+    const isUserRejection = error.message?.toLowerCase().includes('user rejected') ||
+      error.message?.toLowerCase().includes('user denied') ||
+      error.message?.toLowerCase().includes('user cancelled') ||
+      error.name === 'WalletConnectionError';
+
     if (isUserRejection) {
       // User intentionally cancelled - show info toast
       toast.info('Wallet Connection Cancelled', {
