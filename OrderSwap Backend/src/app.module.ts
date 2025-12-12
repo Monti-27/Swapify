@@ -13,6 +13,7 @@ import { WebsocketModule } from './websocket/websocket.module';
 import { LoggerModule } from './logger/logger.module';
 import { TokenModule } from './token/token.module';
 import { HealthModule } from './health/health.module';
+import { BirdeyeModule } from './birdeye/birdeye.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { HealthModule } from './health/health.module';
     PrismaModule,
     LoggerModule,
     HealthModule,
+    BirdeyeModule,
     
     // Feature modules
     AuthModule,
