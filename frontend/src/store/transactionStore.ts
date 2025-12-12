@@ -38,17 +38,17 @@ export const useTransactionStore = create<TransactionState>()(
           ...transaction,
           id: Math.random().toString(36).slice(2),
           timestamp: Date.now(),
-          // Use Solscan for mainnet (better UX than official explorer)
-          explorerUrl: `https://solscan.io/tx/${transaction.signature}`,
+          // Use Solana Explorer for devnet testing
+          explorerUrl: `https://explorer.solana.com/tx/${transaction.signature}?cluster=devnet`,
         };
 
         set((state) => ({
           transactions: [newTransaction, ...state.transactions].slice(0, 50), // Keep only last 50
         }));
-        
+
         console.log('✅ Transaction added to store:', newTransaction.id, newTransaction.status);
         console.log('📝 Full transaction:', newTransaction);
-        
+
         // RETURN THE ID SO IT CAN BE USED FOR UPDATES!
         return newTransaction.id;
       },
@@ -58,10 +58,10 @@ export const useTransactionStore = create<TransactionState>()(
         console.log('🔄 UPDATE TRANSACTION CALLED');
         console.log('  ID to update:', id);
         console.log('  Updates:', updates);
-        
+
         const currentState = get();
         const txToUpdate = currentState.transactions.find(tx => tx.id === id);
-        
+
         if (txToUpdate) {
           console.log('  ✅ Found transaction:', {
             id: txToUpdate.id,
@@ -69,19 +69,19 @@ export const useTransactionStore = create<TransactionState>()(
             signature: txToUpdate.signature.slice(0, 8) + '...'
           });
         } else {
-          console.log('  ❌ Transaction NOT FOUND! Available IDs:', 
+          console.log('  ❌ Transaction NOT FOUND! Available IDs:',
             currentState.transactions.map(tx => tx.id));
           toast.error('Transaction Not Found', {
             description: 'Could not update transaction status'
           });
         }
-        
+
         set((state) => ({
           transactions: state.transactions.map((tx) =>
             tx.id === id ? { ...tx, ...updates } : tx
           ),
         }));
-        
+
         const newState = get();
         const updatedTx = newState.transactions.find(tx => tx.id === id);
         console.log('  ✅ After update:', {
