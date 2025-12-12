@@ -12,7 +12,9 @@ import type {
   UpdateWalletDto,
   TradeStats,
   StrategyStats,
+  PriceHistoryResponse,
 } from '@/types/api';
+import { ChartTimeframe } from '@/types/api';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -157,6 +159,16 @@ class ApiClient {
     return this.request(`/strategies/${id}`, { method: 'DELETE' });
   }
 
+  async updateStrategyMetadata(
+    pdaAddress: string,
+    data: { name: string; description?: string }
+  ): Promise<Strategy> {
+    return this.request(`/strategies/${pdaAddress}/metadata`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
   // Wallet API
   async getWallets(): Promise<Wallet[]> {
     return this.request('/wallets');
@@ -199,6 +211,16 @@ class ApiClient {
 
   async getMarketCap(tokenAddress: string): Promise<{ marketCap: number }> {
     return this.request(`/prices/market-cap?token=${tokenAddress}`);
+  }
+
+  async getPriceHistory(
+    tokenAddress: string,
+    timeframe: ChartTimeframe = ChartTimeframe.ONE_HOUR,
+    limit: number = 200
+  ): Promise<PriceHistoryResponse> {
+    return this.request(
+      `/prices/history?token=${tokenAddress}&timeframe=${timeframe}&limit=${limit}`
+    );
   }
 
   // Token API

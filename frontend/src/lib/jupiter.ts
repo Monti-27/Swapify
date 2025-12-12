@@ -1,5 +1,4 @@
 import { Connection, VersionedTransaction, PublicKey } from '@solana/web3.js';
-import { toast } from 'sonner';
 
 const JUPITER_SWAP_API_URL = 'https://lite-api.jup.ag/swap/v1';
 const JUPITER_PRICE_API_URL = 'https://lite-api.jup.ag/price/v3';

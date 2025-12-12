@@ -109,6 +109,20 @@ class WebSocketClient {
     this.socket.on('balance_update', (data: any) => {
       this.triggerHandlers('balance_update', data);
     });
+
+    this.socket.on('chart_update', (data: any) => {
+      this.triggerHandlers('chart_update', data);
+    });
+
+    this.socket.on('chart_subscribed', (data: any) => {
+      console.log('📊 Subscribed to chart updates:', data);
+      this.triggerHandlers('chart_subscribed', data);
+    });
+
+    this.socket.on('chart_unsubscribed', (data: any) => {
+      console.log('📊 Unsubscribed from chart updates:', data);
+      this.triggerHandlers('chart_unsubscribed', data);
+    });
   }
 
   private triggerHandlers(event: string, data: any) {
@@ -151,6 +165,14 @@ class WebSocketClient {
   isConnected() {
     return this.socket?.connected || false;
   }
+
+  subscribeToChart(tokenAddress: string, timeframe?: string) {
+    this.send('subscribe_chart', { tokenAddress, timeframe });
+  }
+
+  unsubscribeFromChart(tokenAddress: string) {
+    this.send('unsubscribe_chart', { tokenAddress });
+  }
 }
 
 // Export singleton instance
@@ -165,5 +187,8 @@ export const WS_EVENTS = {
   STRATEGY_COMPLETED: 'strategy_completed',
   BALANCE_UPDATE: 'balance_update',
   NOTIFICATION: 'notification',
+  CHART_UPDATE: 'chart_update',
+  CHART_SUBSCRIBED: 'chart_subscribed',
+  CHART_UNSUBSCRIBED: 'chart_unsubscribed',
 } as const;
 

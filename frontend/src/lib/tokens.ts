@@ -31,6 +31,14 @@ export const POPULAR_TOKENS: Token[] = [
     tags: ['stablecoin', 'popular'],
   },
   {
+    address: '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
+    symbol: 'USDC',
+    name: 'USD Coin (Devnet)',
+    decimals: 6,
+    logoURI: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png',
+    tags: ['stablecoin', 'devnet'],
+  },
+  {
     address: 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB',
     symbol: 'USDT',
     name: 'USDT',
