@@ -1,0 +1,8 @@
+{
+  "rpcUrl": "https://api.mainnet-beta.solana.com",
+  "programId": "AFhpyoVmDCEVofP3sqj8wCPSFYYGpL83sbXKuwMZtcoQ",
+  "supabaseUrl": "https://your-project.supabase.co",
+  "supabaseKey": "your-supabase-anon-key-here",
+  "startSlot": null,
+  "pollIntervalMs": 2000
+}

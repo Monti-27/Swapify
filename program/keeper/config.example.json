@@ -1,0 +1,16 @@
+{
+  "rpcUrl": "https://api.mainnet-beta.solana.com",
+  "_comment": "Use either keeperPrivateKey (base58) OR keeperKeypairPath (file path)",
+  "keeperKeypairPath": "./keeper-keypair.json",
+  "programId": "AFhpyoVmDCEVofP3sqj8wCPSFYYGpL83sbXKuwMZtcoQ",
+  "jupiterProgramId": "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
+  "jupiterApiUrl": "https://quote-api.jup.ag/v6",
+  "priceApiUrl": "https://api.jup.ag",
+  "supabaseUrl": "https://your-project.supabase.co",
+  "supabaseKey": "your-anon-key",
+  "pollIntervalMs": 10000,
+  "maxStrategiesPerPoll": 50,
+  "minExecutionAmount": 1000,
+  "slippageBps": 50
+}
+
