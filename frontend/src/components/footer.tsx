@@ -1,12 +1,20 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import Image from 'next/image';
-import { Github, MessageCircle } from 'lucide-react';
-import { useThemeStore } from '@/store/themeStore';
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Github, MessageCircle } from "lucide-react";
+import { useTheme } from "next-themes";
 
 export function Footer() {
-  const { theme } = useThemeStore();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isDark = mounted ? resolvedTheme === "dark" : true;
   return (
     <footer className="relative z-10 border-t border-border/40 bg-background/95 backdrop-blur-sm">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -15,8 +23,8 @@ export function Footer() {
           <div>
             <div className="flex items-center gap-2.5 mb-4 group cursor-default">
               <div className="relative">
-                <Image 
-                  src="/WeSwap-logo.png" 
+                <Image
+                  src="/WeSwap-logo.png"
                   alt="WeSwap Logo"
                   width={36}
                   height={36}
@@ -30,22 +38,35 @@ export function Footer() {
             </p>
             <div className="mt-4 flex space-x-4 items-center">
               <Link
-                href="https://twitter.com"
+                href="https://x.com/WeSwapfun"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground transition-all hover:text-primary hover:scale-110 flex items-center justify-center"
               >
-                <Image 
-                  src="/x logo.svg" 
+                <Image
+                  src="/x logo.svg"
                   alt="X (Twitter)"
                   width={20}
                   height={20}
-                  className={`transition-all duration-300 hover:brightness-125 ${
-                    theme === 'dark' 
-                      ? 'invert brightness-90 hover:brightness-110' 
-                      : 'brightness-50 hover:brightness-30'
-                  }`}
-                  style={{ filter: theme === 'dark' ? 'invert(1) brightness(0.9)' : 'brightness(0.5)' }}
+                  className={`transition-all duration-300 hover:brightness-125 ${isDark
+                      ? "invert brightness-90 hover:brightness-110"
+                      : "brightness-50 hover:brightness-30"
+                    }`}
+                  style={{ filter: isDark ? "invert(1) brightness(0.9)" : "brightness(0.5)" }}
+                />
+              </Link>
+              <Link
+                href="https://t.me/WeSwapfun"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground transition-all hover:text-primary hover:scale-110 flex items-center justify-center"
+              >
+                <Image
+                  src="/Telegram Logo.svg"
+                  alt="Telegram"
+                  width={20}
+                  height={20}
+                  className="transition-transform hover:scale-110"
                 />
               </Link>
               <Link
