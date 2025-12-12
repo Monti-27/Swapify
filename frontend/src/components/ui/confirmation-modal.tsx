@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, AlertTriangle } from "lucide-react";
+import { AlertCircle, AlertTriangle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface ConfirmationModalProps {
@@ -34,14 +34,17 @@ export function ConfirmationModal({
   variant = "default",
   isLoading = false,
 }: ConfirmationModalProps) {
+  // NOTE: We don't auto-close here anymore.
+  // The parent component should close the modal after the async operation completes.
+  // This prevents the modal from closing before a blockchain transaction is signed.
   const handleConfirm = () => {
     onConfirm();
-    onClose();
+    // Don't call onClose() here - let parent handle it after async operation
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+    <Dialog open={open} onOpenChange={(isOpen) => !isLoading && !isOpen && onClose()}>
+      <DialogContent className="max-w-md" onPointerDownOutside={(e) => isLoading && e.preventDefault()}>
         <DialogHeader>
           <div className="flex items-start gap-4">
             <div
@@ -80,12 +83,21 @@ export function ConfirmationModal({
             variant={variant === "destructive" ? "destructive" : "default"}
             onClick={handleConfirm}
             disabled={isLoading}
+            className="min-w-[100px]"
           >
-            {confirmText}
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              confirmText
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
+
 
