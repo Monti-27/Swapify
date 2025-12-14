@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Kanit } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import { SmoothScroll } from "@/components/smooth-scroll";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -31,7 +32,9 @@ export default function RootLayout({
       </head>
       <body className={`${kanit.variable} font-sans antialiased`}>
         <Providers>
-          {children}
+          <SmoothScroll>
+            {children}
+          </SmoothScroll>
         </Providers>
         <Analytics />
         <SpeedInsights />
