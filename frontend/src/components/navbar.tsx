@@ -1,34 +1,19 @@
 'use client';
 
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Moon, Sun, Wallet } from "lucide-react";
+import { Moon, Sun, Wallet, Home, LayoutDashboard, ArrowRightLeft, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { useState } from "react";
 import { useWalletInit } from "@/contexts/WalletInitContext";
 import { useBalance } from "@/contexts/BalanceContext";
 import { cn } from "@/lib/utils";
-import {
-  Navbar as AceternityNavbar,
-  NavBody,
-  NavItems,
-  MobileNav,
-  MobileNavHeader,
-  MobileNavMenu,
-  MobileNavToggle,
-} from "@/components/ui/resizable-navbar";
 import { useThemeToggle } from "@/components/ui/skiper-ui/skiper26";
-
-const navItems = [
-  { name: "Home", link: "/" },
-  { name: "Dashboard", link: "/dashboard" },
-  { name: "Swap", link: "/swap" },
-  { name: "Strategies", link: "/strategies" },
-];
+import { TubelightNavbar } from "@/components/ui/tubelight-navbar";
+import { GradientButton } from "@/components/ui/gradient-button";
 
 // Memoize helper function outside component
 const formatAddress = (addr: string) => {
@@ -63,11 +48,19 @@ const AnimatedThemeToggle = ({ className }: { className?: string }) => {
 };
 
 export const Navbar = React.memo(function Navbar() {
-  const { balance } = useBalance(); // READ-ONLY: No fetching in navbar
+  const { balance } = useBalance();
   const { publicKey, connected, disconnect: solanaDisconnect } = useWallet();
   const { setVisible } = useWalletModal();
   const { isInitializing } = useWalletInit();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Memoize event handlers
   const handleWalletClick = useCallback(() => {
@@ -80,62 +73,23 @@ export const Navbar = React.memo(function Navbar() {
     await solanaDisconnect();
   }, [solanaDisconnect]);
 
-  const handleCloseMobileMenu = useCallback(() => setMobileMenuOpen(false), []);
-  const handleToggleMobileMenu = useCallback(() => setMobileMenuOpen(!mobileMenuOpen), [mobileMenuOpen]);
-
-  // Handlers for mobile menu actions
-  const handleDisconnectAndClose = useCallback(() => {
-    handleDisconnect();
-    handleCloseMobileMenu();
-  }, [handleDisconnect, handleCloseMobileMenu]);
-
-  const handleWalletClickAndClose = useCallback(() => {
-    handleWalletClick();
-    handleCloseMobileMenu();
-  }, [handleWalletClick, handleCloseMobileMenu]);
-
   // Memoize formatted address
   const formattedAddress = useMemo(() =>
     publicKey ? formatAddress(publicKey.toBase58()) : '',
     [publicKey]
   );
 
-  // Memoize sub-components for better performance
-  const LogoSection = useMemo(() => (
-    <Link href="/" className="relative z-20 flex items-center gap-2.5 group px-2 py-1">
-      <span className="text-xl font-bold text-gradient-purple transition-all duration-300 group-hover:tracking-wide font-display">
-        WeSwap
-      </span>
-    </Link>
-  ), []);
-
-
+  // Action Buttons (Desktop)
   const ActionButtons = useMemo(
     () => (
-      <div className="relative z-20 flex items-center gap-2">
-        <AnimatedThemeToggle className="h-11 w-11" />
+      <div className="flex items-center gap-2">
+        <AnimatedThemeToggle className="h-9 w-9 hidden lg:flex" />
 
-        <Button
-          variant="ghost"
-          size="icon"
-          asChild
-          aria-label="Join Telegram Group"
-          className="rounded-full hover:bg-primary/10 transition-all"
-        >
-          <a href="https://t.me/WeSwapfun" target="_blank" rel="noopener noreferrer">
-            <Image
-              src="/Telegram Logo.svg"
-              alt="Telegram"
-              width={20}
-              height={20}
-              className="transition-transform hover:scale-110"
-            />
-          </a>
-        </Button>
 
-        <Separator orientation="vertical" className="h-6 mx-1 hidden md:block" />
 
-        {/* Show placeholder during initialization to prevent flash */}
+        <Separator orientation="vertical" className="h-6 mx-1 hidden lg:block" />
+
+        {/* Show placeholder during initialization */}
         {isInitializing ? (
           <div className="w-[140px] h-9 bg-muted/20 animate-pulse rounded-md" />
         ) : connected && publicKey ? (
@@ -150,7 +104,7 @@ export const Navbar = React.memo(function Navbar() {
               variant="outline"
               size="sm"
               onClick={handleDisconnect}
-              className="gap-2 border-primary/30 hover:bg-primary/10 transition-all"
+              className={cn("gap-2 border-primary/30 hover:bg-primary/10 transition-all")}
             >
               <Wallet className="h-4 w-4" />
               <span className="hidden sm:inline lg:hidden">
@@ -160,108 +114,32 @@ export const Navbar = React.memo(function Navbar() {
             </Button>
           </div>
         ) : (
-          <Button
-            size="sm"
+          <GradientButton
             onClick={handleWalletClick}
-            className="gap-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg hover:shadow-xl transition-all"
+            className="gap-2 min-w-[auto] px-6 py-2 h-9 text-sm font-semibold"
+            variant="variant"
           >
             <Wallet className="h-4 w-4" />
             <span className="hidden sm:inline">Connect Wallet</span>
-          </Button>
+          </GradientButton>
         )}
-      </div>
+      </div >
     ),
     [balance, connected, formattedAddress, handleDisconnect, handleWalletClick, isInitializing, publicKey]
   );
 
+  const tubelightItems = [
+    { name: "Home", url: "/", icon: Home },
+    { name: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+    { name: "Swap", url: "/swap", icon: ArrowRightLeft },
+    { name: "Strategies", url: "/strategies", icon: Layers },
+  ];
+
   return (
-    <AceternityNavbar className="top-0">
-      {/* Desktop Navigation */}
-      <NavBody className="border border-border/40">
-        {LogoSection}
-        <NavItems items={navItems} />
+    <header>
+      <TubelightNavbar items={tubelightItems} className="fixed top-0">
         {ActionButtons}
-      </NavBody>
-
-      {/* Mobile Navigation */}
-      <MobileNav className="border border-border/40">
-        <MobileNavHeader>
-          {LogoSection}
-          <div className="flex items-center gap-2">
-            <AnimatedThemeToggle className="h-10 w-10" />
-            <Button
-              variant="ghost"
-              size="icon"
-              asChild
-              aria-label="Join Telegram Group"
-              className="rounded-full"
-            >
-              <a href="https://t.me/WeSwapfun" target="_blank" rel="noopener noreferrer">
-                <Image
-                  src="/Telegram Logo.svg"
-                  alt="Telegram"
-                  width={20}
-                  height={20}
-                  className="transition-transform hover:scale-110"
-                />
-              </a>
-            </Button>
-            <MobileNavToggle
-              isOpen={mobileMenuOpen}
-              onClick={handleToggleMobileMenu}
-            />
-          </div>
-        </MobileNavHeader>
-
-        <MobileNavMenu
-          isOpen={mobileMenuOpen}
-          onClose={handleCloseMobileMenu}
-        >
-          {navItems.map((item, idx) => (
-            <Link
-              key={idx}
-              href={item.link}
-              onClick={handleCloseMobileMenu}
-              className="block w-full text-left text-lg font-medium text-neutral-600 hover:text-primary dark:text-neutral-300 dark:hover:text-primary transition-colors"
-            >
-              {item.name}
-            </Link>
-          ))}
-
-          <Separator className="my-2" />
-
-          {/* Show placeholder during initialization to prevent flash */}
-          {isInitializing ? (
-            <div className="w-full h-10 bg-muted/20 animate-pulse rounded-md" />
-          ) : connected && publicKey ? (
-            <div className="space-y-3">
-              <div className="flex flex-col gap-1">
-                <span className="text-sm text-muted-foreground">Balance</span>
-                <span className="font-semibold text-primary">{balance} SOL</span>
-                <span className="text-xs text-muted-foreground">
-                  {formattedAddress}
-                </span>
-              </div>
-              <Button
-                variant="outline"
-                onClick={handleDisconnectAndClose}
-                className="w-full gap-2 border-primary/30 hover:bg-primary/10"
-              >
-                <Wallet className="h-4 w-4" />
-                Disconnect Wallet
-              </Button>
-            </div>
-          ) : (
-            <Button
-              onClick={handleWalletClickAndClose}
-              className="w-full gap-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white"
-            >
-              <Wallet className="h-4 w-4" />
-              Connect Wallet
-            </Button>
-          )}
-        </MobileNavMenu>
-      </MobileNav>
-    </AceternityNavbar>
+      </TubelightNavbar>
+    </header>
   );
 });
