@@ -1,194 +1,74 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import React from "react";
+import { ModemAnimatedFooter } from "@/components/ui/modem-animated-footer";
+import { FileText, LayoutDashboard, ArrowRightLeft, Layers } from "lucide-react";
 import Image from "next/image";
-import { Github, MessageCircle } from "lucide-react";
 import { useTheme } from "next-themes";
 
 export function Footer() {
   const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const isDark = resolvedTheme === "dark";
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const socialLinks = [
+    {
+      // Using Image for X logo to maintain brand accuracy
+      icon: (
+        <div className="relative w-full h-full flex items-center justify-center">
+          <Image
+            src="/x logo.svg"
+            alt="X"
+            fill
+            className={`object-contain ${isDark ? "invert" : ""}`}
+          />
+        </div>
+      ),
+      href: "https://x.com/WeSwapfun",
+      label: "X (Twitter)",
+    },
+    {
+      // Using Image for Telegram logo
+      icon: (
+        <div className="relative w-full h-full flex items-center justify-center">
+          <Image
+            src="/Telegram Logo.svg"
+            alt="Telegram"
+            fill
+            className="object-contain"
+          />
+        </div>
+      ),
+      href: "https://t.me/WeSwapfun",
+      label: "Telegram",
+    },
 
-  const isDark = mounted ? resolvedTheme === "dark" : true;
+  ];
+
+  const navLinks = [
+    { label: "Swap", href: "/swap" },
+    { label: "Strategies", href: "/strategies" },
+    { label: "Dashboard", href: "/dashboard" },
+    { label: "Docs", href: "/docs" },
+  ];
+
   return (
-    <footer className="relative z-10 border-t border-border/40 bg-background/95 backdrop-blur-sm">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {/* Brand */}
-          <div>
-            <div className="flex items-center gap-2.5 mb-4 group cursor-default">
-              <div className="relative">
-                <Image
-                  src="/WeSwap-logo.png"
-                  alt="WeSwap Logo"
-                  width={36}
-                  height={36}
-                  className="drop-shadow-md transition-transform duration-300 group-hover:scale-105"
-                />
-              </div>
-              <span className="text-xl font-bold text-gradient-purple font-display">Weswap</span>
-            </div>
-            <p className="text-sm text-muted-foreground font-sans">
-              The future of decentralized trading on Solana.
-            </p>
-            <div className="mt-4 flex space-x-4 items-center">
-              <Link
-                href="https://x.com/WeSwapfun"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground transition-all hover:text-primary hover:scale-110 flex items-center justify-center"
-              >
-                <Image
-                  src="/x logo.svg"
-                  alt="X (Twitter)"
-                  width={20}
-                  height={20}
-                  className={`transition-all duration-300 hover:brightness-125 ${isDark
-                      ? "invert brightness-90 hover:brightness-110"
-                      : "brightness-50 hover:brightness-30"
-                    }`}
-                  style={{ filter: isDark ? "invert(1) brightness(0.9)" : "brightness(0.5)" }}
-                />
-              </Link>
-              <Link
-                href="https://t.me/WeSwapfun"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground transition-all hover:text-primary hover:scale-110 flex items-center justify-center"
-              >
-                <Image
-                  src="/Telegram Logo.svg"
-                  alt="Telegram"
-                  width={20}
-                  height={20}
-                  className="transition-transform hover:scale-110"
-                />
-              </Link>
-              <Link
-                href="https://github.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground transition-colors hover:text-primary"
-              >
-                <Github className="h-5 w-5" />
-              </Link>
-              <Link
-                href="https://discord.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground transition-colors hover:text-primary"
-              >
-                <MessageCircle className="h-5 w-5" />
-              </Link>
-            </div>
-          </div>
-
-          {/* Product */}
-          <div>
-            <h3 className="mb-4 text-sm font-semibold font-display">Product</h3>
-            <ul className="space-y-3 text-sm font-sans">
-              <li>
-                <Link
-                  href="/swap"
-                  className="text-muted-foreground transition-colors hover:text-primary"
-                >
-                  Swap
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/dashboard"
-                  className="text-muted-foreground transition-colors hover:text-primary"
-                >
-                  Dashboard
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/strategies"
-                  className="text-muted-foreground transition-colors hover:text-primary"
-                >
-                  Strategies
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Developers */}
-          <div>
-            <h3 className="mb-4 text-sm font-semibold font-display">Developers</h3>
-            <ul className="space-y-3 text-sm font-sans">
-              <li>
-                <Link
-                  href="/docs"
-                  className="text-muted-foreground transition-colors hover:text-primary"
-                >
-                  Documentation
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/api"
-                  className="text-muted-foreground transition-colors hover:text-primary"
-                >
-                  API Reference
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="https://github.com"
-                  className="text-muted-foreground transition-colors hover:text-primary"
-                >
-                  GitHub
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Company */}
-          <div>
-            <h3 className="mb-4 text-sm font-semibold font-display">Company</h3>
-            <ul className="space-y-3 text-sm font-sans">
-              <li>
-                <Link
-                  href="/about"
-                  className="text-muted-foreground transition-colors hover:text-primary"
-                >
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/terms"
-                  className="text-muted-foreground transition-colors hover:text-primary"
-                >
-                  Terms of Service
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/privacy"
-                  className="text-muted-foreground transition-colors hover:text-primary"
-                >
-                  Privacy Policy
-                </Link>
-              </li>
-            </ul>
-          </div>
+    <ModemAnimatedFooter
+      brandName="WeSwap"
+      brandDescription="The future of decentralized trading on Solana. Fast, non-custodial, and fully automated."
+      socialLinks={socialLinks}
+      navLinks={navLinks}
+      creatorName="WeSwap Protocol"
+      creatorUrl="https://weswap.fun"
+      brandIcon={
+        <div className="relative w-full h-full">
+          <Image
+            src="/WeSwap-logo.png"
+            alt="WeSwap"
+            fill
+            className="object-contain drop-shadow-lg"
+          />
         </div>
-
-        <div className="mt-12 border-t border-border/40 pt-8">
-          <p className="text-center text-sm text-muted-foreground font-sans">
-            © {new Date().getFullYear()} WeSwap. All rights reserved.
-          </p>
-        </div>
-      </div>
-    </footer>
+      }
+    />
   );
 }
-
