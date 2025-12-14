@@ -73,9 +73,9 @@ export const Navbar = ({ children, className }: NavbarProps) => {
       {React.Children.map(children, (child) =>
         React.isValidElement(child)
           ? React.cloneElement(
-              child as React.ReactElement<{ visible?: boolean }>,
-              { visible },
-            )
+            child as React.ReactElement<{ visible?: boolean }>,
+            { visible },
+          )
           : child,
       )}
     </motion.div>
@@ -253,14 +253,11 @@ export const NavbarButton = ({
   ...props
 }: {
   href?: string;
-  as?: React.ElementType;
+  as?: "a" | "button";
   children: React.ReactNode;
   className?: string;
   variant?: "primary" | "secondary" | "dark" | "gradient";
-} & (
-  | React.ComponentPropsWithoutRef<"a">
-  | React.ComponentPropsWithoutRef<"button">
-)) => {
+} & React.HTMLAttributes<HTMLElement>) => {
   const baseStyles =
     "px-4 py-2 rounded-md bg-white button bg-white text-black text-sm font-bold relative cursor-pointer hover:-translate-y-0.5 transition duration-200 inline-block text-center";
 
@@ -273,13 +270,24 @@ export const NavbarButton = ({
       "bg-gradient-to-b from-blue-500 to-blue-700 text-white shadow-[0px_2px_0px_0px_rgba(255,255,255,0.3)_inset]",
   };
 
+  if (Tag === "button") {
+    return (
+      <button
+        className={cn(baseStyles, variantStyles[variant], className)}
+        {...(props as React.ButtonHTMLAttributes<HTMLButtonElement>)}
+      >
+        {children}
+      </button>
+    );
+  }
+
   return (
-    <Tag
+    <a
       href={href || undefined}
       className={cn(baseStyles, variantStyles[variant], className)}
-      {...props}
+      {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}
     >
       {children}
-    </Tag>
+    </a>
   );
 };
