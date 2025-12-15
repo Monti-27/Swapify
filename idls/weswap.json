@@ -1,0 +1,1806 @@
+{
+  "address": "AFhpyoVmDCEVofP3sqj8wCPSFYYGpL83sbXKuwMZtcoQ",
+  "metadata": {
+    "name": "weswap",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "create_strategy",
+      "discriminator": [
+        152,
+        160,
+        107,
+        148,
+        245,
+        190,
+        127,
+        224
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "strategy",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  114,
+                  97,
+                  116,
+                  101,
+                  103,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "arg",
+                "path": "params.id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "global",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  108,
+                  111,
+                  98,
+                  97,
+                  108
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "escrow",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  115,
+                  99,
+                  114,
+                  111,
+                  119
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "strategy"
+              }
+            ]
+          }
+        },
+        {
+          "name": "sell_token_mint"
+        },
+        {
+          "name": "sell_token_program"
+        },
+        {
+          "name": "buy_token_mint"
+        },
+        {
+          "name": "buy_token_program"
+        },
+        {
+          "name": "owner_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "account",
+                "path": "sell_token_program"
+              },
+              {
+                "kind": "account",
+                "path": "sell_token_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "escrow_token_account",
+          "docs": [
+            "Authority is escrow PDA - escrow PDA can sign for transfers via invoke_signed"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "escrow"
+              },
+              {
+                "kind": "account",
+                "path": "sell_token_program"
+              },
+              {
+                "kind": "account",
+                "path": "sell_token_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "CreateStrategyParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "deposit_escrow",
+      "discriminator": [
+        226,
+        112,
+        158,
+        176,
+        178,
+        118,
+        153,
+        128
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "global",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  108,
+                  111,
+                  98,
+                  97,
+                  108
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "strategy",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  114,
+                  97,
+                  116,
+                  101,
+                  103,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "arg",
+                "path": "params.id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "escrow",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  115,
+                  99,
+                  114,
+                  111,
+                  119
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "strategy"
+              }
+            ]
+          }
+        },
+        {
+          "name": "sell_token_mint"
+        },
+        {
+          "name": "sell_token_program"
+        },
+        {
+          "name": "buy_token_mint"
+        },
+        {
+          "name": "buy_token_program"
+        },
+        {
+          "name": "owner_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "account",
+                "path": "sell_token_program"
+              },
+              {
+                "kind": "account",
+                "path": "sell_token_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "escrow_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "escrow"
+              },
+              {
+                "kind": "account",
+                "path": "sell_token_program"
+              },
+              {
+                "kind": "account",
+                "path": "sell_token_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "DepositEscrowParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "execute_strategy",
+      "discriminator": [
+        164,
+        197,
+        251,
+        183,
+        219,
+        177,
+        85,
+        161
+      ],
+      "accounts": [
+        {
+          "name": "keeper",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "owner"
+        },
+        {
+          "name": "global",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  108,
+                  111,
+                  98,
+                  97,
+                  108
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "strategy",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  114,
+                  97,
+                  116,
+                  101,
+                  103,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "strategy.owner",
+                "account": "Strategy"
+              },
+              {
+                "kind": "arg",
+                "path": "params.strategy_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "escrow",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  115,
+                  99,
+                  114,
+                  111,
+                  119
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "strategy"
+              }
+            ]
+          }
+        },
+        {
+          "name": "sell_token_mint"
+        },
+        {
+          "name": "sell_token_program"
+        },
+        {
+          "name": "buy_token_mint"
+        },
+        {
+          "name": "buy_token_program"
+        },
+        {
+          "name": "escrow_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "escrow"
+              },
+              {
+                "kind": "account",
+                "path": "sell_token_program"
+              },
+              {
+                "kind": "account",
+                "path": "sell_token_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "owner_receive_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "account",
+                "path": "buy_token_program"
+              },
+              {
+                "kind": "account",
+                "path": "buy_token_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "treasury"
+        },
+        {
+          "name": "treasury_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "treasury"
+              },
+              {
+                "kind": "account",
+                "path": "buy_token_program"
+              },
+              {
+                "kind": "account",
+                "path": "buy_token_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "jupiter_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "ExecuteStrategyParams"
+            }
+          }
+        },
+        {
+          "name": "jupiter_instruction_data",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "initialize",
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "global",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  108,
+                  111,
+                  98,
+                  97,
+                  108
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "treasury"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "InitializeParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "manage_keepers",
+      "discriminator": [
+        27,
+        40,
+        211,
+        52,
+        176,
+        212,
+        83,
+        223
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "global",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  108,
+                  111,
+                  98,
+                  97,
+                  108
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "ManageKeepersParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "withdraw_escrow",
+      "discriminator": [
+        81,
+        84,
+        226,
+        128,
+        245,
+        47,
+        96,
+        104
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "global",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  108,
+                  111,
+                  98,
+                  97,
+                  108
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "strategy",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  114,
+                  97,
+                  116,
+                  101,
+                  103,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "arg",
+                "path": "params.id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "escrow",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  115,
+                  99,
+                  114,
+                  111,
+                  119
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "strategy"
+              }
+            ]
+          }
+        },
+        {
+          "name": "sell_token_mint"
+        },
+        {
+          "name": "sell_token_program"
+        },
+        {
+          "name": "buy_token_mint"
+        },
+        {
+          "name": "buy_token_program"
+        },
+        {
+          "name": "owner_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "account",
+                "path": "sell_token_program"
+              },
+              {
+                "kind": "account",
+                "path": "sell_token_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "escrow_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "escrow"
+              },
+              {
+                "kind": "account",
+                "path": "sell_token_program"
+              },
+              {
+                "kind": "account",
+                "path": "sell_token_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "WithdrawEscrowParams"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Global",
+      "discriminator": [
+        167,
+        232,
+        232,
+        177,
+        200,
+        108,
+        114,
+        127
+      ]
+    },
+    {
+      "name": "Strategy",
+      "discriminator": [
+        174,
+        110,
+        39,
+        119,
+        82,
+        106,
+        169,
+        102
+      ]
+    },
+    {
+      "name": "StrategyEscrow",
+      "discriminator": [
+        92,
+        37,
+        37,
+        7,
+        115,
+        68,
+        208,
+        196
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "CancelStrategyEvent",
+      "discriminator": [
+        115,
+        251,
+        38,
+        11,
+        217,
+        122,
+        9,
+        169
+      ]
+    },
+    {
+      "name": "CreateStrategyEvent",
+      "discriminator": [
+        95,
+        184,
+        21,
+        242,
+        124,
+        223,
+        203,
+        226
+      ]
+    },
+    {
+      "name": "DepositEscrowEvent",
+      "discriminator": [
+        80,
+        255,
+        40,
+        85,
+        138,
+        13,
+        199,
+        66
+      ]
+    },
+    {
+      "name": "ExecuteStrategyEvent",
+      "discriminator": [
+        197,
+        247,
+        59,
+        197,
+        240,
+        113,
+        74,
+        211
+      ]
+    },
+    {
+      "name": "UpdateStrategyEvent",
+      "discriminator": [
+        25,
+        246,
+        49,
+        26,
+        28,
+        113,
+        142,
+        146
+      ]
+    },
+    {
+      "name": "WithdrawEscrowEvent",
+      "discriminator": [
+        146,
+        99,
+        17,
+        180,
+        230,
+        68,
+        73,
+        58
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "UnauthorizedAdmin",
+      "msg": "Only the protocol authority can manage keepers"
+    }
+  ],
+  "types": [
+    {
+      "name": "CancelStrategyEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "strategy",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "cancelled_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CreateStrategyEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "strategy",
+            "type": "pubkey"
+          },
+          {
+            "name": "escrow",
+            "type": "pubkey"
+          },
+          {
+            "name": "sell_token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "buy_token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "sell_token_decimals",
+            "type": "u8"
+          },
+          {
+            "name": "buy_token_decimals",
+            "type": "u8"
+          },
+          {
+            "name": "trigger_price",
+            "type": "u64"
+          },
+          {
+            "name": "price_precision",
+            "type": "u8"
+          },
+          {
+            "name": "take_profit_price",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "stop_loss_price",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "sell_amount",
+            "type": "u64"
+          },
+          {
+            "name": "use_percentage",
+            "type": "bool"
+          },
+          {
+            "name": "boomerang_mode",
+            "type": "bool"
+          },
+          {
+            "name": "deposit_amount",
+            "type": "u64"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CreateStrategyParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "u64"
+          },
+          {
+            "name": "trigger_price",
+            "type": "u64"
+          },
+          {
+            "name": "price_precision",
+            "type": "u8"
+          },
+          {
+            "name": "take_profit_price",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "stop_loss_price",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "sell_amount",
+            "type": "u64"
+          },
+          {
+            "name": "use_percentage",
+            "type": "bool"
+          },
+          {
+            "name": "boomerang_mode",
+            "type": "bool"
+          },
+          {
+            "name": "deposit_amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DepositEscrowEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "strategy",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "sell_token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "new_total_deposited",
+            "type": "u64"
+          },
+          {
+            "name": "deposited_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DepositEscrowParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "u64"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExecuteStrategyEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "strategy",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "sell_token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "buy_token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "tokens_sold",
+            "type": "u64"
+          },
+          {
+            "name": "tokens_received",
+            "type": "u64"
+          },
+          {
+            "name": "execution_price",
+            "type": "u64"
+          },
+          {
+            "name": "executed_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExecuteStrategyParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "strategy_id",
+            "type": "u64"
+          },
+          {
+            "name": "current_price",
+            "type": {
+              "option": "u64"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Global",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "initialized",
+            "type": "bool"
+          },
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "treasury",
+            "type": "pubkey"
+          },
+          {
+            "name": "keepers",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "platform_fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "max_strategies_per_user",
+            "type": "u64"
+          },
+          {
+            "name": "strategy_counter",
+            "type": "u64"
+          },
+          {
+            "name": "is_paused",
+            "type": "bool"
+          },
+          {
+            "name": "allow_new_strategies",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "InitializeParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "platform_fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "max_strategies_per_user",
+            "type": "u64"
+          },
+          {
+            "name": "keepers",
+            "type": {
+              "vec": "pubkey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "KeeperAction",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Add",
+            "fields": [
+              {
+                "name": "keeper",
+                "type": "pubkey"
+              }
+            ]
+          },
+          {
+            "name": "Remove",
+            "fields": [
+              {
+                "name": "keeper",
+                "type": "pubkey"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "ManageKeepersParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "action",
+            "type": {
+              "defined": {
+                "name": "KeeperAction"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Strategy",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "id",
+            "type": "u64"
+          },
+          {
+            "name": "sell_token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "buy_token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "sell_token_decimals",
+            "type": "u8"
+          },
+          {
+            "name": "buy_token_decimals",
+            "type": "u8"
+          },
+          {
+            "name": "trigger_price",
+            "type": "u64"
+          },
+          {
+            "name": "price_precision",
+            "type": "u8"
+          },
+          {
+            "name": "take_profit_price",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "stop_loss_price",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "sell_amount",
+            "type": "u64"
+          },
+          {
+            "name": "use_percentage",
+            "type": "bool"
+          },
+          {
+            "name": "is_active",
+            "type": "bool"
+          },
+          {
+            "name": "is_executed",
+            "type": "bool"
+          },
+          {
+            "name": "boomerang_mode",
+            "type": "bool"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "executed_at",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "execution_price",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "tokens_received",
+            "type": {
+              "option": "u64"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "StrategyEscrow",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "strategy",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "sell_token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "deposited_amount",
+            "type": "u64"
+          },
+          {
+            "name": "withdrawn_amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdateStrategyEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "strategy",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "updated_at",
+            "type": "i64"
+          },
+          {
+            "name": "field",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "WithdrawEscrowEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "strategy",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "sell_token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "new_total_withdrawn",
+            "type": "u64"
+          },
+          {
+            "name": "withdrawn_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "WithdrawEscrowParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "u64"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "cancel_strategy",
+            "type": "bool"
+          }
+        ]
+      }
+    }
+  ]
+}
