@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: "WeSwap - Crypto Trading Platform",
   description: "Modern crypto swap and trading platform powered by Solana",
   icons: {
-    icon: "/favicon/favi.ico",
+    icon: "/favicon/new-favicon.ico",
   },
 };
 
@@ -30,7 +30,7 @@ export default function RootLayout({
       <head>
         <meta name="color-scheme" content="dark light" />
       </head>
-      <body className={`${kanit.variable} font-sans antialiased`}>
+      <body className={`${kanit.variable} font-sans antialiased overflow-x-hidden`}>
         <Providers>
           <SmoothScroll>
             {children}
