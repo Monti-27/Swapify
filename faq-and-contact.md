@@ -20,5 +20,5 @@ Currently, our token is available on Pump.fun. Once the bonding curve is complet
 
 For the latest announcements and support:
 
-* X: https://x.com/WeSwapfun
-* Telegram: t.me/WeSwapfun
+* X: [x.com/WeSwapfun](https://x.com/WeSwapfun)
+* Telegram: [t.me/WeSwapfun](https://t.me/WeSwapfun)
