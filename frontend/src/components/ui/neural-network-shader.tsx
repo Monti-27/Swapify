@@ -261,12 +261,12 @@ export function ShaderBackground() {
 
     return (
         <div ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" aria-hidden>
-            <div className={`absolute inset-0 ${isDark ? 'bg-black' : 'bg-white'}`}>
+            <div className={`absolute inset-0 ${isDark ? 'bg-black' : 'bg-white'} pointer-events-none`}>
                 <Canvas
                     camera={camera}
                     gl={{ antialias: true, alpha: true }}
                     dpr={[1, 2]}
-                    style={{ width: '100%', height: '100%' }}
+                    style={{ width: '100%', height: '100%', pointerEvents: 'none' }}
                 >
                     <ShaderPlane color1={color1} color2={color2} />
                 </Canvas>

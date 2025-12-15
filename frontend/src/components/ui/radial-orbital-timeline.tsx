@@ -138,15 +138,16 @@ export default function RadialOrbitalTimeline({
         const radius = 250; // Increased radius slightly to ensure separation from center element
         const radian = (angle * Math.PI) / 180;
 
-        const x = radius * Math.cos(radian) + centerOffset.x;
-        const y = radius * Math.sin(radian) + centerOffset.y;
+        // Round values to avoid hydration mismatches due to float precision
+        const x = parseFloat((radius * Math.cos(radian) + centerOffset.x).toFixed(3));
+        const y = parseFloat((radius * Math.sin(radian) + centerOffset.y).toFixed(3));
 
         // Z-index calculation for pseudo-3D
         const zIndex = Math.round(100 + 50 * Math.cos(radian));
-        const opacity = Math.max(
+        const opacity = parseFloat(Math.max(
             0.4,
             Math.min(1, 0.4 + 0.6 * ((1 + Math.sin(radian)) / 2))
-        );
+        ).toFixed(3));
 
         return { x, y, angle, zIndex, opacity };
     };

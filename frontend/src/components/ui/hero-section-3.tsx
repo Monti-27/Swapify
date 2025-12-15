@@ -30,7 +30,7 @@ const transitionVariants = {
 
 export function HeroSection() {
     return (
-        <main className="overflow-hidden relative">
+        <div className="overflow-hidden relative">
             <ShaderBackground />
             <section>
                 <div className="relative mx-auto max-w-6xl px-6 pt-32 lg:pb-16 lg:pt-48">
@@ -49,7 +49,7 @@ export function HeroSection() {
                             }}
                         >
                             <div className="mx-auto mb-6 w-fit rounded-full border border-border bg-muted/50 px-4 py-1.5 text-sm font-medium text-muted-foreground shadow-inner">
-                                v1.0 Now Live on Solana
+                                CA : We are gonna launch our token soon
                             </div>
                             <h1
                                 className="text-balance text-5xl font-medium md:text-7xl text-foreground tracking-tight">
@@ -61,7 +61,7 @@ export function HeroSection() {
                             </p>
 
                             <div className="mt-12 flex justify-center">
-                                <Button asChild size="lg" className="rounded-full px-8 font-semibold bg-foreground text-background hover:bg-foreground/90">
+                                <Button asChild size="lg" className="rounded-full px-8 font-semibold bg-foreground text-background hover:bg-foreground/90 relative z-20">
                                     <Link href="/strategies">Launch App</Link>
                                 </Button>
                             </div>
@@ -86,7 +86,7 @@ export function HeroSection() {
                     </div>
                 </div>
             </section>
-        </main>
+        </div>
     )
 }
 
