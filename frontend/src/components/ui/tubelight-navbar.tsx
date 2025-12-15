@@ -44,7 +44,7 @@ export function TubelightNavbar({ items, className, children }: NavBarProps) {
     return (
         <div
             className={cn(
-                "fixed bottom-0 sm:top-0 left-1/2 -translate-x-1/2 z-50 mb-6 sm:pt-6 w-full max-w-4xl",
+                "fixed bottom-0 sm:bottom-auto sm:top-0 left-1/2 -translate-x-1/2 z-50 mb-6 sm:pt-6 w-full max-w-4xl",
                 className,
             )}
         >
@@ -59,6 +59,8 @@ export function TubelightNavbar({ items, className, children }: NavBarProps) {
                                 key={item.name}
                                 href={item.url}
                                 onClick={() => setActiveTab(item.name)}
+                                target={item.url.startsWith('http') ? '_blank' : undefined}
+                                rel={item.url.startsWith('http') ? 'noopener noreferrer' : undefined}
                                 className={cn(
                                     "relative cursor-pointer text-sm font-semibold px-6 py-2 rounded-full transition-colors",
                                     "text-foreground/80 hover:text-primary",

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { ModemAnimatedFooter } from "@/components/ui/modem-animated-footer";
 import { FileText, LayoutDashboard, ArrowRightLeft, Layers } from "lucide-react";
 import Image from "next/image";
@@ -8,7 +8,15 @@ import { useTheme } from "next-themes";
 
 export function Footer() {
   const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
+  const [mounted, setMounted] = useState(false);
+
+  // Avoid hydration mismatch by only using theme after mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Use dark as default during SSR to avoid flash, then apply actual theme on mount
+  const isDark = mounted ? resolvedTheme === "dark" : true;
 
   const socialLinks = [
     {

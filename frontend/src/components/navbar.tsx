@@ -3,7 +3,7 @@
 import React, { useCallback, useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Moon, Sun, Wallet, Home, LayoutDashboard, ArrowRightLeft, Layers, Menu, X } from "lucide-react";
+import { Moon, Sun, Wallet, Home, LayoutDashboard, ArrowRightLeft, Layers, Menu, X, Book } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
@@ -134,6 +134,7 @@ export const Navbar = React.memo(function Navbar() {
     { name: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
     { name: "Swap", url: "/swap", icon: ArrowRightLeft },
     { name: "Strategies", url: "/strategies", icon: Layers },
+    { name: "Docs", url: "https://docs.weswap.fun/", icon: Book },
   ];
 
   return (
@@ -159,6 +160,8 @@ export const Navbar = React.memo(function Navbar() {
                 href={item.url}
                 className="flex items-center gap-4 text-2xl font-semibold text-foreground/80 hover:text-primary transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
+                target={item.url.startsWith('http') ? '_blank' : undefined}
+                rel={item.url.startsWith('http') ? 'noopener noreferrer' : undefined}
               >
                 <item.icon className="h-6 w-6" />
                 {item.name}
