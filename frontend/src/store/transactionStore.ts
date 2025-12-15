@@ -38,8 +38,8 @@ export const useTransactionStore = create<TransactionState>()(
           ...transaction,
           id: Math.random().toString(36).slice(2),
           timestamp: Date.now(),
-          // Use Solana Explorer for devnet testing
-          explorerUrl: `https://explorer.solana.com/tx/${transaction.signature}?cluster=devnet`,
+          // Use Solana Explorer (mainnet)
+          explorerUrl: `https://explorer.solana.com/tx/${transaction.signature}`,
         };
 
         set((state) => ({

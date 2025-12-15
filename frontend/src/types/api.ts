@@ -111,6 +111,9 @@ export interface CreateStrategyDto {
   stopLoss?: number;
   takeProfit?: number;
   nextStrategyId?: string;
+  // On-chain fields (for indexer linking)
+  pdaStrategy?: string;     // On-chain PDA address
+  strategyIndex?: number;   // Contract index (0-9)
 }
 
 export interface UpdateStrategyDto extends Partial<CreateStrategyDto> {
