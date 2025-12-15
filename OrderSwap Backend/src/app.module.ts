@@ -14,6 +14,7 @@ import { LoggerModule } from './logger/logger.module';
 import { TokenModule } from './token/token.module';
 import { HealthModule } from './health/health.module';
 import { BirdeyeModule } from './birdeye/birdeye.module';
+import { BlockchainModule } from './blockchain/blockchain.module';
 
 @Module({
   imports: [
@@ -22,22 +23,22 @@ import { BirdeyeModule } from './birdeye/birdeye.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    
+
     // Rate limiting
     ThrottlerModule.forRoot([{
       ttl: 60000, // 60 seconds
       limit: 100, // 100 requests per TTL
     }]),
-    
+
     // Scheduling for monitoring bot
     ScheduleModule.forRoot(),
-    
+
     // Core modules
     PrismaModule,
     LoggerModule,
     HealthModule,
     BirdeyeModule,
-    
+
     // Feature modules
     AuthModule,
     WalletModule,
@@ -47,7 +48,8 @@ import { BirdeyeModule } from './birdeye/birdeye.module';
     TokenModule,
     MonitoringModule,
     WebsocketModule,
+    BlockchainModule,
   ],
 })
-export class AppModule {}
+export class AppModule { }
 

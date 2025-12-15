@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios, { AxiosInstance } from 'axios';
-import * as WebSocket from 'ws';
+import WebSocket from 'ws';
 import {
   BirdeyeTimeframe,
   BirdeyeOHLCVResponse,
@@ -20,7 +20,7 @@ export class BirdeyeService implements OnModuleDestroy {
   private readonly restUrl: string;
   private readonly wsUrl: string;
   private readonly axiosInstance: AxiosInstance;
-  
+
   // WebSocket connection management
   private ws: WebSocket | null = null;
   private wsReconnectAttempts = 0;
@@ -33,15 +33,27 @@ export class BirdeyeService implements OnModuleDestroy {
   private tradeHandlers = new Map<string, Set<(trade: BirdeyeTradeEvent) => void>>();
   private reconnectTimeout: NodeJS.Timeout | null = null;
   private heartbeatInterval: NodeJS.Timeout | null = null;
+  private isEnabled = false; // Flag to track if service is enabled - TEMPORARILY DISABLED
 
   constructor(private configService: ConfigService) {
     this.apiKey = this.configService.get('BIRDEYE_API_KEY') || '';
     this.restUrl = this.configService.get('BIRDEYE_REST_URL') || 'https://public-api.birdeye.so';
     this.wsUrl = this.configService.get('BIRDEYE_WS_URL') || 'wss://public-api.birdeye.so/socket/solana';
 
+    // TEMPORARILY DISABLED - Trading charts feature coming in future update
+    this.logger.log('ℹ️ Birdeye service disabled (trading charts coming in future update).');
+    this.isEnabled = false;
+    return; // Don't initialize anything - feature is disabled
+
+    // The code below will be enabled when trading charts feature is ready
+    /*
     if (!this.apiKey) {
-      this.logger.warn('⚠️ BIRDEYE_API_KEY not set. Birdeye features will be disabled.');
+      this.logger.log('ℹ️ BIRDEYE_API_KEY not set. Birdeye service disabled.');
+      this.isEnabled = false;
+      return;
     }
+
+    this.isEnabled = true;
 
     // Create axios instance with default config
     this.axiosInstance = axios.create({
@@ -54,9 +66,8 @@ export class BirdeyeService implements OnModuleDestroy {
     });
 
     // Initialize WebSocket connection
-    if (this.apiKey) {
-      this.connectWebSocket();
-    }
+    this.connectWebSocket();
+    */
   }
 
   /**
@@ -67,6 +78,11 @@ export class BirdeyeService implements OnModuleDestroy {
     timeframe: ChartTimeframe,
     limit: number = 200,
   ): Promise<OHLCVCandle[]> {
+    // Skip if service is disabled
+    if (!this.isEnabled) {
+      return [];
+    }
+
     try {
       const shortAddress = `${tokenAddress.slice(0, 8)}...${tokenAddress.slice(-8)}`;
       this.logger.log(`Fetching historical candles from Birdeye for ${shortAddress}, timeframe: ${timeframe}`);
@@ -120,12 +136,12 @@ export class BirdeyeService implements OnModuleDestroy {
       return ohlcvCandles;
     } catch (error) {
       this.logger.error(`Error fetching Birdeye candles: ${error.message}`, error.stack);
-      
+
       // Check if it's a rate limit error
       if (error.response?.status === 429) {
         this.logger.error('⚠️ Birdeye API rate limit exceeded');
       }
-      
+
       return [];
     }
   }
@@ -134,6 +150,11 @@ export class BirdeyeService implements OnModuleDestroy {
    * Subscribe to live trades for a token
    */
   subscribeToTrades(tokenAddress: string, handler: (trade: BirdeyeTradeEvent) => void): void {
+    // Skip if service is disabled
+    if (!this.isEnabled) {
+      return;
+    }
+
     if (!this.tradeHandlers.has(tokenAddress)) {
       this.tradeHandlers.set(tokenAddress, new Set());
     }
@@ -155,7 +176,7 @@ export class BirdeyeService implements OnModuleDestroy {
     const handlers = this.tradeHandlers.get(tokenAddress);
     if (handlers) {
       handlers.delete(handler);
-      
+
       // If no more handlers, unsubscribe from WebSocket
       if (handlers.size === 0) {
         this.tradeHandlers.delete(tokenAddress);
@@ -243,7 +264,7 @@ export class BirdeyeService implements OnModuleDestroy {
       if (this.ws && this.ws.readyState === WebSocket.OPEN) {
         this.isAuthenticated = true;
         this.logger.log('✅ Birdeye WebSocket authenticated');
-        
+
         // Re-subscribe to all active subscriptions
         this.resubscribeAll();
       }
@@ -268,7 +289,7 @@ export class BirdeyeService implements OnModuleDestroy {
 
     this.ws.send(JSON.stringify(message));
     this.subscriptions.add(tokenAddress);
-    
+
     const shortAddress = `${tokenAddress.slice(0, 8)}...${tokenAddress.slice(-8)}`;
     this.logger.log(`📊 Subscribed to trades for ${shortAddress}`);
   }
@@ -290,7 +311,7 @@ export class BirdeyeService implements OnModuleDestroy {
 
     this.ws.send(JSON.stringify(message));
     this.subscriptions.delete(tokenAddress);
-    
+
     const shortAddress = `${tokenAddress.slice(0, 8)}...${tokenAddress.slice(-8)}`;
     this.logger.log(`📊 Unsubscribed from trades for ${shortAddress}`);
   }
@@ -300,13 +321,13 @@ export class BirdeyeService implements OnModuleDestroy {
    */
   private resubscribeAll(): void {
     const activeTokens = Array.from(this.tradeHandlers.keys());
-    
+
     if (activeTokens.length === 0) {
       return;
     }
 
     this.logger.log(`Re-subscribing to ${activeTokens.length} tokens...`);
-    
+
     activeTokens.forEach((tokenAddress) => {
       this.sendTradeSubscription(tokenAddress);
     });
@@ -319,7 +340,7 @@ export class BirdeyeService implements OnModuleDestroy {
     if (message.type === BirdeyeWSMessageType.TRADE) {
       const tradeEvent = message as BirdeyeTradeEvent;
       const handlers = this.tradeHandlers.get(tradeEvent.data.address);
-      
+
       if (handlers && handlers.size > 0) {
         handlers.forEach((handler) => {
           try {
@@ -340,7 +361,7 @@ export class BirdeyeService implements OnModuleDestroy {
    */
   private startHeartbeat(): void {
     this.stopHeartbeat();
-    
+
     this.heartbeatInterval = setInterval(() => {
       if (this.ws && this.ws.readyState === WebSocket.OPEN) {
         const pingMessage = {
@@ -427,7 +448,7 @@ export class BirdeyeService implements OnModuleDestroy {
    * Check if Birdeye service is available
    */
   isAvailable(): boolean {
-    return !!this.apiKey && this.ws !== null && this.ws.readyState === WebSocket.OPEN;
+    return this.isEnabled && this.ws !== null && this.ws.readyState === WebSocket.OPEN;
   }
 
   /**
@@ -435,9 +456,9 @@ export class BirdeyeService implements OnModuleDestroy {
    */
   onModuleDestroy(): void {
     this.logger.log('Cleaning up Birdeye service...');
-    
+
     this.stopHeartbeat();
-    
+
     if (this.reconnectTimeout) {
       clearTimeout(this.reconnectTimeout);
     }

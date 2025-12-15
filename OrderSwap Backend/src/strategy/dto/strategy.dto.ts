@@ -54,6 +54,16 @@ export class CreateStrategyDto {
   @IsOptional()
   nextStrategyId?: string;
 
+  @ApiProperty({ description: 'On-chain PDA address (for indexer linking)', required: false })
+  @IsString()
+  @IsOptional()
+  pdaStrategy?: string;
+
+  @ApiProperty({ description: 'Contract strategy index (0-9)', required: false })
+  @IsNumber()
+  @IsOptional()
+  strategyIndex?: number;
+
   @ApiProperty({ description: 'Additional metadata', required: false })
   @IsObject()
   @IsOptional()

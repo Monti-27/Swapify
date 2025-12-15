@@ -48,7 +48,10 @@ export class StrategyService {
         takeProfit: dto.takeProfit,
         nextStrategyId: dto.nextStrategyId,
         metadata: dto.metadata || {},
-        status: 'active',
+        status: 'created', // Changed from 'active' - indexer will set to 'active'
+        // On-chain fields (for indexer linking)
+        pdaStrategy: dto.pdaStrategy,
+        strategyIndex: dto.strategyIndex,
       },
     });
 
