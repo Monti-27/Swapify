@@ -3,7 +3,7 @@
 import React, { useCallback, useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Moon, Sun, Wallet, Home, LayoutDashboard, ArrowRightLeft, Layers } from "lucide-react";
+import { Moon, Sun, Wallet, Home, LayoutDashboard, ArrowRightLeft, Layers, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
@@ -53,6 +53,7 @@ export const Navbar = React.memo(function Navbar() {
   const { setVisible } = useWalletModal();
   const { isInitializing } = useWalletInit();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -137,9 +138,81 @@ export const Navbar = React.memo(function Navbar() {
 
   return (
     <header>
-      <TubelightNavbar items={tubelightItems} className="fixed top-0">
-        {ActionButtons}
-      </TubelightNavbar>
+      {/* Mobile Header */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-4 bg-background/80 backdrop-blur-md border-b border-border/50">
+        <div className="flex items-center gap-2">
+          {/* <Image src="/logo.png" alt="WeSwap" width={32} height={32} className="w-8 h-8" /> */}
+          <span className="font-display font-bold text-xl tracking-tight pl-2">Weswap</span>
+        </div>
+        <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+          {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        </Button>
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden fixed inset-0 z-40 bg-background pt-24 px-6 animate-in slide-in-from-top-5 duration-200 flex flex-col h-screen overflow-y-auto">
+          <nav className="flex flex-col space-y-6">
+            {tubelightItems.map((item) => (
+              <Link
+                key={item.name}
+                href={item.url}
+                className="flex items-center gap-4 text-2xl font-semibold text-foreground/80 hover:text-primary transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <item.icon className="h-6 w-6" />
+                {item.name}
+              </Link>
+            ))}
+          </nav>
+          <Separator className="my-6" />
+          <div className="flex flex-col gap-6 pb-10">
+            <div className="flex items-center justify-between">
+              <span className="text-lg font-medium">Appearance</span>
+              <AnimatedThemeToggle className="h-10 w-10" />
+            </div>
+
+            {/* Wallet Integration */}
+            {!connected ? (
+              <GradientButton
+                onClick={() => {
+                  handleWalletClick();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full justify-center py-6 text-lg"
+              >
+                <Wallet className="mr-2 h-5 w-5" />
+                Connect Wallet
+              </GradientButton>
+            ) : (
+              <div className="space-y-4">
+                <div className="p-4 rounded-xl bg-muted/50 border border-border/50">
+                  <p className="text-sm text-muted-foreground mb-1">Connected Wallet</p>
+                  <p className="font-mono font-medium">{formattedAddress}</p>
+                  <p className="text-sm text-primary mt-1">{balance} SOL</p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    handleDisconnect();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full py-6 text-lg border-destructive/20 hover:bg-destructive/10 hover:text-destructive"
+                >
+                  Disconnect
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Desktop Navbar */}
+      <div className="hidden md:block">
+        <TubelightNavbar items={tubelightItems} className="fixed top-0">
+          {ActionButtons}
+        </TubelightNavbar>
+      </div>
     </header>
   );
 });
