@@ -51,12 +51,12 @@ export const ModemAnimatedFooter = ({
         { title: 'Swap', href: '/swap' },
         { title: 'Strategies', href: '/strategies' },
         { title: 'Dashboard', href: '/dashboard' },
-        { title: 'Analytics', href: '/analytics' },
+
     ];
 
     const companyLinks = [
         { title: 'About Us', href: '/about' },
-        { title: 'Docs', href: '/docs' },
+        { title: 'Docs', href: 'https://docs.weswap.fun/' },
         { title: 'Privacy Policy', href: '/privacy' },
         { title: 'Terms of Service', href: '/terms' },
     ];
@@ -116,6 +116,8 @@ export const ModemAnimatedFooter = ({
                                             key={i}
                                             className="w-max text-sm text-muted-foreground hover:text-primary transition-colors duration-200"
                                             href={href}
+                                            target={href.startsWith('http') ? '_blank' : undefined}
+                                            rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
                                         >
                                             {title}
                                         </Link>
@@ -134,6 +136,8 @@ export const ModemAnimatedFooter = ({
                                             key={i}
                                             className="w-max text-sm text-muted-foreground hover:text-primary transition-colors duration-200"
                                             href={href}
+                                            target={href.startsWith('http') ? '_blank' : undefined}
+                                            rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
                                         >
                                             {title}
                                         </Link>

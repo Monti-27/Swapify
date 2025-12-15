@@ -2,6 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card"
 import { TrendingUp, Lock, ArrowDownRight, Flame } from "lucide-react"
+import React from 'react';
 
 export function TokenBurnGrid() {
     return (
@@ -35,17 +36,28 @@ export function TokenBurnGrid() {
 
                                 {/* Particle Embers System */}
                                 <div className="absolute inset-0 overflow-visible">
-                                    {[...Array(6)].map((_, i) => (
-                                        <div key={i}
-                                            className={`absolute bg-orange-500/60 rounded-full blur-[1px] animate-ember-${i + 1}`}
-                                            style={{
+                                    {[...Array(6)].map((_, i) => {
+                                        // Use state to store random values to avoid hydration mismatch
+                                        const [style, setStyle] = React.useState({ width: '0px', height: '0px' });
+
+                                        React.useEffect(() => {
+                                            setStyle({
                                                 width: Math.random() * 3 + 1 + 'px',
                                                 height: Math.random() * 3 + 1 + 'px',
-                                                left: '50%',
-                                                top: '60%',
-                                            }}
-                                        />
-                                    ))}
+                                            });
+                                        }, []);
+
+                                        return (
+                                            <div key={i}
+                                                className={`absolute bg-orange-500/60 rounded-full blur-[1px] animate-ember-${i + 1}`}
+                                                style={{
+                                                    ...style,
+                                                    left: '50%',
+                                                    top: '60%',
+                                                }}
+                                            />
+                                        );
+                                    })}
                                 </div>
 
                                 {/* The Token - Semantic Border/Bg */}
