@@ -10,7 +10,7 @@ export function BentoGrid() {
                 <div className="relative">
                     <div className="relative z-10 grid grid-cols-6 gap-3">
                         {/* Card 1: Automated Strategies */}
-                        <Card className="relative col-span-full flex overflow-hidden lg:col-span-4 rounded-3xl border-border bg-card/50 dark:bg-card/40 backdrop-blur-sm shadow-sm transition-all duration-300 hover:shadow-md">
+                        <Card className="relative col-span-full flex overflow-hidden lg:col-span-4 rounded-3xl border-border bg-card/50 dark:bg-card/40 backdrop-blur-sm shadow-sm transition-all duration-300 hover:shadow-md min-h-[300px]">
                             <div className="absolute inset-0 z-0 opacity-30 dark:opacity-20 translate-x-[1px] translate-y-[1px]"
                                 style={{ backgroundImage: 'radial-gradient(currentColor 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
                             </div>
@@ -53,7 +53,7 @@ export function BentoGrid() {
                         </Card>
 
                         {/* Card 2: Lightning Fast (Fixed Flickering & Added Smooth Ripples) */}
-                        <Card className="relative col-span-full overflow-hidden sm:col-span-3 lg:col-span-2 rounded-3xl border-border bg-card/50 dark:bg-card/40 backdrop-blur-sm group hover:bg-accent/5 transition-colors duration-500 shadow-sm hover:shadow-md">
+                        <Card className="relative col-span-full overflow-hidden sm:col-span-3 lg:col-span-2 rounded-3xl border-border bg-card/50 dark:bg-card/40 backdrop-blur-sm group hover:bg-accent/5 transition-colors duration-500 shadow-sm hover:shadow-md min-h-[250px]">
                             <div className="absolute inset-0 z-0 bg-gradient-to-br from-zinc-100/50 to-zinc-50/0 dark:from-zinc-800/20 dark:to-zinc-900/0"></div>
 
                             <CardContent className="p-6 flex flex-col h-full relative z-10 text-card-foreground">
@@ -105,7 +105,7 @@ export function BentoGrid() {
                         </Card>
 
                         {/* Card 3: Advanced Security */}
-                        <Card className="relative col-span-full overflow-hidden sm:col-span-3 lg:col-span-2 rounded-3xl border-border bg-card/50 dark:bg-card/40 backdrop-blur-sm group shadow-sm transition-all duration-300 hover:shadow-md">
+                        <Card className="relative col-span-full overflow-hidden sm:col-span-3 lg:col-span-2 rounded-3xl border-border bg-card/50 dark:bg-card/40 backdrop-blur-sm group shadow-sm transition-all duration-300 hover:shadow-md min-h-[250px]">
                             <CardContent className="p-6 flex flex-col h-full relative z-10 items-center justify-center text-card-foreground">
                                 <div className="w-full text-center mb-6">
                                     <h2 className="text-xl font-semibold mb-2">Advanced Security</h2>
@@ -144,7 +144,7 @@ export function BentoGrid() {
                         </Card>
 
                         {/* Card 4: Profit Margin */}
-                        <Card className="relative col-span-full flex overflow-hidden lg:col-span-4 rounded-3xl border-border bg-card/50 dark:bg-card/40 backdrop-blur-sm shadow-sm transition-all duration-300 hover:shadow-md">
+                        <Card className="relative col-span-full flex overflow-hidden lg:col-span-4 rounded-3xl border-border bg-card/50 dark:bg-card/40 backdrop-blur-sm shadow-sm transition-all duration-300 hover:shadow-md min-h-[300px]">
                             <CardContent className="relative m-auto size-full p-6 text-card-foreground">
                                 <div className="flex justify-between items-start mb-6">
                                     <div>
