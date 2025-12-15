@@ -14,7 +14,7 @@ import { Footer } from '@/components/footer';
 
 export default function Home() {
   return (
-    <div className="min-h-screen relative bg-background">
+    <div className="min-h-screen relative bg-background w-full overflow-x-hidden">
       <div className="absolute inset-0 gradient-purple-radial pointer-events-none" style={{ willChange: 'auto' }} />
       <div className="relative z-10" style={{ willChange: 'auto' }}>
         <Navbar />
