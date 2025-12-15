@@ -179,8 +179,17 @@ export default function StrategiesPage() {
     }
   };
 
-  const handleDeleteStrategy = async (id: string, name: string) => {
-    setDeleteConfirmation({ id, name });
+  const handleDeleteStrategy = async (strategy: Strategy) => {
+    // Block deletion of active strategies - user must cancel first
+    if (strategy.status === 'active') {
+      toast.error('Cannot delete active strategy', {
+        description: 'Please cancel the strategy first to withdraw your escrowed funds, then you can delete it.',
+        duration: 5000,
+      });
+      return;
+    }
+
+    setDeleteConfirmation({ id: strategy.id, name: strategy.name });
   };
 
   const confirmDeleteStrategy = async () => {
@@ -415,7 +424,7 @@ export default function StrategiesPage() {
                                 variant="outline"
                                 size="sm"
                                 className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8 p-0"
-                                onClick={() => handleDeleteStrategy(strategy.id, strategy.name)}
+                                onClick={() => handleDeleteStrategy(strategy)}
                                 title="Delete strategy"
                               >
                                 <Trash2 className="w-4 h-4" />
