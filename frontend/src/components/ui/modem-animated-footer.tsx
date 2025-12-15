@@ -70,9 +70,9 @@ export const ModemAnimatedFooter = ({
                     <div className="bg-[radial-gradient(35%_80%_at_30%_0%,var(--color-foreground)/0.1,transparent)] mx-auto max-w-6xl md:border-x border-border/40">
                         <div className="bg-border/40 absolute inset-x-0 top-0 h-px w-full" />
 
-                        <div className="grid grid-cols-1 gap-8 p-8 md:grid-cols-6 lg:gap-12">
+                        <div className="grid grid-cols-2 gap-8 p-6 md:p-8 md:grid-cols-6 lg:gap-12">
                             {/* Brand Column */}
-                            <div className="col-span-1 md:col-span-4 flex flex-col gap-6">
+                            <div className="col-span-2 md:col-span-4 flex flex-col gap-6">
                                 <div className="flex items-center gap-2 opacity-90">
                                     {/* Small Brand Icon if needed, or just text */}
                                     <div className="relative w-8 h-8">
@@ -149,12 +149,12 @@ export const ModemAnimatedFooter = ({
 
 
                 {/* Spacing for Bottom Big Text Area */}
-                <div className="min-h-[25rem] md:min-h-[30rem] relative w-full">
+                <div className="min-h-[24rem] md:min-h-[30rem] relative w-full">
                     {/* Large background text - FIXED */}
                     <div
                         className="bg-gradient-to-b from-foreground/20 via-foreground/10 to-transparent bg-clip-text text-transparent leading-none absolute left-1/2 -translate-x-1/2 top-10 font-display font-bold tracking-tighter pointer-events-none select-none text-center px-4"
                         style={{
-                            fontSize: 'clamp(5rem, 20vw, 25rem)',
+                            fontSize: 'clamp(5rem, 21vw, 25rem)',
                             maxWidth: '100vw',
                             width: '100%'
                         }}
@@ -163,7 +163,7 @@ export const ModemAnimatedFooter = ({
                     </div>
 
                     {/* Bottom logo */}
-                    <div className="absolute top-32 sm:top-40 md:top-48 left-1/2 -translate-x-1/2 z-20">
+                    <div className="absolute top-24 sm:top-40 md:top-48 left-1/2 -translate-x-1/2 z-20">
                         <div className="hover:border-primary/50 duration-500 drop-shadow-[0_0px_30px_rgba(0,0,0,0.2)] dark:drop-shadow-[0_0px_30px_rgba(255,255,255,0.1)] backdrop-blur-md rounded-3xl bg-background/30 border border-border/50 p-4">
                             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-zinc-800 to-black dark:from-zinc-100 dark:to-zinc-300 rounded-2xl flex items-center justify-center shadow-xl">
                                 {brandIcon || (
