@@ -5,7 +5,7 @@ import { TrendingUp, Lock, ArrowDownRight, Flame } from "lucide-react"
 
 export function TokenBurnGrid() {
     return (
-        <section className="py-24 bg-background relative overflow-visible">
+        <section className="py-24 bg-background relative overflow-hidden">
 
             <div className="container mx-auto px-4 relative z-10">
                 <div className="mb-12 text-center max-w-2xl mx-auto">
