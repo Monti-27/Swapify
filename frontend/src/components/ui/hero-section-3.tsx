@@ -62,7 +62,7 @@ export function HeroSection() {
 
                             <div className="mt-12 flex justify-center">
                                 <Button asChild size="lg" className="rounded-full px-8 font-semibold bg-foreground text-background hover:bg-foreground/90">
-                                    <Link href="/dashboard">Launch App</Link>
+                                    <Link href="/strategies">Launch App</Link>
                                 </Button>
                             </div>
 
@@ -70,10 +70,10 @@ export function HeroSection() {
                                 aria-hidden
                                 className="bg-radial from-muted/20 relative mx-auto mt-32 max-w-2xl to-transparent to-55% text-left"
                             >
-                                <div className="bg-background border-border/50 absolute inset-0 mx-auto w-80 -translate-x-3 -translate-y-12 rounded-[2rem] border p-2 [mask-image:linear-gradient(to_bottom,#000_50%,transparent_90%)] sm:-translate-x-6">
+                                <div className="bg-background border-border/50 absolute inset-0 mx-auto w-72 sm:w-80 -translate-x-2 -translate-y-12 rounded-[2rem] border p-2 [mask-image:linear-gradient(to_bottom,#000_50%,transparent_90%)] sm:-translate-x-6">
                                     <div className="relative h-96 overflow-hidden rounded-[1.5rem] border border-border/50 p-2 pb-12 before:absolute before:inset-0 before:bg-[repeating-linear-gradient(-45deg,var(--border),var(--border)_1px,transparent_1px,transparent_6px)] before:opacity-20 before:dark:opacity-50"></div>
                                 </div>
-                                <div className="bg-card/50 border-white/10 dark:border-white/10 border-border/50 mx-auto w-80 translate-x-4 rounded-[2rem] border p-2 backdrop-blur-3xl [mask-image:linear-gradient(to_bottom,#000_50%,transparent_90%)] sm:translate-x-8">
+                                <div className="bg-card/50 border-white/10 dark:border-white/10 border-border/50 mx-auto w-72 sm:w-80 translate-x-2 rounded-[2rem] border p-2 backdrop-blur-3xl [mask-image:linear-gradient(to_bottom,#000_50%,transparent_90%)] sm:translate-x-8">
                                     <div className="bg-card space-y-2 overflow-hidden rounded-[1.5rem] border border-border/50 p-2 shadow-2xl shadow-black/5 dark:shadow-black">
                                         <StrategyCard />
 
