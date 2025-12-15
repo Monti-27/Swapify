@@ -209,3 +209,29 @@ model SystemLog {
   @@index([createdAt])
   @@map("system_logs")
 }
+
+// Escrow model for tracking on-chain escrow account balances
+model Escrow {
+  id           String   @id @default(uuid())
+  
+  // Link to Strategy via pdaStrategy (the on-chain strategy PDA)
+  pdaStrategy  String   @unique  // The strategy's on-chain PDA address
+  pdaEscrow    String?  // The escrow account's on-chain PDA address
+  
+  // Owner information
+  owner        String   // Wallet public key of the owner
+  
+  // Token information
+  tokenMint    String   // The SPL token mint address
+  
+  // Balance tracking
+  deposited    String   @default("0")  // Total deposited (stored as string for precision)
+  withdrawn    String   @default("0")  // Total withdrawn (stored as string for precision)
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@index([pdaStrategy])
+  @@index([owner])
+  @@map("escrows")
+}
