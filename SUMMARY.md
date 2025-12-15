@@ -1,20 +1,10 @@
-\# Table of Contents
+# Table of contents
 
-
-
-\* \[Introduction](docs/01-introduction.md)
-
-\* \[Getting Started](docs/02-getting-started.md)
-
-\* \[Core Features](docs/03-core-features.md)
-
-\* \[Tutorials](docs/04-tutorials.md)
-
-\* \[Tokenomics](docs/05-tokenomics.md)
-
-\* \[Security](docs/06-security.md)
-
-\* \[Roadmap](docs/07-roadmap.md)
-
-\* \[FAQ \& Contact](docs/08-faq.md)
-
+* [Welcome to WeSwap](README.md)
+* [Getting Started](getting-started.md)
+* [Core Features](core-features.md)
+* [Step-by-Step Tutorials](step-by-step-tutorials.md)
+* [Tokenomics & Launch](tokenomics-and-launch.md)
+* [Security & Infrastructure](security-and-infrastructure.md)
+* [Roadmap](roadmap.md)
+* [FAQ & Contact](faq-and-contact.md)
