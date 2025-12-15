@@ -49,7 +49,7 @@ export function HeroSection() {
                             }}
                         >
                             <div className="mx-auto mb-6 w-fit rounded-full border border-border bg-muted/50 px-4 py-1.5 text-sm font-medium text-muted-foreground shadow-inner">
-                                CA : We are gonna launch our token soon
+                                CA : 3LkGja4ptKgVH3FoP3xye3HYGLPbX2iAbvGYj5ePpump
                             </div>
                             <h1
                                 className="text-balance text-5xl font-medium md:text-7xl text-foreground tracking-tight">
