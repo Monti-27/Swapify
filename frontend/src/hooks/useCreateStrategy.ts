@@ -56,46 +56,27 @@ const NATIVE_SOL_ADDRESSES = [
 ];
 
 /**
- * Devnet Token Addresses
- * These are the actual mint addresses on devnet (different from mainnet!)
+ * Mainnet Token Addresses
  */
-const DEVNET_WSOL = new PublicKey('So11111111111111111111111111111111111111112'); // Same on all clusters
-const DEVNET_USDC = new PublicKey('4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU'); // Devnet USDC
+const WRAPPED_SOL = new PublicKey('So11111111111111111111111111111111111111112');
+const MAINNET_USDC = new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v');
 
 /**
- * Mainnet addresses that need to be remapped on devnet
+ * Resolve mint address for mainnet
+ * Handles SOL → Wrapped SOL conversion
  */
-const MAINNET_USDC = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
-const MAINNET_USDT = 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB';
-
-/**
- * Resolve mint address for devnet
- * Maps mainnet addresses to their devnet equivalents
- */
-function resolveMintForDevnet(token: Token): PublicKey {
+function resolveMint(token: Token): PublicKey {
     const address = token.address || token.id || '';
     const symbol = token.symbol?.toUpperCase() || '';
 
-    // Handle SOL variants
+    // Handle SOL variants → Wrapped SOL
     if (NATIVE_SOL_ADDRESSES.includes(address) || symbol === 'SOL') {
-        console.log(`🔄 Resolving ${symbol || address} → Devnet WSOL`);
-        return DEVNET_WSOL;
+        console.log(`🔄 Resolving ${symbol || address} → Wrapped SOL`);
+        return WRAPPED_SOL;
     }
 
-    // Handle USDC (mainnet address → devnet address)
-    if (address === MAINNET_USDC || symbol === 'USDC') {
-        console.log(`🔄 Resolving USDC → Devnet USDC: ${DEVNET_USDC.toBase58()}`);
-        return DEVNET_USDC;
-    }
-
-    // Handle USDT (map to devnet USDC for testing, since USDT doesn't exist on devnet)
-    if (address === MAINNET_USDT || symbol === 'USDT') {
-        console.log(`🔄 Resolving USDT → Devnet USDC (substitute): ${DEVNET_USDC.toBase58()}`);
-        return DEVNET_USDC;
-    }
-
-    // Return as-is for other tokens
-    console.log(`ℹ️ Using address as-is: ${address}`);
+    // Return as-is for all other tokens (mainnet addresses)
+    console.log(`ℹ️ Using token address: ${address}`);
     return new PublicKey(address);
 }
 
@@ -129,10 +110,10 @@ export function useCreateStrategy(): UseCreateStrategyResult {
         setError(null);
 
         try {
-            // 1. Resolve mint addresses (maps mainnet → devnet addresses)
-            console.log('📍 Resolving token addresses for devnet...');
-            const sellTokenMint = resolveMintForDevnet(params.sellToken);
-            const buyTokenMint = resolveMintForDevnet(params.buyToken);
+            // 1. Resolve mint addresses
+            console.log('📍 Resolving token addresses...');
+            const sellTokenMint = resolveMint(params.sellToken);
+            const buyTokenMint = resolveMint(params.buyToken);
 
             console.log('   Sell token mint:', sellTokenMint.toBase58());
             console.log('   Buy token mint:', buyTokenMint.toBase58());
@@ -306,7 +287,7 @@ export function useCreateStrategy(): UseCreateStrategyResult {
 
             // 12. Build pre-instructions for auto-wrapping SOL if needed
             const preInstructions: TransactionInstruction[] = [];
-            const isSellingSOL = sellTokenMint.equals(DEVNET_WSOL);
+            const isSellingSOL = sellTokenMint.equals(WRAPPED_SOL);
 
             if (isSellingSOL) {
                 console.log('🔄 Auto-wrapping SOL → WSOL...');
@@ -340,7 +321,37 @@ export function useCreateStrategy(): UseCreateStrategyResult {
                 console.log('   ✅ Added 3 pre-instructions for SOL wrapping');
             }
 
-            // 13. Build and send transaction
+            // 13. CREATE DB ROW FIRST (before blockchain tx)
+            // This allows the indexer to find and update the strategy
+            console.log('📝 Creating strategy row in database...');
+            console.log('   pdaStrategy:', strategyPda.toBase58());
+            console.log('   strategyIndex:', nextId);
+
+            let dbStrategy: any = null;
+            try {
+                dbStrategy = await api.createStrategy({
+                    name: params.name || `Strategy #${nextId}`,
+                    description: params.description,
+                    fromToken: sellTokenMint.toBase58(),
+                    toToken: buyTokenMint.toBase58(),
+                    triggerType: 'price',
+                    triggerValue: params.triggerPrice,
+                    amountType: params.amountType,
+                    amount: params.amount,
+                    stopLoss: params.stopLoss,
+                    takeProfit: params.takeProfit,
+                    // CRITICAL: Include PDA so indexer can find this row
+                    pdaStrategy: strategyPda.toBase58(),
+                    strategyIndex: nextId,
+                });
+                console.log('   ✅ DB row created:', dbStrategy.id);
+            } catch (dbError: any) {
+                console.error('Failed to create DB row:', dbError?.message || dbError);
+                // Don't throw - we can still proceed with blockchain tx
+                // The indexer will handle it via retry logic
+            }
+
+            // 14. Build and send transaction
             console.log('🚀 Building createStrategy transaction...');
             console.log('   Strategy ID:', strategyId.toString());
             console.log('   Sell Token:', sellTokenMint.toBase58());
@@ -376,41 +387,50 @@ export function useCreateStrategy(): UseCreateStrategyResult {
                 description: `Transaction confirmed: ${tx.slice(0, 8)}...`,
             });
 
-            // Sync strategy name with backend (after indexer catches up)
-            if (params.name) {
-                const syncMetadata = async (retries = 2) => {
-                    try {
-                        // Wait for indexer to create the row
-                        await new Promise(r => setTimeout(r, 2000));
+            // 15. Link pdaStrategy to DB row (so indexer can find it)
+            const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+            const linkStrategyToDb = async () => {
+                const MAX_RETRIES = 10;
+                const RETRY_DELAY = 2000;
+
+                console.log("🔗 Linking pdaStrategy to database...");
+                console.log("   pdaStrategy:", strategyPda.toBase58());
+
+                for (let i = 0; i < MAX_RETRIES; i++) {
+                    try {
+                        // Try to update with pdaStrategy address
                         await api.updateStrategyMetadata(strategyPda.toBase58(), {
-                            name: params.name!,
+                            name: params.name || `Strategy #${nextId}`,
                             description: params.description,
                         });
-                        console.log('✅ Strategy name synced with backend');
-                        toast.success('Strategy name saved!');
+
+                        console.log("✅ Strategy linked successfully!");
+                        toast.success('Strategy saved!');
 
                         // Trigger callback to refresh strategies list
                         if (params.onMetadataSynced) {
                             params.onMetadataSynced();
                         }
+                        return; // Success
+
                     } catch (error: any) {
-                        console.warn('Failed to sync strategy name:', error?.message || error);
-
-                        // Retry if 404 (indexer not ready yet)
-                        if (retries > 0 && error?.message?.includes('404')) {
-                            console.log(`Retrying metadata sync... (${retries} retries left)`);
-                            await syncMetadata(retries - 1);
-                        } else {
-                            // Non-critical error - strategy is still created on-chain
-                            console.error('Could not save strategy name to backend:', error);
+                        if (i === MAX_RETRIES - 1) {
+                            console.error('Could not link strategy after all retries:', error?.message || error);
+                            toast.error('Could not save strategy', {
+                                description: 'Strategy created on-chain but DB sync failed.',
+                            });
+                            return;
                         }
-                    }
-                };
 
-                // Fire and forget - don't block the return
-                syncMetadata();
-            }
+                        console.warn(`DB not ready (attempt ${i + 1}/${MAX_RETRIES}). Retrying...`);
+                        await sleep(RETRY_DELAY);
+                    }
+                }
+            };
+
+            // Fire and forget
+            linkStrategyToDb();
 
             return tx;
 

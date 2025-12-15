@@ -32,45 +32,23 @@ const NATIVE_SOL_ADDRESSES = [
 ];
 
 /**
- * Devnet Token Addresses
- * These are the actual mint addresses on devnet (different from mainnet!)
+ * Mainnet Token Addresses
  */
-const DEVNET_WSOL = new PublicKey('So11111111111111111111111111111111111111112');
-const DEVNET_USDC = new PublicKey('4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU');
+const WRAPPED_SOL = new PublicKey('So11111111111111111111111111111111111111112');
 
 /**
- * Mainnet addresses that need to be remapped on devnet
+ * Resolve mint address for mainnet
+ * Handles SOL → Wrapped SOL conversion
  */
-const MAINNET_USDC = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
-const MAINNET_USDT = 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB';
-
-/**
- * Resolve mint address for devnet
- * Maps mainnet addresses to their devnet equivalents
- */
-function resolveMintForDevnet(tokenAddress: string): PublicKey {
-    const address = tokenAddress;
-
-    // Handle SOL variants
-    if (NATIVE_SOL_ADDRESSES.includes(address)) {
-        console.log(`🔄 Resolving ${address} → Devnet WSOL`);
-        return DEVNET_WSOL;
+function resolveMint(tokenAddress: string): PublicKey {
+    // Handle SOL variants → Wrapped SOL
+    if (NATIVE_SOL_ADDRESSES.includes(tokenAddress)) {
+        console.log(`🔄 Resolving ${tokenAddress} → Wrapped SOL`);
+        return WRAPPED_SOL;
     }
 
-    // Handle USDC (mainnet address → devnet address)
-    if (address === MAINNET_USDC) {
-        console.log(`🔄 Resolving USDC → Devnet USDC: ${DEVNET_USDC.toBase58()}`);
-        return DEVNET_USDC;
-    }
-
-    // Handle USDT (map to devnet USDC for testing)
-    if (address === MAINNET_USDT) {
-        console.log(`🔄 Resolving USDT → Devnet USDC (substitute): ${DEVNET_USDC.toBase58()}`);
-        return DEVNET_USDC;
-    }
-
-    // Return as-is for other tokens
-    return new PublicKey(address);
+    // Return as-is for all other tokens (mainnet addresses)
+    return new PublicKey(tokenAddress);
 }
 
 export interface CancelStrategyParams {
@@ -138,8 +116,8 @@ export function useCancelStrategy(): UseCancelStrategyResult {
             console.log('   On-chain Strategy Index:', strategyIndex);
 
             // 2. Resolve sell token mint
-            const sellTokenMint = resolveMintForDevnet(strategy.fromToken);
-            const buyTokenMint = resolveMintForDevnet(strategy.toToken);
+            const sellTokenMint = resolveMint(strategy.fromToken);
+            const buyTokenMint = resolveMint(strategy.toToken);
 
             console.log('   Sell Token Mint:', sellTokenMint.toBase58());
             console.log('   Buy Token Mint:', buyTokenMint.toBase58());
@@ -244,7 +222,7 @@ export function useCancelStrategy(): UseCancelStrategyResult {
                 .rpc();
 
             console.log('✅ Blockchain transaction sent! Signature:', tx);
-            console.log('🔗 Solscan:', `https://solscan.io/tx/${tx}?cluster=devnet`);
+            console.log('🔗 Solscan:', `https://solscan.io/tx/${tx}`);
 
             // 9. Confirm transaction
             console.log('⏳ Waiting for transaction confirmation...');
