@@ -31,9 +31,9 @@ This documentation is organized into the following sections:
 
 ## 🔗 Links
 
-* **X (Twitter):** https://x.com/WeSwapfun
-* **Telegram:** t.me/WeSwapfun
-* **Launch Platform:** Pump.fun
+* **X (Twitter):** [https://x.com/WeSwapfun](https://x.com/WeSwapfun)
+* **Telegram:** [t.me/WeSwapfun](https://t.me/WeSwapfun)
+* **Launch Platform:** [Pump.fun](https://pump.fun)
 
 ## 🎯 Key Features
 
