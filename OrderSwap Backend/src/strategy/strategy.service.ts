@@ -31,6 +31,23 @@ export class StrategyService {
       }
     }
 
+    // IDEMPOTENCY CHECK: If pdaStrategy is provided, check if it already exists
+    if (dto.pdaStrategy) {
+      const existing = await this.prisma.strategy.findUnique({
+        where: { pdaStrategy: dto.pdaStrategy },
+      });
+
+      if (existing) {
+        // If it belongs to the same user, return it gracefully
+        if (existing.userId === userId) {
+          this.logger.log(`Strategy ${dto.pdaStrategy} already exists for user ${userId}, returning existing.`);
+          return existing;
+        }
+        // If it belongs to another user (unlikely with correct PDA derivation), throw error
+        throw new BadRequestException('Strategy with this address already exists for another user.');
+      }
+    }
+
     // Create strategy
     const strategy = await this.prisma.strategy.create({
       data: {

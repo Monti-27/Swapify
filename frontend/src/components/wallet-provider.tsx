@@ -38,9 +38,9 @@ export const SolanaWalletProvider: FC<{ children: ReactNode }> = ({ children }) 
 
   // Use Helius Mainnet RPC for production
   const endpoint = useMemo(() => {
-    // Helius Mainnet RPC
-    const mainnetUrl = process.env.NEXT_PUBLIC_SOLANA_RPC_URL ||
-      'https://mainnet.helius-rpc.com/?api-key=6bf8928b-1c63-412a-9334-73bdfc2b18b5';
+    // FORCE Helius Mainnet RPC
+    // We ignore process.env.NEXT_PUBLIC_SOLANA_RPC_URL because it likely contains an Alchemy URL that is rate-limited
+    const mainnetUrl = 'https://mainnet.helius-rpc.com/?api-key=6bf8928b-1c63-412a-9334-73bdfc2b18b5';
 
     console.log('🌐 RPC ENDPOINT CONFIG:');
     console.log('   Network:', network);
