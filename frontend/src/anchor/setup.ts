@@ -4,11 +4,10 @@ import type { Weswap } from './weswap';
 import idl from './weswap.json';
 
 /**
- * WeSwap Program ID on Devnet
+ * WeSwap Program ID on Mainnet
  * NOTE: This must match the 'address' field in weswap.json IDL
  */
-// NEW (Your Fresh Devnet Deployment)
-export const PROGRAM_ID = new PublicKey('AyFdzipBUDFRjznJZeVKoj8bb11oXZm3kjLQv9v7C3hd');
+export const PROGRAM_ID = new PublicKey('AFhpyoVmDCEVofP3sqj8wCPSFYYGpL83sbXKuwMZtcoQ');
 
 /**
  * Wrapped SOL Mint - used when user selects Native SOL

@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/weswap.json`.
  */
 export type Weswap = {
-  "address": "AyFdzipBUDFRjznJZeVKoj8bb11oXZm3kjLQv9v7C3hd",
+  "address": "AFhpyoVmDCEVofP3sqj8wCPSFYYGpL83sbXKuwMZtcoQ",
   "metadata": {
     "name": "weswap",
     "version": "0.1.0",
