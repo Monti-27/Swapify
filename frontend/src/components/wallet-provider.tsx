@@ -32,21 +32,21 @@ export const SolanaWalletProvider: FC<{ children: ReactNode }> = ({ children }) 
     };
   }, []);
 
-  // Set to 'devnet', 'testnet', or 'mainnet-beta'
-  // ⚠️ DEVNET - FOR TESTING ONLY!
-  const network = WalletAdapterNetwork.Devnet;
+  // Set to 'mainnet-beta' for production
+  // 🚀 MAINNET - PRODUCTION
+  const network = WalletAdapterNetwork.Mainnet;
 
-  // Use Devnet RPC endpoint for testing
+  // Use Helius Mainnet RPC for production
   const endpoint = useMemo(() => {
-    // FORCE DEVNET - ignore environment variable for testing
-    const devnetUrl = clusterApiUrl('devnet');
+    // Helius Mainnet RPC
+    const mainnetUrl = process.env.NEXT_PUBLIC_SOLANA_RPC_URL ||
+      'https://mainnet.helius-rpc.com/?api-key=6bf8928b-1c63-412a-9334-73bdfc2b18b5';
 
     console.log('🌐 RPC ENDPOINT CONFIG:');
     console.log('   Network:', network);
-    console.log('   ENV RPC:', process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'not set');
-    console.log('   Using:', devnetUrl);
+    console.log('   Using:', mainnetUrl.slice(0, 50) + '...');
 
-    return devnetUrl;
+    return mainnetUrl;
   }, [network]);
 
   const wallets = useMemo(
