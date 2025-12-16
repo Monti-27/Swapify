@@ -1,0 +1,27 @@
+node_modules
+.env
+dist
+notes.txt
+codes
+notes.txt
+keypairs
+
+# Privy authorization keys (never commit these!)
+.keys/
+*.pem
+private.pem
+public.pem
+private_pkcs8.pem
+cache/
+
+# TypeScript build artifacts in source directories (should only be in dist/)
+src/**/*.js
+src/**/*.d.ts
+src/**/*.js.map
+src/**/*.d.ts.map
+privacy-cash-sdk/src/**/*.js
+privacy-cash-sdk/src/**/*.d.ts
+privacy-cash-sdk/src/**/*.js.map
+privacy-cash-sdk/src/**/*.d.ts.map
+
+keypairs/*
