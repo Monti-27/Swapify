@@ -51,4 +51,4 @@ if (needsBuild) {
 } else {
   console.log('✅ SDK already built, skipping...');
 }
-
+;

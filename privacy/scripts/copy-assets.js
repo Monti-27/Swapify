@@ -28,4 +28,4 @@ try {
   console.error('❌ Failed to copy assets:', error.message);
   process.exit(1);
 }
-
+;
