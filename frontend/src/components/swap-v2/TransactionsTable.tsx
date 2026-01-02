@@ -89,15 +89,15 @@ export default function TransactionsTable() {
   };
 
   return (
-    <section className="bg-[#0D0D12] rounded-2xl shadow-card w-full flex flex-col border border-[#1E1E2E]">
-      <div className="p-6 border-b border-[#1E1E2E]">
-        <h2 className="text-lg font-semibold text-white uppercase tracking-wider">Transactions</h2>
+    <section className="bg-white dark:bg-[#0D0D12] rounded-2xl shadow-card w-full flex flex-col border border-zinc-200 dark:border-[#1E1E2E]">
+      <div className="p-6 border-b border-zinc-200 dark:border-[#1E1E2E]">
+        <h2 className="text-lg font-semibold text-zinc-900 dark:text-white uppercase tracking-wider">Transactions</h2>
       </div>
 
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-[#0A0A0F]">
+            <tr className="bg-zinc-50 dark:bg-[#0A0A0F]">
               <th className="px-6 py-4 text-xs font-medium text-zinc-500 uppercase tracking-wider">Date</th>
               <th className="px-6 py-4 text-xs font-medium text-zinc-500 uppercase tracking-wider">Conversion</th>
               <th className="px-6 py-4 text-xs font-medium text-zinc-500 uppercase tracking-wider">Gas Fee</th>
@@ -106,34 +106,34 @@ export default function TransactionsTable() {
               <th className="px-6 py-4 text-xs font-medium text-zinc-500 uppercase tracking-wider text-right">Repeat</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#1E1E2E] !w-full !h-[372px]">
+          <tbody className="divide-y divide-zinc-100 dark:divide-[#1E1E2E] !w-full !h-[372px]">
             {transactions.map((tx, idx) =>
-            <tr key={idx} className="hover:bg-[#18181B]/50 transition-colors h-[72px]">
-                <td className="px-6 py-4 text-sm text-white font-medium">
+            <tr key={idx} className="hover:bg-zinc-50 dark:hover:bg-[#18181B]/50 transition-colors h-[72px]">
+                <td className="px-6 py-4 text-sm text-zinc-900 dark:text-white font-medium">
                   {tx.date}
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1.5">
                       <TokenIcon symbol={tx.fromToken.symbol} />
-                      <span className="text-sm font-semibold text-white">{tx.fromToken.amount}</span>
+                      <span className="text-sm font-semibold text-zinc-900 dark:text-white">{tx.fromToken.amount}</span>
                       <span className="text-xs text-zinc-500 uppercase">{tx.fromToken.symbol}</span>
                     </div>
-                    <span className="text-zinc-600 text-xs">→</span>
+                    <span className="text-zinc-400 dark:text-zinc-600 text-xs">→</span>
                     <div className="flex items-center gap-1.5">
                       <TokenIcon symbol={tx.toToken.symbol} />
-                      <span className="text-sm font-semibold text-white">{tx.toToken.amount}</span>
+                      <span className="text-sm font-semibold text-zinc-900 dark:text-white">{tx.toToken.amount}</span>
                       <span className="text-xs text-zinc-500 uppercase">{tx.toToken.symbol}</span>
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 text-sm text-zinc-400 font-medium">
+                <td className="px-6 py-4 text-sm text-zinc-500 dark:text-zinc-400 font-medium">
                   {tx.gasFee}
                 </td>
                 <td className="px-6 py-4 text-center">
                   {tx.status === 'completed' && (
                     <div className="inline-flex items-center justify-center size-6">
-                      <Check className="size-4 text-zinc-400" strokeWidth={2} />
+                      <Check className="size-4 text-emerald-500" strokeWidth={2} />
                     </div>
                   )}
                   {tx.status === 'pending' && (
@@ -152,7 +152,7 @@ export default function TransactionsTable() {
                     href={`https://solscan.io/tx/${tx.txHash}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white transition-colors"
+                    className="flex items-center gap-1.5 text-sm text-indigo-600 dark:text-zinc-400 hover:text-indigo-800 dark:hover:text-white transition-colors"
                   >
                     <span className="font-mono">{tx.txHash.slice(0, 4)}...{tx.txHash.slice(-4)}</span>
                     <ExternalLink className="size-3.5" />
@@ -161,7 +161,7 @@ export default function TransactionsTable() {
                 <td className="px-6 py-4 text-right">
                   <button 
                     onClick={() => handleRepeatSwap(tx)}
-                    className="text-zinc-500 hover:text-white transition-colors p-2 hover:bg-[#27272A] rounded-full"
+                    className="text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors p-2 hover:bg-zinc-100 dark:hover:bg-[#27272A] rounded-full"
                   >
                     <RotateCcw className="size-4" />
                   </button>
@@ -172,14 +172,14 @@ export default function TransactionsTable() {
         </table>
       </div>
 
-      <div className="p-6 flex items-center justify-between border-t border-[#1E1E2E]">
-        <button className="p-2 border border-[#27272A] rounded-lg hover:bg-[#18181B] transition-colors text-zinc-500 disabled:opacity-30">
+      <div className="p-6 flex items-center justify-between border-t border-zinc-200 dark:border-[#1E1E2E]">
+        <button className="p-2 border border-zinc-200 dark:border-[#27272A] rounded-lg hover:bg-zinc-100 dark:hover:bg-[#18181B] transition-colors text-zinc-500 disabled:opacity-30">
           <ChevronLeft className="size-5" />
         </button>
         <div className="text-sm text-zinc-500">
-          Page <span className="text-white font-semibold">1</span> of <span className="text-white font-semibold">12</span>
+          Page <span className="text-zinc-900 dark:text-white font-semibold">1</span> of <span className="text-zinc-900 dark:text-white font-semibold">12</span>
         </div>
-        <button className="p-2 border border-[#27272A] rounded-lg hover:bg-[#18181B] transition-colors text-zinc-500">
+        <button className="p-2 border border-zinc-200 dark:border-[#27272A] rounded-lg hover:bg-zinc-100 dark:hover:bg-[#18181B] transition-colors text-zinc-500">
           <ChevronRight className="size-5" />
         </button>
       </div>

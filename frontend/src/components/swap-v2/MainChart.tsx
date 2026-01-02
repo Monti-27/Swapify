@@ -86,22 +86,22 @@ export default function MainChart() {
           </div>
         </div>
 
-        <div className="flex bg-[#18181B] dark:bg-[#18181B] p-1 rounded-md gap-1">
-          {filters.map((filter) => (
-            <button
-              key={filter}
-              onClick={() => setActiveFilter(filter)}
-              className={cn(
-                "px-2.5 py-1 text-[0.75rem] font-medium rounded transition-colors",
-                activeFilter === filter
-                  ? "bg-[#27272A] text-white shadow-sm"
-                  : "text-zinc-400 hover:text-white"
-              )}
-            >
-              {filter}
-            </button>
-          ))}
-        </div>
+        <div className="flex bg-[#E5E5E5] dark:bg-[#18181B] p-1 rounded-md gap-1">
+            {filters.map((filter) => (
+              <button
+                key={filter}
+                onClick={() => setActiveFilter(filter)}
+                className={cn(
+                  "px-2.5 py-1 text-[0.75rem] font-medium rounded transition-colors",
+                  activeFilter === filter
+                    ? "bg-white dark:bg-[#27272A] text-zinc-900 dark:text-white shadow-sm"
+                    : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                )}
+              >
+                {filter}
+              </button>
+            ))}
+          </div>
       </div>
 
       <div className="flex-1 w-full min-h-[280px]">
