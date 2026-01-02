@@ -1,19 +1,16 @@
 "use client";
 
 import React from 'react';
-import Image from 'next/image';
 import { ChevronLeft, ChevronRight, Check, RotateCcw, ExternalLink, Clock, XCircle } from 'lucide-react';
 import { useSwap } from './SwapContext';
 
 interface Transaction {
   date: string;
   fromToken: {
-    icon?: string;
     symbol: string;
     amount: string;
   };
   toToken: {
-    icon?: string;
     symbol: string;
     amount: string;
   };
@@ -22,18 +19,7 @@ interface Transaction {
   txHash: string;
 }
 
-function TokenIcon({ icon, symbol, size = 20 }: { icon?: string; symbol: string; size?: number }) {
-  if (icon) {
-    return (
-      <Image 
-        src={icon} 
-        alt={symbol} 
-        width={size} 
-        height={size} 
-        className="rounded-full shadow-sm"
-      />
-    );
-  }
+function TokenIcon({ symbol, size = 20 }: { symbol: string; size?: number }) {
   return (
     <span 
       className="rounded-full bg-[#27272A] flex items-center justify-center text-zinc-400 font-bold shadow-sm"
@@ -47,40 +33,40 @@ function TokenIcon({ icon, symbol, size = 20 }: { icon?: string; symbol: string;
 const transactions: Transaction[] = [
   {
     date: '17 Feb, 2025',
-    fromToken: { icon: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png', symbol: 'SOL', amount: '2.5' },
-    toToken: { icon: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png', symbol: 'USDC', amount: '312.45' },
+    fromToken: { symbol: 'SOL', amount: '2.5' },
+    toToken: { symbol: 'USDC', amount: '312.45' },
     gasFee: '0.000005 SOL',
     status: 'completed',
     txHash: '5UxV7nR9KfZh8MgCw3LB4vqMnR7xKjZ9sYtNqF2pWe8x'
   },
   {
     date: '16 Feb, 2025',
-    fromToken: { icon: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png', symbol: 'USDC', amount: '500' },
-    toToken: { icon: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png', symbol: 'SOL', amount: '4.02' },
+    fromToken: { symbol: 'USDC', amount: '500' },
+    toToken: { symbol: 'SOL', amount: '4.02' },
     gasFee: '0.000005 SOL',
     status: 'completed',
     txHash: '3KpZx8wNmR4vTqYhL2sJfD7xMnQ6bCeV9hUyWgF1pT4m'
   },
   {
     date: '15 Feb, 2025',
-    fromToken: { icon: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png', symbol: 'SOL', amount: '10' },
-    toToken: { icon: 'https://arweave.net/hQiPZOsRZXGXBJd_82PhVdlM_hACsT_q6wqwf5cSY7I', symbol: 'BONK', amount: '45,230,000' },
+    fromToken: { symbol: 'SOL', amount: '10' },
+    toToken: { symbol: 'BONK', amount: '45,230,000' },
     gasFee: '0.000005 SOL',
     status: 'pending',
     txHash: '7HjYx2wKnR5vTqZhM3sLfD8xPnQ7bDeW0iVyXgG2qU5n'
   },
   {
     date: '14 Feb, 2025',
-    fromToken: { icon: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png', symbol: 'USDC', amount: '1,000' },
-    toToken: { icon: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB/logo.svg', symbol: 'USDT', amount: '999.50' },
+    fromToken: { symbol: 'USDC', amount: '1,000' },
+    toToken: { symbol: 'USDT', amount: '999.50' },
     gasFee: '0.000005 SOL',
     status: 'completed',
     txHash: '9MnWz4xRnT6vUqAhN4sKfE9xQnR8cEfX1jWzYhH3rV6o'
   },
   {
     date: '13 Feb, 2025',
-    fromToken: { icon: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png', symbol: 'SOL', amount: '0.5' },
-    toToken: { icon: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs/logo.png', symbol: 'ETH', amount: '0.023' },
+    fromToken: { symbol: 'SOL', amount: '0.5' },
+    toToken: { symbol: 'ETH', amount: '0.023' },
     gasFee: '0.000005 SOL',
     status: 'failed',
     txHash: '2LpAy3xSnU7vVqBhO5tMfF0xRoS9dGgY2kXzAiI4sW7p'
@@ -129,13 +115,13 @@ export default function TransactionsTable() {
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1.5">
-                      <TokenIcon icon={tx.fromToken.icon} symbol={tx.fromToken.symbol} />
+                      <TokenIcon symbol={tx.fromToken.symbol} />
                       <span className="text-sm font-semibold text-white">{tx.fromToken.amount}</span>
                       <span className="text-xs text-zinc-500 uppercase">{tx.fromToken.symbol}</span>
                     </div>
                     <span className="text-zinc-600 text-xs">→</span>
                     <div className="flex items-center gap-1.5">
-                      <TokenIcon icon={tx.toToken.icon} symbol={tx.toToken.symbol} />
+                      <TokenIcon symbol={tx.toToken.symbol} />
                       <span className="text-sm font-semibold text-white">{tx.toToken.amount}</span>
                       <span className="text-xs text-zinc-500 uppercase">{tx.toToken.symbol}</span>
                     </div>
