@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { ChevronDown, Settings, ArrowDown, Loader2 } from 'lucide-react';
+import { ChevronDown, Settings, ArrowDown } from 'lucide-react';
 import { useSwap } from './SwapContext';
 
 interface TokenState {
@@ -9,6 +9,12 @@ interface TokenState {
   symbol: string;
   amount: string;
   balance: string;
+}
+
+function Skeleton({ className }: { className?: string }) {
+  return (
+    <div className={`animate-pulse bg-zinc-700/50 rounded ${className}`} />
+  );
 }
 
 function TokenIcon({ icon, symbol, size = 24 }: { icon?: string; symbol: string; size?: number }) {
@@ -123,105 +129,132 @@ const ConversionCard = () => {
         </button>
       </div>
 
-      <div className="bg-[#18181B] rounded-2xl p-2.5 shadow-xl relative">
-        {isLoading && (
-          <div className="absolute inset-0 bg-black/50 rounded-2xl flex items-center justify-center z-20">
-            <Loader2 className="size-8 text-[#5850EC] animate-spin" />
-          </div>
-        )}
-        <div className="relative flex flex-col items-center gap-1 mb-5">
-          <div 
-            className="bg-[#27272A] text-white rounded-xl shadow-lg relative w-full flex flex-row items-center justify-between gap-2 p-5 [mask-image:radial-gradient(ellipse_32px_30px_at_50%_100%,transparent_0,transparent_28px,black_29px)]"
-          >
-            <div className="grow">
-              <input 
-                type="text" 
-                value={fromToken.amount}
-                onChange={(e) => setFromToken(prev => ({ ...prev, amount: e.target.value }))}
-                className="w-full max-w-40 text-2xl font-bold bg-transparent border-none outline-none p-0 mb-1 focus:ring-0 text-white"
-              />
-              <div className="text-[12px] text-zinc-500 font-medium">
-                Balance: {fromToken.balance}
+        <div className="bg-[#18181B] rounded-2xl p-2.5 shadow-xl relative">
+          <div className="relative flex flex-col items-center gap-1 mb-5">
+            <div 
+              className="bg-[#27272A] text-white rounded-xl shadow-lg relative w-full flex flex-row items-center justify-between gap-2 p-5 [mask-image:radial-gradient(ellipse_32px_30px_at_50%_100%,transparent_0,transparent_28px,black_29px)]"
+            >
+              <div className="grow">
+                {isLoading ? (
+                  <>
+                    <Skeleton className="h-8 w-32 mb-1" />
+                    <Skeleton className="h-4 w-24" />
+                  </>
+                ) : (
+                  <>
+                    <input 
+                      type="text" 
+                      value={fromToken.amount}
+                      onChange={(e) => setFromToken(prev => ({ ...prev, amount: e.target.value }))}
+                      className="w-full max-w-40 text-2xl font-bold bg-transparent border-none outline-none p-0 mb-1 focus:ring-0 text-white"
+                    />
+                    <div className="text-[12px] text-zinc-500 font-medium">
+                      Balance: {fromToken.balance}
+                    </div>
+                  </>
+                )}
+              </div>
+              <div>
+                {isLoading ? (
+                  <Skeleton className="h-8 w-24 rounded-full" />
+                ) : (
+                  <button 
+                    className="flex items-center gap-2 bg-[#3F3F46] hover:bg-[#52525B] transition-colors rounded-full pl-1 pr-2.5 py-1 text-white shadow-lg border-0 outline-none"
+                  >
+                    <TokenIcon icon={fromToken.icon} symbol={fromToken.symbol} />
+                    <span className="uppercase text-[12px] font-bold tracking-tight">{fromToken.symbol}</span>
+                    <ChevronDown className="size-4 text-zinc-400" />
+                  </button>
+                )}
               </div>
             </div>
-            <div>
-              <button 
-                className="flex items-center gap-2 bg-[#3F3F46] hover:bg-[#52525B] transition-colors rounded-full pl-1 pr-2.5 py-1 text-white shadow-lg border-0 outline-none"
-              >
-                <TokenIcon icon={fromToken.icon} symbol={fromToken.symbol} />
-                <span className="uppercase text-[12px] font-bold tracking-tight">{fromToken.symbol}</span>
-                <ChevronDown className="size-4 text-zinc-400" />
-              </button>
+
+            <div 
+              className="size-10 flex items-center justify-center rounded-full bg-[#5850EC] absolute top-1/2 -translate-y-1/2 z-10 shadow-lg border border-black/10"
+            >
+              <ArrowDown className="size-5 text-white" />
+            </div>
+
+            <div 
+              className="bg-[#27272A] text-white rounded-xl shadow-lg relative w-full flex flex-row items-center justify-between gap-2 p-5 [mask-image:radial-gradient(ellipse_32px_30px_at_50%_0%,transparent_0,transparent_28px,black_29px)]"
+            >
+              <div className="absolute -top-px left-1/2 -translate-x-1/2 w-[58px] h-[29px] rounded-b-full border-b border-x border-white/5"></div>
+              
+              <div className="grow">
+                {isLoading ? (
+                  <>
+                    <Skeleton className="h-8 w-32 mb-1" />
+                    <Skeleton className="h-4 w-24" />
+                  </>
+                ) : (
+                  <>
+                    <input 
+                      type="text" 
+                      value={toToken.amount}
+                      onChange={(e) => setToToken(prev => ({ ...prev, amount: e.target.value }))}
+                      className="w-full max-w-40 text-2xl font-bold bg-transparent border-none outline-none p-0 mb-1 focus:ring-0 text-white"
+                    />
+                    <div className="text-[12px] text-zinc-500 font-medium">
+                      Balance: {toToken.balance}
+                    </div>
+                  </>
+                )}
+              </div>
+              <div>
+                {isLoading ? (
+                  <Skeleton className="h-8 w-24 rounded-full" />
+                ) : (
+                  <button 
+                    className="flex items-center gap-2 bg-[#3F3F46] hover:bg-[#52525B] transition-colors rounded-full pl-1 pr-2.5 py-1 text-white shadow-lg border-0 outline-none"
+                  >
+                    <TokenIcon icon={toToken.icon} symbol={toToken.symbol} />
+                    <span className="uppercase text-[12px] font-bold tracking-tight">{toToken.symbol}</span>
+                    <ChevronDown className="size-4 text-zinc-400" />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
-          <div 
-            className="size-10 flex items-center justify-center rounded-full bg-[#5850EC] absolute top-1/2 -translate-y-1/2 z-10 shadow-lg border border-black/10"
-          >
-            <ArrowDown className="size-5 text-white" />
+          <div className="px-1.5">
+            <div className="mb-3 ps-3 uppercase text-zinc-600 text-[11px] font-bold tracking-widest">
+              Summary
+            </div>
+            <div className="bg-[#242427] rounded-xl p-4 flex flex-col gap-3 shadow-inner">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-zinc-500 font-medium">Transaction Value</span>
+                {isLoading ? <Skeleton className="h-5 w-16" /> : <span className="text-white font-bold">{quote.transactionValue}</span>}
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-zinc-500 font-medium">Network Fees</span>
+                {isLoading ? <Skeleton className="h-5 w-12" /> : <span className="text-white font-bold">{quote.networkFees}</span>}
+              </div>
+              <div className="h-px bg-white/5 my-1"></div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-zinc-500 font-medium">Order Net</span>
+                {isLoading ? <Skeleton className="h-5 w-20" /> : <span className="text-white font-bold">{quote.orderNet}</span>}
+              </div>
+            </div>
           </div>
 
-          <div 
-            className="bg-[#27272A] text-white rounded-xl shadow-lg relative w-full flex flex-row items-center justify-between gap-2 p-5 [mask-image:radial-gradient(ellipse_32px_30px_at_50%_0%,transparent_0,transparent_28px,black_29px)]"
-          >
-            <div className="absolute -top-px left-1/2 -translate-x-1/2 w-[58px] h-[29px] rounded-b-full border-b border-x border-white/5"></div>
+          <div className="mt-5 px-1.5 pb-2">
+            <button 
+              className="w-full bg-[#5850EC] hover:bg-[#4338CA] transition-colors text-white py-3.5 rounded-xl font-bold text-sm shadow-lg mb-4"
+            >
+              Confirm
+            </button>
             
-            <div className="grow">
-              <input 
-                type="text" 
-                value={toToken.amount}
-                onChange={(e) => setToToken(prev => ({ ...prev, amount: e.target.value }))}
-                className="w-full max-w-40 text-2xl font-bold bg-transparent border-none outline-none p-0 mb-1 focus:ring-0 text-white"
-              />
-              <div className="text-[12px] text-zinc-500 font-medium">
-                Balance: {toToken.balance}
+            {isLoading ? (
+              <div className="flex justify-center">
+                <Skeleton className="h-4 w-40" />
               </div>
-            </div>
-            <div>
-              <button 
-                className="flex items-center gap-2 bg-[#3F3F46] hover:bg-[#52525B] transition-colors rounded-full pl-1 pr-2.5 py-1 text-white shadow-lg border-0 outline-none"
-              >
-                <TokenIcon icon={toToken.icon} symbol={toToken.symbol} />
-                <span className="uppercase text-[12px] font-bold tracking-tight">{toToken.symbol}</span>
-                <ChevronDown className="size-4 text-zinc-400" />
-              </button>
-            </div>
+            ) : (
+              <div className="text-center text-[10px] text-zinc-500 font-bold uppercase tracking-wider">
+                {quote.rate}
+              </div>
+            )}
           </div>
         </div>
-
-        <div className="px-1.5">
-          <div className="mb-3 ps-3 uppercase text-zinc-600 text-[11px] font-bold tracking-widest">
-            Summary
-          </div>
-          <div className="bg-[#242427] rounded-xl p-4 flex flex-col gap-3 shadow-inner">
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-zinc-500 font-medium">Transaction Value</span>
-              <span className="text-white font-bold">{quote.transactionValue}</span>
-            </div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-zinc-500 font-medium">Network Fees</span>
-              <span className="text-white font-bold">{quote.networkFees}</span>
-            </div>
-            <div className="h-px bg-white/5 my-1"></div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-zinc-500 font-medium">Order Net</span>
-              <span className="text-white font-bold">{quote.orderNet}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-5 px-1.5 pb-2">
-          <button 
-            className="w-full bg-[#5850EC] hover:bg-[#4338CA] transition-colors text-white py-3.5 rounded-xl font-bold text-sm shadow-lg mb-4"
-          >
-            Confirm
-          </button>
-          
-          <div className="text-center text-[10px] text-zinc-500 font-bold uppercase tracking-wider">
-            {quote.rate}
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
