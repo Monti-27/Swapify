@@ -90,27 +90,27 @@ const ConversionCard = () => {
     <div className="lg:w-[360px] shrink-0 flex flex-col gap-5">
       <div className="flex items-center gap-2">
         <div 
-          role="tablist" 
-          className="flex w-full bg-white dark:bg-swap-card/64 p-0 shadow-md rounded-md overflow-hidden dark:shadow-[inset_0_1px_rgb(255_255_255/0.15)]"
-        >
+            role="tablist" 
+            className="flex w-full bg-zinc-800/80 p-0 shadow-md rounded-md overflow-hidden shadow-[inset_0_1px_rgb(255_255_255/0.15)]"
+          >
           <button 
             role="tab" 
             aria-selected="true"
-            className="flex-1 py-1.5 text-sm font-medium text-swap-foreground transition-all outline-none relative hover:text-swap-foreground/80"
+            className="flex-1 py-1.5 text-sm font-medium text-white transition-all outline-none relative hover:text-white/80"
           >
             Convert
           </button>
           <button 
             role="tab" 
             aria-selected="false"
-            className="flex-1 py-1.5 text-sm font-medium text-swap-muted-foreground transition-all outline-none relative hover:text-swap-foreground before:absolute before:inset-y-2 before:-left-px before:w-px before:bg-swap-border first:before:hidden"
+            className="flex-1 py-1.5 text-sm font-medium text-zinc-400 transition-all outline-none relative hover:text-white before:absolute before:inset-y-2 before:-left-px before:w-px before:bg-zinc-600 first:before:hidden"
           >
             Buy
           </button>
           <button 
             role="tab" 
             aria-selected="false"
-            className="flex-1 py-1.5 text-sm font-medium text-swap-muted-foreground transition-all outline-none relative hover:text-swap-foreground before:absolute before:inset-y-2 before:-left-px before:w-px before:bg-swap-border first:before:hidden"
+            className="flex-1 py-1.5 text-sm font-medium text-zinc-400 transition-all outline-none relative hover:text-white before:absolute before:inset-y-2 before:-left-px before:w-px before:bg-zinc-600 first:before:hidden"
           >
             Send
           </button>
