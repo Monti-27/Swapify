@@ -86,7 +86,7 @@ export default function MainChart() {
           </div>
         </div>
 
-        <div className="flex bg-swap-muted/50 p-1 rounded-md gap-1">
+        <div className="flex bg-[#18181B] dark:bg-[#18181B] p-1 rounded-md gap-1">
           {filters.map((filter) => (
             <button
               key={filter}
@@ -94,8 +94,8 @@ export default function MainChart() {
               className={cn(
                 "px-2.5 py-1 text-[0.75rem] font-medium rounded transition-colors",
                 activeFilter === filter
-                  ? "bg-swap-card text-swap-foreground shadow-sm"
-                  : "text-swap-muted-foreground hover:text-swap-foreground"
+                  ? "bg-[#27272A] text-white shadow-sm"
+                  : "text-zinc-400 hover:text-white"
               )}
             >
               {filter}
