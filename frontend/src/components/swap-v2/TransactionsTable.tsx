@@ -89,7 +89,7 @@ export default function TransactionsTable() {
   };
 
   return (
-    <section className="bg-white dark:bg-[#0D0D12] rounded-2xl shadow-card w-full flex flex-col border border-zinc-200 dark:border-[#1E1E2E]">
+    <section className="bg-white dark:bg-[#0D0D12] rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.08)] dark:shadow-card w-full flex flex-col border border-zinc-200 dark:border-[#1E1E2E]">
       <div className="p-6 border-b border-zinc-200 dark:border-[#1E1E2E]">
         <h2 className="text-lg font-semibold text-zinc-900 dark:text-white uppercase tracking-wider">Transactions</h2>
       </div>

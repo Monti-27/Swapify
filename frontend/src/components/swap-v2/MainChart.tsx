@@ -59,7 +59,7 @@ export default function MainChart() {
   };
 
   return (
-    <div className="bg-swap-card rounded-[1rem] p-6 shadow-card border border-swap-border/50 transition-all flex flex-col h-full min-h-[460px]">
+    <div className="bg-white dark:bg-swap-card rounded-[1rem] p-6 shadow-[0_2px_8px_rgba(0,0,0,0.08)] dark:shadow-card border border-zinc-200 dark:border-swap-border/50 transition-all flex flex-col h-full min-h-[460px]">
       <div className="flex items-start justify-between mb-8">
         <div>
           <h2 className="text-[2.25rem] font-bold tracking-tight text-swap-foreground leading-tight">
