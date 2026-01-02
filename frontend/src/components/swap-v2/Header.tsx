@@ -1,8 +1,7 @@
 "use client";
 
 import React from 'react';
-import Image from 'next/image';
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Moon, User } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
 const Header = () => {
@@ -31,15 +30,8 @@ const Header = () => {
             className="inline-flex items-center justify-center outline-none transition-[color,box-shadow] hover:opacity-80 rounded-full"
             aria-label="User profile"
           >
-            <span className="relative flex size-8 shrink-0 overflow-hidden rounded-full ring-1 ring-swap-border">
-              <Image 
-                src="https://raw.githubusercontent.com/origin-space/origin-images/refs/heads/main/exp4/user_i02xph.png" 
-                alt="Profile image"
-                width={32}
-                height={32}
-                className="aspect-square object-cover"
-                priority
-              />
+            <span className="relative flex size-8 shrink-0 overflow-hidden rounded-full ring-1 ring-swap-border bg-swap-muted items-center justify-center">
+              <User size={18} className="text-swap-muted-foreground" />
             </span>
           </button>
         </div>

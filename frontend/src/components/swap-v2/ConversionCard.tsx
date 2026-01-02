@@ -1,30 +1,49 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import Image from 'next/image';
-import { ChevronDown, Settings, ArrowDown, Loader2 } from 'lucide-react';
+import { ChevronDown, Settings, ArrowDown, Loader2, Coins } from 'lucide-react';
 import { useSwap } from './SwapContext';
 
 interface TokenState {
-  icon: string;
+  icon?: string;
   symbol: string;
   amount: string;
   balance: string;
+}
+
+function TokenIcon({ icon, symbol, size = 24 }: { icon?: string; symbol: string; size?: number }) {
+  if (icon) {
+    return (
+      <img 
+        src={icon} 
+        alt={symbol} 
+        width={size} 
+        height={size} 
+        className="rounded-full"
+      />
+    );
+  }
+  return (
+    <span 
+      className="rounded-full bg-zinc-600 flex items-center justify-center text-white font-bold"
+      style={{ width: size, height: size, fontSize: size * 0.4 }}
+    >
+      {symbol.slice(0, 2)}
+    </span>
+  );
 }
 
 const ConversionCard = () => {
   const { swapData, isLoading } = useSwap();
   
   const [fromToken, setFromToken] = useState<TokenState>({
-    icon: 'https://raw.githubusercontent.com/origin-space/origin-images/refs/heads/main/exp4/coin-02-sm-dark_iqldgv.svg',
-    symbol: 'TOK',
+    symbol: 'SOL',
     amount: '15,494.9',
     balance: '24,579'
   });
   
   const [toToken, setToToken] = useState<TokenState>({
-    icon: 'https://raw.githubusercontent.com/origin-space/origin-images/refs/heads/main/exp4/coin-01-sm-dark_hkrvvm.svg',
-    symbol: 'ARK',
+    symbol: 'USDC',
     amount: '12,984.2',
     balance: '1,379.2'
   });
@@ -33,7 +52,7 @@ const ConversionCard = () => {
     transactionValue: '$2,867',
     networkFees: '$31.2',
     orderNet: '$2,898.2',
-    rate: '1 ARK = 1,574.04 TOK'
+    rate: '1 USDC = 1,574.04 SOL'
   });
 
   useEffect(() => {
@@ -129,13 +148,7 @@ const ConversionCard = () => {
               <button 
                 className="flex items-center gap-2 bg-[#3F3F46] hover:bg-[#52525B] transition-colors rounded-full pl-1 pr-2.5 py-1 text-white shadow-lg border-0 outline-none"
               >
-                <Image 
-                  src={fromToken.icon} 
-                  alt={fromToken.symbol} 
-                  width={24} 
-                  height={24} 
-                  className="rounded-full"
-                />
+                <TokenIcon icon={fromToken.icon} symbol={fromToken.symbol} />
                 <span className="uppercase text-[12px] font-bold tracking-tight">{fromToken.symbol}</span>
                 <ChevronDown className="size-4 text-zinc-400" />
               </button>
@@ -168,13 +181,7 @@ const ConversionCard = () => {
               <button 
                 className="flex items-center gap-2 bg-[#3F3F46] hover:bg-[#52525B] transition-colors rounded-full pl-1 pr-2.5 py-1 text-white shadow-lg border-0 outline-none"
               >
-                <Image 
-                  src={toToken.icon} 
-                  alt={toToken.symbol} 
-                  width={24} 
-                  height={24} 
-                  className="rounded-full"
-                />
+                <TokenIcon icon={toToken.icon} symbol={toToken.symbol} />
                 <span className="uppercase text-[12px] font-bold tracking-tight">{toToken.symbol}</span>
                 <ChevronDown className="size-4 text-zinc-400" />
               </button>

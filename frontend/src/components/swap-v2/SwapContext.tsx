@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface TokenInfo {
-  icon: string;
+  icon?: string;
   symbol: string;
   amount: string;
 }
