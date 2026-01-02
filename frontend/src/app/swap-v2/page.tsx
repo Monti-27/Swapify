@@ -1,10 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
 import {
   SwapProvider,
-  Sidebar,
-  Header,
   MainChart,
   ConversionCard,
   TransactionsTable,
@@ -13,14 +13,13 @@ import {
 export default function SwapV2Page() {
   return (
     <SwapProvider>
-      <div className="flex min-h-screen bg-swap-background">
-        <Sidebar />
-        
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto px-6 lg:px-8">
-            <Header />
-            
-            <main className="py-6 max-w-7xl mx-auto">
+      <div className="min-h-screen relative bg-background">
+        <div className="absolute inset-0 gradient-purple-radial pointer-events-none" style={{ willChange: 'auto' }} />
+        <div className="relative z-10" style={{ willChange: 'auto' }}>
+          <Navbar />
+          
+          <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-32" style={{ willChange: 'auto' }}>
+            <div className="max-w-7xl mx-auto">
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -52,8 +51,10 @@ export default function SwapV2Page() {
               >
                 <TransactionsTable />
               </motion.div>
-            </main>
-          </div>
+            </div>
+          </main>
+
+          <Footer />
         </div>
       </div>
     </SwapProvider>
