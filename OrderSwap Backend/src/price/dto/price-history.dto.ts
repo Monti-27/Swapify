@@ -41,6 +41,24 @@ export class GetPriceHistoryDto {
   @Max(500)
   @IsOptional()
   limit?: number;
+
+  @ApiProperty({
+    description: 'Start timestamp (Unix seconds)',
+    example: 1678886400,
+    required: false,
+  })
+  @IsNumber()
+  @IsOptional()
+  from?: number;
+
+  @ApiProperty({
+    description: 'End timestamp (Unix seconds)',
+    example: 1678972800,
+    required: false,
+  })
+  @IsNumber()
+  @IsOptional()
+  to?: number;
 }
 
 export interface OHLCVCandle {

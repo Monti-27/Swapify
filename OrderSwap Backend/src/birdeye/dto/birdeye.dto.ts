@@ -42,9 +42,11 @@ export interface BirdeyeCandle {
  */
 export enum BirdeyeWSMessageType {
   SUBSCRIBE = 'SUBSCRIBE',
-  SUBSCRIBE_TRADE = 'SUBSCRIBE_TRADE',
-  UNSUBSCRIBE_TRADE = 'UNSUBSCRIBE_TRADE',
+  SUBSCRIBE_TRADE = 'SUBSCRIBE_TXS',
+  UNSUBSCRIBE_TRADE = 'UNSUBSCRIBE_TXS',
   TRADE = 'TRADE',
+  TXS_DATA = 'TXS_DATA',
+  PRICE_DATA = 'PRICE_DATA',
   PING = 'PING',
   PONG = 'PONG',
 }
@@ -94,6 +96,31 @@ export interface BirdeyeTradeEvent {
   };
 }
 
+export interface BirdeyeWSTxsDataMessage {
+  type: BirdeyeWSMessageType.TXS_DATA;
+  data: {
+    blockUnixTime: number;
+    owner: string;
+    source: string;
+    txHash: string;
+    side: 'buy' | 'sell';
+    tokenAddress: string;
+    volumeUSD: number;
+    from: {
+      address: string;
+      price: number;
+      uiAmount: number;
+      symbol: string;
+    };
+    to: {
+      address: string;
+      price: number;
+      uiAmount: number;
+      symbol: string;
+    };
+  };
+}
+
 /**
  * Birdeye WebSocket message union type
  */
@@ -102,6 +129,8 @@ export type BirdeyeWSMessage =
   | BirdeyeWSTradeSubscribeMessage
   | BirdeyeWSTradeUnsubscribeMessage
   | BirdeyeTradeEvent
+  | BirdeyeWSTxsDataMessage
+  | { type: BirdeyeWSMessageType.PRICE_DATA } // Placeholder
   | { type: BirdeyeWSMessageType.PING | BirdeyeWSMessageType.PONG };
 
 /**

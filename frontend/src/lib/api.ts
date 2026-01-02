@@ -216,11 +216,20 @@ class ApiClient {
   async getPriceHistory(
     tokenAddress: string,
     timeframe: ChartTimeframe = ChartTimeframe.ONE_HOUR,
-    limit: number = 200
+    limit: number = 200,
+    from?: number,
+    to?: number
   ): Promise<PriceHistoryResponse> {
-    return this.request(
-      `/prices/history?token=${tokenAddress}&timeframe=${timeframe}&limit=${limit}`
-    );
+    const params = new URLSearchParams({
+      token: tokenAddress,
+      timeframe,
+      limit: limit.toString(),
+    });
+
+    if (from) params.append('from', from.toString());
+    if (to) params.append('to', to.toString());
+
+    return this.request(`/prices/history?${params.toString()}`);
   }
 
   // Token API

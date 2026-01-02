@@ -56,6 +56,7 @@ export function Footer() {
     { label: "Swap", href: "/swap" },
     { label: "Strategies", href: "/strategies" },
     { label: "Dashboard", href: "/dashboard" },
+    { label: "Privacy", href: "/privacy" },
     { label: "Docs", href: "/docs" },
   ];
 

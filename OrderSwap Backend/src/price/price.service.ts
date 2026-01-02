@@ -20,6 +20,19 @@ export class PriceService {
   private chartCacheTimeout = 300000; // 5 minutes cache for chart data
   private chartDataCache = new Map<string, { data: OHLCVCandle[]; timestamp: number }>();
 
+  // ============================================================
+  // 🕵️ MOCK PRICES FOR DEVNET TESTING
+  // These tokens will NEVER hit external APIs - total isolation
+  // ============================================================
+  private readonly MOCK_PRICES: Record<string, { price: number; symbol: string }> = {
+    // Wrapped SOL (Mainnet & Devnet)
+    'So11111111111111111111111111111111111111112': { price: 570.00, symbol: 'SOL' },
+    // Devnet USDC
+    '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU': { price: 1.00, symbol: 'USDC' },
+    // Mainnet USDC (in case of testing)
+    'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v': { price: 1.00, symbol: 'USDC' },
+  };
+
   constructor(
     private prisma: PrismaService,
     private configService: ConfigService,
@@ -28,6 +41,12 @@ export class PriceService {
   ) {
     this.dexScreenerUrl = this.configService.get('DEXSCREENER_API_URL') || 'https://api.dexscreener.com/latest';
     this.jupiterPriceUrl = 'https://api.jup.ag/price/v2';
+
+    // Log mock prices on startup
+    this.logger.log('🕵️ [TEST MODE] Mock prices active for Devnet tokens:');
+    for (const [address, data] of Object.entries(this.MOCK_PRICES)) {
+      this.logger.log(`   ${data.symbol} (${address.slice(0, 8)}...): $${data.price}`);
+    }
   }
 
   /**
@@ -35,6 +54,16 @@ export class PriceService {
    */
   async getTokenPrice(tokenAddress: string): Promise<number> {
     const shortAddress = `${tokenAddress.slice(0, 8)}...${tokenAddress.slice(-8)}`;
+
+    // ============================================================
+    // 🕵️ MOCK-FIRST GUARD: If token is mocked, return immediately
+    // This ensures ZERO external API calls for test tokens
+    // ============================================================
+    const mockData = this.MOCK_PRICES[tokenAddress];
+    if (mockData) {
+      this.logger.debug(`🕵️ [TEST MODE] Forcing Mock Price for ${mockData.symbol}: $${mockData.price}`);
+      return mockData.price;
+    }
 
     // Check cache first
     const cached = await this.getCachedPrice(tokenAddress);
@@ -281,8 +310,8 @@ export class PriceService {
   }
 
   /**
-   * Get multiple token prices in a single API call (lightweight, for monitoring)
-   * Uses Jupiter's /price/v2?ids=x,y,z endpoint - supports up to 100 tokens
+   * Get multiple token prices with MOCK DATA support for Devnet
+   * Uses centralized MOCK_PRICES for consistency
    */
   async getMultipleTokenPrices(tokenAddresses: string[]): Promise<Map<string, number>> {
     const priceMap = new Map<string, number>();
@@ -291,9 +320,31 @@ export class PriceService {
       return priceMap;
     }
 
-    // Check cache first, collect only uncached tokens
-    const uncachedTokens: string[] = [];
+    // ============================================================
+    // 🕵️ MOCK-FIRST GUARD: Filter out mocked tokens first
+    // These tokens will NEVER hit external APIs
+    // ============================================================
+    const realTokensToFetch: string[] = [];
+
     for (const address of tokenAddresses) {
+      const mockData = this.MOCK_PRICES[address];
+      if (mockData) {
+        priceMap.set(address, mockData.price);
+        this.logger.debug(`🕵️ [TEST MODE] Mock Price for ${mockData.symbol}: $${mockData.price}`);
+      } else {
+        realTokensToFetch.push(address);
+      }
+    }
+
+    // If we only have mock tokens, we are done!
+    if (realTokensToFetch.length === 0) {
+      return priceMap;
+    }
+    // ============================================================
+
+    // Check cache for the REAL tokens
+    const uncachedTokens: string[] = [];
+    for (const address of realTokensToFetch) {
       const cached = await this.getCachedPrice(address);
       if (cached) {
         priceMap.set(address, cached.price);
@@ -305,11 +356,10 @@ export class PriceService {
 
     // If all cached, return early
     if (uncachedTokens.length === 0) {
-      this.logger.debug(`All ${tokenAddresses.length} token prices served from cache`);
       return priceMap;
     }
 
-    // Batch fetch uncached tokens from Jupiter (max 100 per request)
+    // Batch fetch uncached tokens from Jupiter
     const batchSize = 100;
     for (let i = 0; i < uncachedTokens.length; i += batchSize) {
       const batch = uncachedTokens.slice(i, i + batchSize);
@@ -328,10 +378,9 @@ export class PriceService {
 
           if (price > 0) {
             priceMap.set(address, price);
-            // Update cache
             await this.updatePriceCache(address, { price, source: 'jupiter-batch' });
           } else {
-            // Fallback to DexScreener for tokens Jupiter doesn't support
+            // Fallback to DexScreener
             try {
               const fallbackPrice = await this.fetchPriceFromDexScreener(address);
               if (fallbackPrice > 0) {
@@ -343,22 +392,8 @@ export class PriceService {
             }
           }
         }
-
-        this.logger.debug(`Batch fetched ${batch.length} token prices from Jupiter`);
       } catch (error) {
         this.logger.warn(`Jupiter batch request failed: ${error.message}`);
-        // Fallback: try each token individually with DexScreener
-        for (const address of batch) {
-          try {
-            const price = await this.fetchPriceFromDexScreener(address);
-            if (price > 0) {
-              priceMap.set(address, price);
-              await this.updatePriceCache(address, { price, source: 'dexscreener' });
-            }
-          } catch (err) {
-            this.logger.debug(`Fallback failed for ${address.slice(0, 8)}...`);
-          }
-        }
       }
     }
 
@@ -369,6 +404,21 @@ export class PriceService {
    * Get token info
    */
   async getTokenInfo(tokenAddress: string) {
+    // ============================================================
+    // 🕵️ MOCK-FIRST GUARD: Return synthetic data for mocked tokens
+    // ============================================================
+    const mockData = this.MOCK_PRICES[tokenAddress];
+    if (mockData) {
+      this.logger.debug(`🕵️ [TEST MODE] Returning mock TokenInfo for ${mockData.symbol}`);
+      return {
+        priceUsd: mockData.price,
+        marketCap: 0,  // Synthetic value
+        volume24h: 0,  // Synthetic value
+        priceChange24h: 0,
+        liquidity: 0,
+      };
+    }
+
     const data = await this.fetchTokenDataFromDexScreener(tokenAddress);
 
     // Update cache
@@ -404,13 +454,16 @@ export class PriceService {
     tokenAddress: string,
     timeframe: ChartTimeframe = ChartTimeframe.ONE_HOUR,
     limit: number = 200,
+    from?: number,
+    to?: number,
   ): Promise<PriceHistoryResponse> {
     try {
       const shortAddress = `${tokenAddress.slice(0, 8)}...${tokenAddress.slice(-8)}`;
       this.logger.log(`Fetching chart data for ${shortAddress}, timeframe: ${timeframe}`);
 
       // Check cache first
-      const cacheKey = `${tokenAddress}_${timeframe}`;
+      // Include from/to/limit in cache key to ensure uniqueness for historical queries
+      const cacheKey = `${tokenAddress}_${timeframe}_${limit}_${from || 'latest'}_${to || 'latest'}`;
       const cached = this.chartDataCache.get(cacheKey);
 
       if (cached && Date.now() - cached.timestamp < this.chartCacheTimeout) {
@@ -424,7 +477,7 @@ export class PriceService {
           data: {
             tokenAddress,
             timeframe,
-            candles: cached.data.slice(-limit),
+            candles: cached.data, // Return exact cached data (already sliced/filtered by key)
             currentPrice: tokenInfo.priceUsd,
             priceChange24h: tokenInfo.priceChange24h,
             priceChange24hPercent: tokenInfo.priceChange24h,
@@ -441,6 +494,8 @@ export class PriceService {
           tokenAddress,
           timeframe,
           limit,
+          from,
+          to,
         );
       }
 

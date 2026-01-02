@@ -42,8 +42,7 @@ pub struct ExecuteStrategy<'info> {
         mut,
         seeds = [b"strategy", strategy.owner.as_ref(), &params.strategy_id.to_le_bytes()],
         bump,
-        constraint = strategy.is_active @ WeswapError::StrategyNotActive,
-        constraint = !strategy.is_executed @ WeswapError::StrategyAlreadyExecuted,
+        constraint = strategy.is_active() @ WeswapError::StrategyNotActive,
     )]
     pub strategy: Box<Account<'info, Strategy>>,
 
@@ -247,8 +246,7 @@ pub fn execute_strategy(
 
     let execution_price = params.current_price.unwrap_or(strategy.trigger_price);
     
-    strategy.mark_executed(execution_price, tokens_received, current_time);
-    strategy.is_active = false;
+    strategy.mark_entry_executed(execution_price, tokens_received, current_time);
 
     msg!(
         "Strategy executed: {:?} - sold {} tokens, received {} tokens",

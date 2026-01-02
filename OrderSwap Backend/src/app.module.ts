@@ -15,6 +15,7 @@ import { TokenModule } from './token/token.module';
 import { HealthModule } from './health/health.module';
 import { BirdeyeModule } from './birdeye/birdeye.module';
 import { BlockchainModule } from './blockchain/blockchain.module';
+import { PrivacyModule } from './privacy/privacy.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { BlockchainModule } from './blockchain/blockchain.module';
     MonitoringModule,
     WebsocketModule,
     BlockchainModule,
+    PrivacyModule,
   ],
 })
 export class AppModule { }

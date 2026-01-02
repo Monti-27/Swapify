@@ -7,7 +7,7 @@ import { GetPriceHistoryDto, ChartTimeframe } from './dto/price-history.dto';
 @ApiTags('prices')
 @Controller('prices')
 export class PriceController {
-  constructor(private priceService: PriceService) {}
+  constructor(private priceService: PriceService) { }
 
   @Get()
   @ApiOperation({ summary: 'Get token price' })
@@ -58,8 +58,9 @@ export class PriceController {
   async getPriceHistory(@Query() dto: GetPriceHistoryDto) {
     const timeframe = dto.timeframe || ChartTimeframe.ONE_HOUR;
     const limit = dto.limit || 200;
+    const { from, to } = dto;
 
-    return this.priceService.getPriceHistory(dto.token, timeframe, limit);
+    return this.priceService.getPriceHistory(dto.token, timeframe, limit, from, to);
   }
 }
 

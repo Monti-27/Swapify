@@ -1,0 +1,8 @@
+{
+  "projectId": "8f8ec410-d7e2-4fb7-aca4-9df947edf18a",
+  "createdAt": 1767366811747,
+  "startupCommands": [
+    "cd frontend && npm run dev",
+    "cd \"OrderSwap Backend\" && npm run start:dev"
+  ]
+}

@@ -3,6 +3,7 @@
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { TokenSelectModal } from '@/components/token-select-modal';
@@ -488,8 +489,11 @@ export default function SwapPage() {
                             </div>
                           </Button>
                           <div className="text-right text-3xl font-semibold w-full max-w-[200px] flex items-center justify-end gap-2">
-                            {isLoadingQuote && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />}
-                            {toAmount || '0.00'}
+                            {isLoadingQuote ? (
+                              <Skeleton className="h-9 w-32" />
+                            ) : (
+                              toAmount || '0.00'
+                            )}
                           </div>
                         </div>
                         <div className="flex justify-between text-xs text-muted-foreground">

@@ -9,11 +9,12 @@ pub use crate::instructions::*;
 pub use crate::instructions::initialize::*;
 pub use crate::instructions::create_strategy::*;
 pub use crate::instructions::execute_strategy::*;
+pub use crate::instructions::execute_exit::*;  // NEW: TP/SL exit instruction
 pub use crate::instructions::deposit_escrow::*;
 pub use crate::instructions::withdraw_escrow::*;
 pub use crate::instructions::manage_keepers::*;
 
-declare_id!("AFhpyoVmDCEVofP3sqj8wCPSFYYGpL83sbXKuwMZtcoQ");
+declare_id!("7UiSkmJek7KrNyUFLBi4vphdimZuYh2iGRNpAfzwKR8r");
 
 #[macro_export]
 macro_rules! try_from {
@@ -69,5 +70,14 @@ pub mod weswap {
         params: ManageKeepersParams,
     ) -> Result<()> {
         instructions::manage_keepers::manage_keepers(ctx, params)
+    }
+
+    /// Execute TP/SL exit for a FILLED strategy
+    pub fn execute_exit(
+        ctx: Context<ExecuteExit>,
+        params: instructions::execute_exit::ExecuteExitParams,
+        jupiter_instruction_data: Vec<u8>,
+    ) -> Result<()> {
+        instructions::execute_exit::execute_exit(ctx, params, jupiter_instruction_data)
     }
 }

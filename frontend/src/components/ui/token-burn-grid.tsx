@@ -1,8 +1,9 @@
 "use client"
 
 import { Card, CardContent } from "@/components/ui/card"
-import { TrendingUp, Lock, ArrowDownRight, Flame } from "lucide-react"
+import { TrendingUp, ArrowDownRight } from "lucide-react"
 import React from 'react';
+import WspTextBurn from '@/components/wsp-text-burn';
 
 export function TokenBurnGrid() {
     return (
@@ -30,56 +31,14 @@ export function TokenBurnGrid() {
 
                         <CardContent className="h-full flex flex-col items-center justify-center relative z-10 p-10 min-h-[400px]">
                             {/* Burning WSP Token Visualization */}
-                            <div className="relative w-48 h-48 flex items-center justify-center mb-8">
-                                {/* Outer Glow - Subtle */}
-                                <div className="absolute inset-x-0 bottom-0 top-1/2 bg-orange-500/10 blur-[50px] rounded-full animate-pulse-slow"></div>
-
-                                {/* Particle Embers System */}
-                                <div className="absolute inset-0 overflow-visible">
-                                    {[...Array(6)].map((_, i) => {
-                                        // Use state to store random values to avoid hydration mismatch
-                                        const [style, setStyle] = React.useState({ width: '0px', height: '0px' });
-
-                                        React.useEffect(() => {
-                                            setStyle({
-                                                width: Math.random() * 3 + 1 + 'px',
-                                                height: Math.random() * 3 + 1 + 'px',
-                                            });
-                                        }, []);
-
-                                        return (
-                                            <div key={i}
-                                                className={`absolute bg-orange-500/60 rounded-full blur-[1px] animate-ember-${i + 1}`}
-                                                style={{
-                                                    ...style,
-                                                    left: '50%',
-                                                    top: '60%',
-                                                }}
-                                            />
-                                        );
-                                    })}
-                                </div>
-
-                                {/* The Token - Semantic Border/Bg */}
-                                <div className="relative w-32 h-32 bg-card rounded-full border border-border flex items-center justify-center shadow-2xl z-20 group">
-                                    {/* Inner Burn Effect */}
-                                    <div className="absolute inset-0 rounded-full overflow-hidden">
-                                        <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-orange-600/30 to-transparent blur-md opacity-60 animate-burn-internal"></div>
-                                    </div>
-
-                                    <div className="relative z-30 flex flex-col items-center">
-                                        <span className="text-4xl font-black text-foreground select-none">WSP</span>
-                                        <span className="text-[10px] text-orange-500/80 font-mono mt-1 tracking-widest uppercase">Burn</span>
-                                    </div>
-
-                                    <div className="absolute inset-0 rounded-full border-2 border-orange-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-                                </div>
+                            <div className="relative w-full h-[300px] flex items-center justify-center mb-8">
+                                <WspTextBurn />
                             </div>
 
                             <div className="text-center">
                                 <h3 className="text-2xl font-bold text-foreground mb-2">Sustainable Deflation</h3>
                                 <p className="text-muted-foreground max-w-md mx-auto">
-                                    A portion of every transaction fee is used to buy back and burn WSP tokens, permanently removing them from circulation.
+                                    A relentless deflationary mechanism. We have burned <span className="font-bold text-foreground">134,000,000+ WSP</span> tokens, permanently removing them from the total supply.
                                 </p>
                             </div>
                         </CardContent>
@@ -92,8 +51,8 @@ export function TokenBurnGrid() {
                                 <ArrowDownRight className="text-muted-foreground w-5 h-5 group-hover:text-orange-500 transition-colors" />
                             </div>
                             <div>
-                                <div className="text-3xl font-bold text-foreground mb-1">-2.5%</div>
-                                <h4 className="font-medium text-muted-foreground text-sm">Circulating Supply / Year</h4>
+                                <div className="text-3xl font-bold mb-1 text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-600">134M+</div>
+                                <h4 className="font-medium text-muted-foreground text-sm uppercase">Tokens Permanently Burned</h4>
                             </div>
                             {/* Mini visual */}
                             <div className="h-12 w-full mt-4 flex items-end gap-1 opacity-50">
@@ -113,7 +72,7 @@ export function TokenBurnGrid() {
                             <div>
                                 <h4 className="text-lg font-semibold text-foreground mb-1">Value Alignment</h4>
                                 <p className="text-sm text-muted-foreground">
-                                    As protocol usage grows, scarcity increases, aligning incentives for holders.
+                                    As protocol usage grows, scarcity increases. We have already removed 134M+ WSP from circulation to align long-term incentives.
                                 </p>
                             </div>
                         </CardContent>
@@ -122,34 +81,7 @@ export function TokenBurnGrid() {
                 </div>
             </div>
 
-            <style jsx global>{`
-        @keyframes pulse-slow {
-            0%, 100% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 0.6; transform: scale(1.1); }
-        }
-        .animate-pulse-slow {
-            animation: pulse-slow 4s ease-in-out infinite;
-        }
-        
-        @keyframes ember-rise {
-            0% { transform: translateY(0) scale(1); opacity: 1; }
-            100% { transform: translateY(-50px) scale(0); opacity: 0; }
-        }
-        .animate-ember-1 { animation: ember-rise 2s ease-out infinite; animation-delay: 0s; left: 45% !important; }
-        .animate-ember-2 { animation: ember-rise 2.5s ease-out infinite; animation-delay: 0.5s; left: 55% !important; }
-        .animate-ember-3 { animation: ember-rise 1.8s ease-out infinite; animation-delay: 0.2s; left: 48% !important; }
-        .animate-ember-4 { animation: ember-rise 3s ease-out infinite; animation-delay: 1s; left: 52% !important; }
-        .animate-ember-5 { animation: ember-rise 2.2s ease-out infinite; animation-delay: 0.8s; left: 42% !important; }
-        .animate-ember-6 { animation: ember-rise 2.7s ease-out infinite; animation-delay: 1.5s; left: 58% !important; }
-        
-        @keyframes burn-internal {
-            0%, 100% { height: 40%; opacity: 0.4; }
-            50% { height: 55%; opacity: 0.7; }
-        }
-        .animate-burn-internal {
-            animation: burn-internal 3s ease-in-out infinite;
-        }
-      `}</style>
-        </section>
+
+        </section >
     )
 }

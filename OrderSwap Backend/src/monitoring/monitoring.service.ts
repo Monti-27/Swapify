@@ -27,9 +27,14 @@ export class MonitoringService implements OnModuleInit {
   ) { }
 
   onModuleInit() {
-    // Start monitoring on module initialization
-    this.startMonitoring();
-    this.logger.log('Monitoring service initialized');
+    // ============================================================
+    // DISABLED: Using BlockchainService as the unified keeper
+    // The BlockchainService polls ON-CHAIN data directly and handles
+    // both price and market cap triggering. This avoids race conditions
+    // from having two separate keeper loops.
+    // ============================================================
+    // this.startMonitoring();
+    this.logger.log('MonitoringService initialized (KEEPER LOOP DISABLED - using BlockchainService)');
   }
 
   /**
@@ -81,7 +86,7 @@ export class MonitoringService implements OnModuleInit {
       const uniqueTokens = new Set<string>();
       for (const strategy of activeStrategies) {
         if (strategy.triggerType === 'price') {
-          uniqueTokens.add(strategy.toToken);
+          uniqueTokens.add(strategy.fromToken);  // ✅ Monitor SELL token price (source)
         }
       }
 
@@ -137,7 +142,7 @@ export class MonitoringService implements OnModuleInit {
     try {
       // Check stop loss before executing
       if (strategy.stopLoss) {
-        const currentPrice = await this.priceService.getTokenPrice(strategy.toToken);
+        const currentPrice = await this.priceService.getTokenPrice(strategy.fromToken);  // ✅ Check SELL token price
         if (currentPrice > 0 && currentPrice <= strategy.stopLoss) {
           this.logger.warn(`Strategy ${strategy.id} hit stop loss at $${currentPrice}. Cancelling...`);
           await this.strategyService.cancelStrategy(strategy.id, strategy.userId);

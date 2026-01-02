@@ -33,8 +33,10 @@ export interface CreateStrategyParams {
     triggerPrice: number;
     amount: number;
     amountType: 'percentage' | 'fixed';
+    direction: 'buy' | 'sell';  // NEW: Order direction
     stopLoss?: number;
     takeProfit?: number;
+    boomerangMode?: boolean;    // NEW: Boomerang mode
     name?: string;
     description?: string;
     onMetadataSynced?: () => void;
@@ -109,11 +111,13 @@ export function useCreateStrategy(): UseCreateStrategyResult {
         setIsLoading(true);
         setError(null);
 
+        const devnetUSDC = new PublicKey("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU");
+
         try {
             // 1. Resolve mint addresses
             console.log('📍 Resolving token addresses...');
             const sellTokenMint = resolveMint(params.sellToken);
-            const buyTokenMint = resolveMint(params.buyToken);
+            const buyTokenMint = devnetUSDC;
 
             console.log('   Sell token mint:', sellTokenMint.toBase58());
             console.log('   Buy token mint:', buyTokenMint.toBase58());
@@ -271,17 +275,21 @@ export function useCreateStrategy(): UseCreateStrategyResult {
                 ? new BN(Math.floor(params.stopLoss * Math.pow(10, PRICE_PRECISION)))
                 : null;
 
-            // Program already initialized above (step 6)
-            // 11. Build the createStrategy instruction params
+            // 11. Convert direction to Rust-compatible enum object
+            // Anchor expects enums as { variant: {} } format
+            const rustDirection = params.direction === 'buy' ? { buy: {} } : { sell: {} };
+
+            // 12. Build the createStrategy instruction params
             const createStrategyParams = {
                 id: strategyId,
+                direction: rustDirection,  // NEW: Rust enum format
                 triggerPrice: triggerPriceBN,
                 pricePrecision: PRICE_PRECISION,
                 takeProfitPrice: takeProfitPriceBN,
                 stopLossPrice: stopLossPriceBN,
                 sellAmount: sellAmountBN,
-                usePercentage: params.amountType === 'percentage',
-                boomerangMode: false,
+                usePercentage: false,
+                boomerangMode: params.boomerangMode ?? false,  // NEW: From params
                 depositAmount: depositAmountBN,
             };
 

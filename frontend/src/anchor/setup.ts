@@ -7,7 +7,7 @@ import idl from './weswap.json';
  * WeSwap Program ID on Mainnet
  * NOTE: This must match the 'address' field in weswap.json IDL
  */
-export const PROGRAM_ID = new PublicKey('AFhpyoVmDCEVofP3sqj8wCPSFYYGpL83sbXKuwMZtcoQ');
+export const PROGRAM_ID = new PublicKey('7UiSkmJek7KrNyUFLBi4vphdimZuYh2iGRNpAfzwKR8r');
 
 /**
  * Wrapped SOL Mint - used when user selects Native SOL

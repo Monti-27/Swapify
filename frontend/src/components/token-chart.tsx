@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   createChart,
   IChartApi,
@@ -23,22 +23,35 @@ interface TokenChartProps {
     volume?: number;
   }>;
   height?: number;
+  autoHeight?: boolean;
   onCandleUpdate?: (candle: CandlestickData) => void;
 }
 
-export default function TokenChart({ data, height = 320, onCandleUpdate }: TokenChartProps) {
+export default function TokenChart({ data, height = 320, autoHeight = false, onCandleUpdate }: TokenChartProps) {
   const chartRef = useRef<HTMLDivElement>(null);
   const chart = useRef<IChartApi | null>(null);
   const candleSeries = useRef<ISeriesApi<"Candlestick"> | null>(null);
   const volumeSeries = useRef<ISeriesApi<"Histogram"> | null>(null);
-  const lastUpdateRef = useRef<number>(0);
+  const [isChartReady, setIsChartReady] = useState(false);
 
+  // Initialize chart
   useEffect(() => {
-    if (!chartRef.current || chart.current) return;
+    if (!chartRef.current) return;
+
+    // Clean up existing chart if present
+    if (chart.current) {
+      chart.current.remove();
+      chart.current = null;
+      candleSeries.current = null;
+      volumeSeries.current = null;
+      setIsChartReady(false);
+    }
+
+    const containerHeight = autoHeight ? chartRef.current.clientHeight : height;
 
     chart.current = createChart(chartRef.current, {
       width: chartRef.current.clientWidth,
-      height,
+      height: containerHeight || height, // Fallback if clientHeight is 0
       layout: {
         background: { color: "#0B0A14" },
         textColor: "#C3C2D4",
@@ -79,13 +92,27 @@ export default function TokenChart({ data, height = 320, onCandleUpdate }: Token
       },
     });
 
-    // Add candlestick series
+    // Helper to determine precision dynamically for crypto-friendly formatting
+    const formatPrice = (price: number): string => {
+      if (price === 0) return '0';
+      if (price < 0.00001) return price.toFixed(8); // e.g., 0.00000044
+      if (price < 0.01) return price.toFixed(6);    // e.g., 0.004433
+      if (price < 1) return price.toFixed(4);       // e.g., 0.4433
+      return price.toFixed(2);                      // e.g., 145.20
+    };
+
+    // Add candlestick series with custom price formatting
     candleSeries.current = chart.current.addSeries(CandlestickSeries, {
       upColor: "#4ADE80",
       downColor: "#EF4444",
       borderVisible: false,
       wickUpColor: "#4ADE80",
       wickDownColor: "#EF4444",
+      priceFormat: {
+        type: 'custom',
+        formatter: formatPrice,
+        minMove: 0.00000001, // Allow micro-movements for low-value tokens
+      },
     });
 
     // Add volume series
@@ -105,9 +132,17 @@ export default function TokenChart({ data, height = 320, onCandleUpdate }: Token
       },
     });
 
+    // Mark chart as ready
+    setIsChartReady(true);
+    console.log('📊 [TokenChart] Chart initialized and ready');
+
     const resizeObserver = new ResizeObserver(() => {
       if (chart.current && chartRef.current) {
-        chart.current.applyOptions({ width: chartRef.current.clientWidth });
+        const options: { width: number; height?: number } = { width: chartRef.current.clientWidth };
+        if (autoHeight && chartRef.current.clientHeight > 0) {
+          options.height = chartRef.current.clientHeight;
+        }
+        chart.current.applyOptions(options);
       }
     });
 
@@ -122,17 +157,21 @@ export default function TokenChart({ data, height = 320, onCandleUpdate }: Token
         volumeSeries.current = null;
       }
     };
-  }, [height]);
+  }, [height, autoHeight]);
 
+  // Process and set chart data - only when chart is ready
   useEffect(() => {
-    if (!candleSeries.current || !volumeSeries.current || !data || data.length === 0) return;
-
-    // Throttle updates to max 10 per second for smooth performance
-    const now = Date.now();
-    if (now - lastUpdateRef.current < 100) {
+    if (!isChartReady || !candleSeries.current || !volumeSeries.current) {
+      console.log('📊 [TokenChart] Waiting for chart to be ready...', { isChartReady });
       return;
     }
-    lastUpdateRef.current = now;
+
+    if (!data || data.length === 0) {
+      console.log('📊 [TokenChart] No data to display');
+      return;
+    }
+
+    console.log('📊 [TokenChart] Processing data:', data.length, 'candles');
 
     const candleData: CandlestickData[] = [];
     const volumeData: HistogramData[] = [];
@@ -142,6 +181,12 @@ export default function TokenChart({ data, height = 320, onCandleUpdate }: Token
       const timeValue = c.timestamp ?? c.time ?? 0;
       // Normalize to seconds: if > 1e10, assume milliseconds, else assume seconds
       const timeInSeconds = timeValue > 1e10 ? Math.floor(timeValue / 1000) : Math.floor(timeValue);
+
+      // Skip invalid candles
+      if (!timeInSeconds || isNaN(c.open) || isNaN(c.close)) {
+        console.warn('📊 [TokenChart] Skipping invalid candle:', c);
+        return;
+      }
 
       const candlePoint: CandlestickData = {
         time: timeInSeconds as Time,
@@ -164,6 +209,11 @@ export default function TokenChart({ data, height = 320, onCandleUpdate }: Token
       }
     });
 
+    if (candleData.length === 0) {
+      console.error('📊 [TokenChart] No valid candles after processing');
+      return;
+    }
+
     // Sort by time in ascending order (required by Lightweight Charts)
     candleData.sort((a, b) => {
       const timeA = a.time as number;
@@ -177,6 +227,8 @@ export default function TokenChart({ data, height = 320, onCandleUpdate }: Token
       return timeA - timeB;
     });
 
+    console.log('📊 [TokenChart] Setting data:', candleData.length, 'candles');
+
     // Update series data
     candleSeries.current.setData(candleData);
     if (volumeData.length > 0) {
@@ -186,17 +238,28 @@ export default function TokenChart({ data, height = 320, onCandleUpdate }: Token
     // Fit content to view
     if (chart.current) {
       chart.current.timeScale().fitContent();
+      // Also do a delayed fitContent to handle any async rendering
+      setTimeout(() => {
+        chart.current?.timeScale().fitContent();
+      }, 100);
     }
 
     // Trigger callback with latest candle
     if (onCandleUpdate && candleData.length > 0) {
       onCandleUpdate(candleData[candleData.length - 1]);
     }
-  }, [data, onCandleUpdate]);
+  }, [data, isChartReady, onCandleUpdate]);
 
   return (
-    <div className="rounded-xl bg-[#0B0A14] border border-[#1F1B2D] p-2">
-      <div ref={chartRef} className="w-full" style={{ height: `${height}px` }} />
+    <div
+      className="rounded-xl bg-[#0B0A14] border border-[#1F1B2D] p-2 h-full"
+      style={autoHeight ? { height: '100%' } : {}}
+    >
+      <div
+        ref={chartRef}
+        className="w-full h-full"
+        style={autoHeight ? { height: '100%' } : { height: `${height}px` }}
+      />
     </div>
   );
 }

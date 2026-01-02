@@ -123,6 +123,7 @@
     transform: translateX(100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
@@ -370,14 +371,22 @@ html.light {
   * {
     @apply border-border outline-ring/50;
   }
+
   html {
     @apply bg-background;
   }
+
   body {
     @apply bg-background text-foreground font-sans;
     background-color: transparent;
   }
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-display);
     font-weight: 700;
   }
@@ -423,9 +432,9 @@ html.light {
   backdrop-filter: blur(40px) saturate(180%) brightness(1.1) !important;
   -webkit-backdrop-filter: blur(40px) saturate(180%) brightness(1.1) !important;
   border: 1px solid rgba(255, 255, 255, 0.6) !important;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 
-              0 0 0 1px rgba(255, 255, 255, 0.3) inset,
-              0 10px 40px rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.3) inset,
+    0 10px 40px rgba(0, 0, 0, 0.1) !important;
 }
 
 /* Modal Title */
@@ -481,7 +490,7 @@ html.light {
   -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
   border-color: rgba(106, 50, 159, 0.5) !important;
   box-shadow: 0 4px 16px rgba(106, 50, 159, 0.15),
-              0 0 0 1px rgba(255, 255, 255, 0.5) inset !important;
+    0 0 0 1px rgba(255, 255, 255, 0.5) inset !important;
 }
 
 .wallet-adapter-button[disabled] {
@@ -490,11 +499,11 @@ html.light {
 }
 
 /* Wallet Name Text */
-.wallet-adapter-button-start-icon + span {
+.wallet-adapter-button-start-icon+span {
   color: hsl(var(--foreground)) !important;
 }
 
-.light .wallet-adapter-button-start-icon + span {
+.light .wallet-adapter-button-start-icon+span {
   color: #0a0a0a !important;
   font-weight: 500 !important;
 }
@@ -559,6 +568,7 @@ html.light {
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -570,6 +580,7 @@ html.light {
     opacity: 1;
     transform: scale(1);
   }
+
   to {
     opacity: 0;
     transform: scale(0.95);
@@ -580,6 +591,7 @@ html.light {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -634,8 +646,8 @@ html.light {
 /* Border Gradients */
 .border-gradient-purple {
   border: 2px solid transparent;
-  background-image: linear-gradient(var(--background), var(--background)), 
-                    linear-gradient(135deg, #6a329f, #601f9e, #522081);
+  background-image: linear-gradient(var(--background), var(--background)),
+    linear-gradient(135deg, #6a329f, #601f9e, #522081);
   background-origin: border-box;
   background-clip: padding-box, border-box;
 }
@@ -659,9 +671,12 @@ html.light {
 
 /* Token Burn Section Custom Animations */
 @keyframes pulse-glow {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 0 30px rgba(168, 85, 247, 0.4), 0 0 60px rgba(168, 85, 247, 0.2);
   }
+
   50% {
     box-shadow: 0 0 50px rgba(168, 85, 247, 0.6), 0 0 100px rgba(168, 85, 247, 0.3);
   }
@@ -672,14 +687,17 @@ html.light {
     transform: translateY(0) translateX(0) scale(0);
     opacity: 0;
   }
+
   10% {
     opacity: 1;
     transform: translateY(-10%) translateX(0) scale(1);
   }
+
   90% {
     opacity: 1;
     transform: translateY(-90%) translateX(10px) scale(1);
   }
+
   100% {
     transform: translateY(-100%) translateX(20px) scale(0);
     opacity: 0;
@@ -687,9 +705,12 @@ html.light {
 }
 
 @keyframes glow-pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     filter: brightness(1) drop-shadow(0 0 10px rgba(168, 85, 247, 0.5));
   }
+
   50% {
     filter: brightness(1.2) drop-shadow(0 0 20px rgba(168, 85, 247, 0.8));
   }
@@ -705,37 +726,48 @@ html.light {
 
 /* Advanced Fire/Burn Effect Animations */
 @keyframes fire-shimmer {
-  0%, 100% {
+
+  0%,
+  100% {
     filter: brightness(1) hue-rotate(0deg);
   }
+
   25% {
     filter: brightness(1.1) hue-rotate(5deg);
   }
+
   50% {
     filter: brightness(0.9) hue-rotate(-5deg);
   }
+
   75% {
     filter: brightness(1.05) hue-rotate(3deg);
   }
 }
 
 @keyframes flame-flicker {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
     transform: scaleY(1) scaleX(1);
   }
+
   20% {
     opacity: 0.95;
     transform: scaleY(1.05) scaleX(0.98);
   }
+
   40% {
     opacity: 1;
     transform: scaleY(0.97) scaleX(1.02);
   }
+
   60% {
     opacity: 0.98;
     transform: scaleY(1.02) scaleX(0.99);
   }
+
   80% {
     opacity: 0.96;
     transform: scaleY(0.99) scaleX(1.01);
@@ -744,31 +776,37 @@ html.light {
 
 @keyframes burn-edge {
   0% {
-    box-shadow: 
+    box-shadow:
       inset 0 -50px 50px -20px rgba(168, 85, 247, 0.2),
       inset 0 -30px 30px -15px rgba(147, 51, 234, 0.3);
   }
+
   50% {
-    box-shadow: 
+    box-shadow:
       inset 0 -60px 60px -25px rgba(168, 85, 247, 0.3),
       inset 0 -40px 40px -20px rgba(147, 51, 234, 0.4);
   }
+
   100% {
-    box-shadow: 
+    box-shadow:
       inset 0 -50px 50px -20px rgba(168, 85, 247, 0.2),
       inset 0 -30px 30px -15px rgba(147, 51, 234, 0.3);
   }
 }
 
 @keyframes heat-wave {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0) scaleX(1);
     opacity: 0.4;
   }
+
   33% {
     transform: translateY(-5px) scaleX(1.02);
     opacity: 0.5;
   }
+
   66% {
     transform: translateY(-3px) scaleX(0.98);
     opacity: 0.45;
@@ -793,9 +831,12 @@ html.light {
 
 /* Animation for the pulsing effect */
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.5;
   }
@@ -803,7 +844,9 @@ html.light {
 
 /* Animation for the ping effect */
 @keyframes ping {
-  75%, 100% {
+
+  75%,
+  100% {
     transform: scale(2);
     opacity: 0;
   }
@@ -915,7 +958,8 @@ html.light {
 
 .text-white\/80 {
   color: rgba(255, 255, 255, 0.8);
-} 
+}
+
 /* High-quality video rendering */
 video {
   image-rendering: high-quality;
@@ -1150,14 +1194,12 @@ svg {
 @layer components {
   .gradient-button {
     @apply relative appearance-none cursor-pointer;
-    background: radial-gradient(
-      var(--spread-x) var(--spread-y) at var(--pos-x) var(--pos-y),
-      var(--color-1) var(--stop-1),
-      var(--color-2) var(--stop-2),
-      var(--color-3) var(--stop-3),
-      var(--color-4) var(--stop-4),
-      var(--color-5) var(--stop-5)
-    );
+    background: radial-gradient(var(--spread-x) var(--spread-y) at var(--pos-x) var(--pos-y),
+        var(--color-1) var(--stop-1),
+        var(--color-2) var(--stop-2),
+        var(--color-3) var(--stop-3),
+        var(--color-4) var(--stop-4),
+        var(--color-5) var(--stop-5));
     transition:
       --pos-x 0.5s,
       --pos-y 0.5s,
@@ -1184,11 +1226,9 @@ svg {
     inset: 0;
     border-radius: inherit;
     padding: 1px;
-    background: linear-gradient(
-      var(--border-angle),
-      var(--border-color-1),
-      var(--border-color-2)
-    );
+    background: linear-gradient(var(--border-angle),
+        var(--border-color-1),
+        var(--border-color-2));
     mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     mask-composite: exclude;
     pointer-events: none;
@@ -1253,12 +1293,127 @@ svg {
 
 @layer base {
   @keyframes grow-up {
-    0% { transform: scaleY(0); }
-    100% { transform: scaleY(1); }
+    0% {
+      transform: scaleY(0);
+    }
+
+    100% {
+      transform: scaleY(1);
+    }
   }
 
   @keyframes infinite-scroll {
-    0% { transform: translateY(0); }
-    100% { transform: translateY(-50%); }
+    0% {
+      transform: translateY(0);
+    }
+
+    100% {
+      transform: translateY(-50%);
+    }
   }
+}
+
+/* ============================================
+   KLineChart Pro - Dark Theme Overrides
+   Match zinc-950 theme colors
+   ============================================ */
+
+.klinecharts-pro[data-theme="dark"] {
+  --klinecharts-pro-primary-color: #a855f7;
+  /* Purple-500 (matches our primary) */
+  --klinecharts-pro-hover-background-color: rgba(168, 85, 247, 0.15);
+  --klinecharts-pro-background-color: #09090b;
+  /* Zinc-950 */
+  --klinecharts-pro-popover-background-color: #18181b;
+  /* Zinc-900 */
+  --klinecharts-pro-text-color: #fafafa;
+  /* Zinc-50 */
+  --klinecharts-pro-text-second-color: #a1a1aa;
+  /* Zinc-400 */
+  --klinecharts-pro-border-color: #27272a;
+  /* Zinc-800 */
+}
+
+/* Ensure the chart fills its container */
+.klinecharts-pro {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Drawing bar and header bar styling */
+.klinecharts-pro .klinecharts-pro-drawing-bar,
+.klinecharts-pro .klinecharts-pro-header-bar {
+  background-color: var(--klinecharts-pro-background-color) !important;
+  border-color: var(--klinecharts-pro-border-color) !important;
+}
+
+/* Popover/Modal styling */
+.klinecharts-pro .klinecharts-pro-popover {
+  background-color: var(--klinecharts-pro-popover-background-color) !important;
+  border-color: var(--klinecharts-pro-border-color) !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Button styling in KLineChart */
+.klinecharts-pro button:hover {
+  background-color: var(--klinecharts-pro-hover-background-color) !important;
+}
+
+/* Scrollbar styling for KLineChart */
+.klinecharts-pro ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.klinecharts-pro ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.klinecharts-pro ::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+  /* Zinc-700 */
+  border-radius: 3px;
+}
+
+.klinecharts-pro ::-webkit-scrollbar-thumb:hover {
+  background: #52525b;
+  /* Zinc-600 */
+}
+
+/* ============================================
+   KLineChart Pro - Indicator Modal
+   Clean, minimal styling - height + scroll only
+   ============================================ */
+
+/* Constrain modal height */
+.klinecharts-pro .klinecharts-pro-indicator-modal {
+  max-height: 320px !important;
+  overflow-y: auto !important;
+  border-radius: 8px !important;
+  background: #18181b !important;
+  border: 1px solid #27272a !important;
+}
+
+/* Fallback selector */
+.klinecharts-pro [class*="indicator"][class*="modal"] {
+  max-height: 320px !important;
+  overflow-y: auto !important;
+}
+
+/* Ensure scrollbar is visible and styled */
+.klinecharts-pro .klinecharts-pro-indicator-modal::-webkit-scrollbar,
+.klinecharts-pro [class*="indicator"][class*="modal"]::-webkit-scrollbar {
+  width: 6px !important;
+}
+
+.klinecharts-pro .klinecharts-pro-indicator-modal::-webkit-scrollbar-track,
+.klinecharts-pro [class*="indicator"][class*="modal"]::-webkit-scrollbar-track {
+  background: #27272a !important;
+}
+
+.klinecharts-pro .klinecharts-pro-indicator-modal::-webkit-scrollbar-thumb,
+.klinecharts-pro [class*="indicator"][class*="modal"]::-webkit-scrollbar-thumb {
+  background: #52525b !important;
+  border-radius: 3px !important;
 }

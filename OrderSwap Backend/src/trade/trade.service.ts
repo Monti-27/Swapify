@@ -12,7 +12,7 @@ export class TradeService {
     private prisma: PrismaService,
     private jupiterService: JupiterService,
     private priceService: PriceService,
-  ) {}
+  ) { }
 
   /**
    * Prepare a trade (get quote and transaction)
@@ -113,17 +113,51 @@ export class TradeService {
         },
       });
 
-      // If this trade is part of a strategy, mark strategy as completed
-      if (trade.strategyId) {
-        await this.prisma.strategy.update({
-          where: { id: trade.strategyId },
-          data: {
-            status: 'completed',
-            completedAt: new Date(),
-          },
-        });
+      // If this trade is part of a strategy, check for Boomerang mode before completing
+      if (trade.strategyId && trade.strategy) {
+        if (trade.strategy.boomerangMode) {
+          // ============================================================
+          // 🪃 BOOMERANG MODE: Flip tokens and reset to active
+          // ============================================================
+          this.logger.log(`🪃 [Boomerang] Flipping strategy ${trade.strategyId} for Leg 2`);
 
-        this.logger.log(`Strategy ${trade.strategyId} marked as completed`);
+          await this.prisma.strategy.update({
+            where: { id: trade.strategyId },
+            data: {
+              // 1. LOCK ORIGINAL TOKENS (Only on the first flip)
+              originalFromToken: trade.strategy.boomerangLeg === 1
+                ? trade.strategy.fromToken
+                : trade.strategy.originalFromToken,
+              originalToToken: trade.strategy.boomerangLeg === 1
+                ? trade.strategy.toToken
+                : trade.strategy.originalToToken,
+
+              // 2. EXECUTE THE FLIP
+              fromToken: trade.strategy.toToken,       // New Sell Token
+              toToken: trade.strategy.fromToken,       // New Buy Token
+              status: 'active',                        // Reset to Active
+              boomerangLeg: 2,                         // Increment Leg
+              boomerangMode: false,                    // Anti-loop: Round trip is now 2/2
+
+              // 3. RESET TRIGGERS
+              triggeredAt: null,
+              completedAt: null,
+            },
+          });
+
+          this.logger.log(`🪃 Strategy ${trade.strategyId} FLIPPED! Now active for Leg 2`);
+        } else {
+          // Normal completion
+          await this.prisma.strategy.update({
+            where: { id: trade.strategyId },
+            data: {
+              status: 'completed',
+              completedAt: new Date(),
+            },
+          });
+
+          this.logger.log(`Strategy ${trade.strategyId} marked as completed`);
+        }
       }
 
       return updatedTrade;
@@ -185,25 +219,62 @@ export class TradeService {
         },
       });
 
-      // If this trade is part of a strategy, mark strategy as completed
-      if (trade.strategyId) {
+      // If this trade is part of a strategy, check for Boomerang mode before completing
+      if (trade.strategyId && trade.strategy && status === 'success') {
+        if (trade.strategy.boomerangMode) {
+          // ============================================================
+          // 🪃 BOOMERANG MODE: Flip tokens and reset to active
+          // ============================================================
+          this.logger.log(`🪃 [Boomerang] Flipping strategy ${trade.strategyId} for Leg 2`);
+
+          await this.prisma.strategy.update({
+            where: { id: trade.strategyId },
+            data: {
+              // 1. LOCK ORIGINAL TOKENS (Only on the first flip)
+              originalFromToken: trade.strategy.boomerangLeg === 1
+                ? trade.strategy.fromToken
+                : trade.strategy.originalFromToken,
+              originalToToken: trade.strategy.boomerangLeg === 1
+                ? trade.strategy.toToken
+                : trade.strategy.originalToToken,
+
+              // 2. EXECUTE THE FLIP
+              fromToken: trade.strategy.toToken,       // New Sell Token
+              toToken: trade.strategy.fromToken,       // New Buy Token
+              status: 'active',                        // Reset to Active
+              boomerangLeg: 2,                         // Increment Leg
+              boomerangMode: false,                    // Anti-loop: Round trip is now 2/2
+
+              // 3. RESET TRIGGERS
+              triggeredAt: null,
+              completedAt: null,
+            },
+          });
+
+          this.logger.log(`🪃 Strategy ${trade.strategyId} FLIPPED! Now active for Leg 2`);
+        } else {
+          // Normal completion
+          await this.prisma.strategy.update({
+            where: { id: trade.strategyId },
+            data: {
+              status: 'completed',
+              completedAt: new Date(),
+            },
+          });
+
+          this.logger.log(`Strategy ${trade.strategyId} marked as completed`);
+        }
+      } else if (trade.strategyId && status === 'failed') {
+        // Mark as failed on failure
         await this.prisma.strategy.update({
           where: { id: trade.strategyId },
           data: {
-            status: status === 'success' ? 'completed' : 'failed',
-            completedAt: status === 'success' ? new Date() : null,
+            status: 'failed',
+            completedAt: null,
           },
         });
 
-        this.logger.log(`Strategy ${trade.strategyId} marked as ${status === 'success' ? 'completed' : 'failed'}`);
-
-        // TODO: Send WebSocket event (need to inject WebsocketGateway)
-        // this.websocketGateway.notifyUser(userId, {
-        //   type: 'strategy_completed',
-        //   strategyId: trade.strategyId,
-        //   tradeId: trade.id,
-        //   signature,
-        // });
+        this.logger.log(`Strategy ${trade.strategyId} marked as failed`);
       }
 
       return updatedTrade;

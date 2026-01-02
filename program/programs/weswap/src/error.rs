@@ -50,5 +50,9 @@ pub enum WeswapError {
     MaxStrategiesExceeded,
     #[msg("Token program does not match mint's owner")]
     InvalidTokenProgram,
+    #[msg("Strategy is not in Filled state - cannot execute exit")]
+    StrategyNotFilled,
+    #[msg("Neither Take Profit nor Stop Loss condition is met")]
+    ExitConditionNotMet,
 }
 

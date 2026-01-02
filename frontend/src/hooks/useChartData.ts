@@ -123,13 +123,12 @@ export function useChartData({
             throw new Error('No chart data available for this token');
           }
 
-          // Validate candles have proper structure
+          // Validate candles have proper structure (support both 'time' and 'timestamp')
           const firstCandle = response.data.candles[0];
-          if (
-            !firstCandle ||
-            typeof firstCandle.timestamp !== 'number' ||
-            typeof firstCandle.close !== 'number'
-          ) {
+          const hasTime = typeof firstCandle?.time === 'number' || typeof firstCandle?.timestamp === 'number';
+          const hasPrice = typeof firstCandle?.close === 'number' || typeof firstCandle?.value === 'number';
+
+          if (!firstCandle || !hasTime || !hasPrice) {
             console.error('📊 [useChartData] Invalid candle data structure:', firstCandle);
             throw new Error('Invalid chart data format');
           }
@@ -214,7 +213,7 @@ export function useChartData({
       // Throttle updates to prevent excessive re-renders
       const now = Date.now();
       const timeSinceLastUpdate = now - (window as any)._lastChartUpdate || 0;
-      
+
       if (timeSinceLastUpdate < 100) { // Max 10 updates per second
         // Schedule update for later if not already scheduled
         if (!(window as any)._scheduledUpdate) {
@@ -225,7 +224,7 @@ export function useChartData({
         }
         return;
       }
-      
+
       (window as any)._lastChartUpdate = now;
 
       setCandles((prevCandles) => {

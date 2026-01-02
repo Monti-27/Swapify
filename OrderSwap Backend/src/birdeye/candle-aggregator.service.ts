@@ -10,21 +10,21 @@ type CandleUpdateCallback = (tokenAddress: string, candle: OHLCVCandle) => void;
 @Injectable()
 export class CandleAggregatorService implements OnModuleDestroy {
   private readonly logger = new Logger(CandleAggregatorService.name);
-  
+
   // Live candles being aggregated (key: "tokenAddress_timeframe")
   private liveCandles = new Map<string, LiveCandle>();
-  
+
   // Subscribers to candle updates (key: "tokenAddress_timeframe")
   private candleSubscribers = new Map<string, Set<CandleUpdateCallback>>();
-  
+
   // Active token subscriptions (key: tokenAddress, value: set of timeframes)
   private tokenSubscriptions = new Map<string, Set<string>>();
-  
+
   // Throttle intervals for broadcasting updates (max 1 update per second per token/timeframe)
   private throttleMap = new Map<string, NodeJS.Timeout>();
   private pendingUpdates = new Map<string, OHLCVCandle>();
 
-  constructor(private birdeyeService: BirdeyeService) {}
+  constructor(private birdeyeService: BirdeyeService) { }
 
   /**
    * Subscribe to live candle updates for a token/timeframe
@@ -35,7 +35,7 @@ export class CandleAggregatorService implements OnModuleDestroy {
     callback: CandleUpdateCallback,
   ): void {
     const key = this.getKey(tokenAddress, timeframe);
-    
+
     // Register callback
     if (!this.candleSubscribers.has(key)) {
       this.candleSubscribers.set(key, new Set());
@@ -45,17 +45,17 @@ export class CandleAggregatorService implements OnModuleDestroy {
     // Track subscription
     if (!this.tokenSubscriptions.has(tokenAddress)) {
       this.tokenSubscriptions.set(tokenAddress, new Set());
-      
+
       // Subscribe to Birdeye trades for this token
       this.birdeyeService.subscribeToTrades(
         tokenAddress,
         this.handleTrade.bind(this),
       );
-      
+
       const shortAddress = `${tokenAddress.slice(0, 8)}...${tokenAddress.slice(-8)}`;
       this.logger.log(`📊 Started aggregating candles for ${shortAddress}`);
     }
-    
+
     this.tokenSubscriptions.get(tokenAddress)!.add(timeframe);
     this.logger.log(`Added subscriber for ${key}`);
   }
@@ -69,12 +69,12 @@ export class CandleAggregatorService implements OnModuleDestroy {
     callback: CandleUpdateCallback,
   ): void {
     const key = this.getKey(tokenAddress, timeframe);
-    
+
     // Remove callback
     const subscribers = this.candleSubscribers.get(key);
     if (subscribers) {
       subscribers.delete(callback);
-      
+
       if (subscribers.size === 0) {
         this.candleSubscribers.delete(key);
       }
@@ -84,14 +84,14 @@ export class CandleAggregatorService implements OnModuleDestroy {
     const timeframes = this.tokenSubscriptions.get(tokenAddress);
     if (timeframes) {
       timeframes.delete(timeframe);
-      
+
       if (timeframes.size === 0) {
         this.tokenSubscriptions.delete(tokenAddress);
         this.birdeyeService.unsubscribeFromTrades(
           tokenAddress,
           this.handleTrade.bind(this),
         );
-        
+
         const shortAddress = `${tokenAddress.slice(0, 8)}...${tokenAddress.slice(-8)}`;
         this.logger.log(`📊 Stopped aggregating candles for ${shortAddress}`);
       }
@@ -148,17 +148,23 @@ export class CandleAggregatorService implements OnModuleDestroy {
     const key = this.getKey(tokenAddress, timeframe);
     const timeframeMs = this.getTimeframeInMs(timeframe);
     const timestampSeconds = Math.floor(timestamp / 1000);
-    
+
     // Align timestamp to timeframe boundary
     const alignedTimestamp = Math.floor(timestampSeconds / (timeframeMs / 1000)) * (timeframeMs / 1000);
 
     // Get or create live candle
     let candle = this.liveCandles.get(key);
 
-    // If no candle exists or timestamp moved to new timeframe, create new candle
-    if (!candle || candle.timestamp !== alignedTimestamp) {
+    // Strict monotonic check: Ignore trades from the past
+    if (candle && alignedTimestamp < candle.timestamp) {
+      // Latency or out-of-order packet - ignore strictly to preserve chart history
+      return;
+    }
+
+    // If timestamp moved forward, create new candle
+    if (!candle || alignedTimestamp > candle.timestamp) {
       // If there was an old candle, finalize it
-      if (candle && candle.timestamp !== alignedTimestamp) {
+      if (candle) {
         this.finalizeCandle(key, candle);
       }
 
@@ -197,11 +203,11 @@ export class CandleAggregatorService implements OnModuleDestroy {
    */
   private finalizeCandle(key: string, candle: LiveCandle): void {
     this.logger.debug(`Finalizing candle for ${key}: OHLC [${candle.open.toFixed(6)}, ${candle.high.toFixed(6)}, ${candle.low.toFixed(6)}, ${candle.close.toFixed(6)}], Volume: ${candle.volume.toFixed(2)}, Trades: ${candle.tradeCount}`);
-    
+
     // Send final update without throttle
     const ohlcvCandle = this.liveCandleToOHLCV(candle);
     const subscribers = this.candleSubscribers.get(key);
-    
+
     if (subscribers && subscribers.size > 0) {
       subscribers.forEach((callback) => {
         try {
@@ -218,7 +224,7 @@ export class CandleAggregatorService implements OnModuleDestroy {
    */
   private broadcastCandleUpdate(key: string, candle: LiveCandle): void {
     const ohlcvCandle = this.liveCandleToOHLCV(candle);
-    
+
     // Store pending update
     this.pendingUpdates.set(key, ohlcvCandle);
 
@@ -233,7 +239,7 @@ export class CandleAggregatorService implements OnModuleDestroy {
     // Set throttle (1 second)
     const throttleTimeout = setTimeout(() => {
       this.throttleMap.delete(key);
-      
+
       // Send pending update if any
       const pendingUpdate = this.pendingUpdates.get(key);
       if (pendingUpdate) {
@@ -250,13 +256,13 @@ export class CandleAggregatorService implements OnModuleDestroy {
    */
   private sendCandleUpdate(key: string, candle: OHLCVCandle): void {
     const subscribers = this.candleSubscribers.get(key);
-    
+
     if (!subscribers || subscribers.size === 0) {
       return;
     }
 
     const [tokenAddress] = key.split('_');
-    
+
     subscribers.forEach((callback) => {
       try {
         callback(tokenAddress, candle);
@@ -329,11 +335,11 @@ export class CandleAggregatorService implements OnModuleDestroy {
    */
   onModuleDestroy(): void {
     this.logger.log('Cleaning up CandleAggregatorService...');
-    
+
     // Clear all throttle timeouts
     this.throttleMap.forEach((timeout) => clearTimeout(timeout));
     this.throttleMap.clear();
-    
+
     // Clear all data
     this.liveCandles.clear();
     this.candleSubscribers.clear();

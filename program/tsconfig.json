@@ -1,8 +1,10 @@
 {
   "compilerOptions": {
-    "target": "es2018",
+    "target": "es2020",
     "module": "commonjs",
-    "lib": ["es2018"],
+    "lib": [
+      "es2020"
+    ],
     "declaration": true,
     "strict": true,
     "noImplicitAny": true,
@@ -15,6 +17,11 @@
     "outDir": "./dist",
     "baseUrl": "."
   },
-  "include": ["programs/**/*", "app/**/*"],
-  "exclude": ["node_modules"]
+  "include": [
+    "programs/**/*",
+    "app/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

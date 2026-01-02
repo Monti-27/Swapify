@@ -3,7 +3,7 @@
 use {
     crate::{
         state::{
-            strategy::{Strategy, StrategyEscrow},
+            strategy::{Strategy, StrategyEscrow, StrategyStatus},
             global::Global,
         },
         events::DepositEscrowEvent,
@@ -30,8 +30,7 @@ pub struct DepositEscrow<'info> {
         seeds = [b"strategy", owner.key().as_ref(), &params.id.to_le_bytes()],
         bump,
         constraint = strategy.owner == owner.key() @ WeswapError::StrategyNotFound,
-        constraint = strategy.is_active @ WeswapError::StrategyNotActive,
-        constraint = !strategy.is_executed @ WeswapError::StrategyAlreadyExecuted,
+        constraint = strategy.status == StrategyStatus::Active @ WeswapError::StrategyNotActive,
     )]
     pub strategy: Box<Account<'info, Strategy>>,
 
@@ -81,16 +80,19 @@ pub fn deposit_escrow(
 ) -> Result<()> {
     require!(params.amount > 0, WeswapError::InsufficientDeposit);
 
+    let sell_decimals = ctx.accounts.sell_token_mint.decimals;
+
     let cpi_ctx = CpiContext::new(
         ctx.accounts.sell_token_program.to_account_info(),
-        anchor_spl::token_interface::Transfer {
+        anchor_spl::token_interface::TransferChecked {
             from: ctx.accounts.owner_token_account.to_account_info(),
+            mint: ctx.accounts.sell_token_mint.to_account_info(),
             to: ctx.accounts.escrow_token_account.to_account_info(),
             authority: ctx.accounts.owner.to_account_info(),
         },
     );
 
-    anchor_spl::token_interface::transfer(cpi_ctx, params.amount)?;
+    anchor_spl::token_interface::transfer_checked(cpi_ctx, params.amount, sell_decimals)?;
 
     ctx.accounts.escrow.deposited_amount = ctx.accounts.escrow
         .deposited_amount

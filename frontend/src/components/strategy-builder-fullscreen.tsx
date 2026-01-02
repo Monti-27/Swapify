@@ -3,12 +3,17 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import TokenChart from '@/components/token-chart';
-import { StrategyFormSidebar } from '@/components/strategy-form-sidebar';
+import KLineChart from '@/components/kline-chart';
+import { StrategyDashboard, CompactBuilderForm } from '@/components/strategy';
 import { useTokens, type Token } from '@/hooks/useTokens';
 import { useChartData } from '@/hooks/useChartData';
+import { useStrategies } from '@/hooks/useStrategies';
 import { ChartTimeframe } from '@/types/api';
-import { ArrowLeft, LineChart, X, CandlestickChart } from 'lucide-react';
+import {
+  ArrowLeft,
+  LineChart,
+  X,
+} from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -33,41 +38,6 @@ interface ChartPanelProps {
   onTimeframeChange: (timeframe: ChartTimeframe) => void;
 }
 
-const TIMEFRAMES: { value: ChartTimeframe; label: string }[] = [
-  { value: ChartTimeframe.ONE_MINUTE, label: '1m' },
-  { value: ChartTimeframe.FIVE_MINUTES, label: '5m' },
-  { value: ChartTimeframe.FIFTEEN_MINUTES, label: '15m' },
-  { value: ChartTimeframe.ONE_HOUR, label: '1h' },
-  { value: ChartTimeframe.FOUR_HOURS, label: '4h' },
-  { value: ChartTimeframe.ONE_DAY, label: '1d' },
-  { value: ChartTimeframe.ONE_WEEK, label: '1w' },
-];
-
-const TimeframePills = ({
-  value,
-  onChange,
-}: {
-  value: ChartTimeframe;
-  onChange: (timeframe: ChartTimeframe) => void;
-}) => (
-  <div className="flex items-center gap-1 rounded-full bg-white/5 px-2 py-1">
-    {TIMEFRAMES.map((tf) => (
-      <button
-        key={tf.value}
-        onClick={() => onChange(tf.value)}
-        className={cn(
-          'rounded-full px-2 py-1 text-[11px] font-medium transition-colors',
-          value === tf.value
-            ? 'bg-white text-black shadow-[0_5px_15px_rgba(255,255,255,0.25)]'
-            : 'text-white/60 hover:text-white'
-        )}
-      >
-        {tf.label}
-      </button>
-    ))}
-  </div>
-);
-
 const ComingSoonPlaceholder = () => (
   <div className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden rounded-xl border border-white/5 bg-[#050505]">
     {/* Subtle Grid Background */}
@@ -82,7 +52,7 @@ const ComingSoonPlaceholder = () => (
     <div className="relative z-10 flex flex-col items-center gap-3 p-6 text-center">
       {/* Minimal Icon */}
       <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/5 border border-white/10 text-white/60 shadow-sm">
-        <CandlestickChart className="h-5 w-5" />
+        <LineChart className="h-5 w-5" />
       </div>
 
       {/* Clean Typography */}
@@ -105,7 +75,6 @@ const ChartPlaceholder = ({ message }: { message: string }) => (
   </div>
 );
 
-const CHART_PANEL_HEIGHT = 360;
 const ChartPanel = ({
   title,
   token,
@@ -114,61 +83,38 @@ const ChartPanel = ({
   isTokenSelected,
   timeframe,
   onTimeframeChange,
-}: ChartPanelProps) => {
-  // const showChart = isTokenSelected && chartData.candles.length > 0 && !chartData.error;
-  const showChart = false; // Force hide chart for now
-
+  className,
+}: ChartPanelProps & { className?: string }) => {
   return (
-    <div
-      className={cn(
-        'flex flex-col rounded-[26px] border border-white/5 bg-[#080312]/80',
-        'shadow-[0_25px_80px_rgba(3,2,15,0.55)] backdrop-blur-xl transition-all duration-300'
+    <div className={cn('h-full', className)}>
+      {/* Show placeholder if no token selected */}
+      {!isTokenSelected ? (
+        <ChartPlaceholder message={emptyMessage} />
+      ) : chartData.error ? (
+        <ChartPlaceholder message="Unable to load chart data. Please try again." />
+      ) : chartData.loading && chartData.candles.length === 0 ? (
+        <div className="h-full w-full p-4">
+          <Skeleton className="h-full w-full rounded bg-zinc-900/50" />
+        </div>
+      ) : (
+        /* KLineChart with key prop to force complete remount on token change */
+        /* This is the most reliable way to prevent data leakage between tokens */
+        <KLineChart
+          key={`chart-${token?.address || 'none'}`}
+          tokenAddress={token?.address || ''}
+          symbol={token?.symbol || 'TOKEN'}
+          timeframe={timeframe}
+          onTimeframeChange={onTimeframeChange}
+        />
       )}
-      style={{ minHeight: CHART_PANEL_HEIGHT, height: CHART_PANEL_HEIGHT }}
-    >
-      <div className="flex items-center justify-between border-b border-white/5 px-5 py-3">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.4em] text-white/35">{title}</p>
-          <p className="text-xl font-semibold text-white">
-            {token ? token.symbol : 'Select token'}
-          </p>
-          {token?.name && (
-            <p className="text-[13px] text-white/45">
-              {token.name}
-            </p>
-          )}
-        </div>
-        <TimeframePills value={timeframe} onChange={onTimeframeChange} />
-      </div>
-      <div className="relative flex-1 px-4 pb-4 pt-3">
-        <div className="h-full w-full relative">
-          {/* Always show Coming Soon Placeholder */}
-          <ComingSoonPlaceholder />
-
-          {/* Hidden Original Logic */}
-          <div className="hidden">
-            {chartData.loading && chartData.candles.length === 0 ? (
-              <Skeleton className="h-full w-full rounded-2xl bg-white/5" />
-            ) : !isTokenSelected ? (
-              <ChartPlaceholder message={emptyMessage} />
-            ) : chartData.error ? (
-              <ChartPlaceholder message="Unable to load chart data. Please try again." />
-            ) : showChart ? (
-              <div className="h-full">
-                <TokenChart data={chartData.candles} height={CHART_PANEL_HEIGHT - 120} />
-              </div>
-            ) : (
-              <ChartPlaceholder message="No market data available yet for this token." />
-            )}
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
 
 export function StrategyBuilderFullscreen({ open, onClose, onSuccess }: StrategyBuilderFullscreenProps) {
   const { popularTokens } = useTokens();
+  const { strategies, isLoading: isLoadingStrategies, refetch: refetchStrategies } = useStrategies();
+  const [viewMode, setViewMode] = useState<'dashboard' | 'builder'>('dashboard');
   const [fromToken, setFromToken] = useState<Token | null>(null);
   const [toToken, setToToken] = useState<Token | null>(null);
   const [triggerPrice, setTriggerPrice] = useState<number | undefined>(undefined);
@@ -179,16 +125,17 @@ export function StrategyBuilderFullscreen({ open, onClose, onSuccess }: Strategy
   const [toTimeframe, setToTimeframe] = useState<ChartTimeframe>(ChartTimeframe.ONE_HOUR);
 
   // Fetch chart data for both tokens with selected timeframe
+  // Charts load immediately when tokens are selected (no step dependency)
   const fromTokenChartData = useChartData({
     tokenAddress: fromToken?.address || '',
     timeframe: fromTimeframe,
-    enabled: currentStep >= 2 && !!fromToken,
+    enabled: !!fromToken,
   });
 
   const toTokenChartData = useChartData({
     tokenAddress: toToken?.address || '',
     timeframe: toTimeframe,
-    enabled: currentStep >= 2 && !!toToken,
+    enabled: !!toToken,
   });
 
   // Don't auto-select tokens - let user choose in Step 2
@@ -237,132 +184,113 @@ export function StrategyBuilderFullscreen({ open, onClose, onSuccess }: Strategy
     window.history.back();
   };
 
-  // Handle escape key
+  // Handle escape key and prevent body scroll
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && open) {
-        handleClose();
+        onClose();
       }
     };
 
     if (open) {
       document.addEventListener('keydown', handleEscape);
-      // Prevent body scroll when fullscreen is open
+      // Simple approach - just overflow hidden (position:fixed breaks modal scroll)
+      document.documentElement.style.overflow = 'hidden';
       document.body.style.overflow = 'hidden';
     }
 
     return () => {
       document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  const reachedChartStep = currentStep >= 2;
-  const isFromTokenSelected = reachedChartStep && !!fromToken;
-  const isToTokenSelected = reachedChartStep && !!toToken;
+  // Charts show immediately when tokens are selected
+  const isFromTokenSelected = !!fromToken;
+  const isToTokenSelected = !!toToken;
 
-  const fromPanelMessage = reachedChartStep
-    ? "Select a 'From' token to explore live price action."
-    : "Continue to Step 2 to select a token and unlock the chart.";
+  const fromPanelMessage = fromToken
+    ? "Loading chart data..."
+    : "Select a 'From' token to explore live price action.";
 
-  const toPanelMessage = reachedChartStep
-    ? "Select a 'To' token to view its live price action."
-    : "Progress to Step 2 to choose a token pair and view charts.";
+  const toPanelMessage = toToken
+    ? "Loading chart data..."
+    : "Select a 'To' token to view its live price action.";
 
   return (
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-50"
+          className="fixed inset-0 z-50 overflow-hidden"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
+          style={{ overscrollBehavior: 'contain' }}
+          onWheel={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
         >
-          <div className="absolute inset-0 bg-background/90 backdrop-blur-xl" />
+          <div className="absolute inset-0 bg-[#030305]" />
 
           <motion.div
-            className="relative z-10 mx-auto flex h-full w-full max-w-[1400px] flex-col px-4 pb-6"
+            className="relative z-10 flex h-full w-full flex-col"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
           >
-            {/* Top Navigation Bar */}
-            <div className="flex flex-none items-center justify-between gap-4 rounded-3xl border border-white/5 bg-white/5 px-6 py-5 text-white backdrop-blur-xl shadow-[0_25px_80px_rgba(3,2,15,0.55)]">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleBack}
-                className="flex items-center gap-2 text-white/80 hover:text-white"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Back to Strategies
-              </Button>
 
-              <Link href="/" className="flex items-center gap-2.5">
-                <div className="relative">
-                  <div className="absolute inset-0 rounded-full bg-primary/30 blur-xl" />
-                  <Image
-                    src="/WeSwap-logo.png"
-                    alt="WeSwap Logo"
-                    width={36}
-                    height={36}
-                    className="relative drop-shadow-lg"
-                    priority
-                  />
-                </div>
-                <span className="text-xl font-semibold">WeSwap</span>
-              </Link>
+            {/* Main Content - Full Screen Split */}
+            <div className="flex flex-1 gap-0 overflow-hidden">
+              {/* Left Panel - Charts (70%) */}
+              <div className="flex-1 h-full flex flex-col gap-4 p-6 overflow-hidden">
+                {/* From Token Chart - Takes 50% height */}
+                <ChartPanel
+                  title="From (Sell)"
+                  token={fromToken}
+                  chartData={fromTokenChartData}
+                  emptyMessage={fromPanelMessage}
+                  isTokenSelected={isFromTokenSelected}
+                  timeframe={fromTimeframe}
+                  onTimeframeChange={setFromTimeframe}
+                  className="flex-1 min-h-0"
+                />
 
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleClose}
-                className="text-white/80 hover:text-white"
-                aria-label="Close strategy builder"
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-
-            {/* Main Content */}
-            <div className="mt-4 grid flex-1 gap-6 lg:grid-cols-[68%_32%]">
-              {/* Left Side - Charts */}
-              <div className="flex h-full flex-col gap-4 overflow-hidden">
-                <div className="flex-1">
-                  <ChartPanel
-                    title="From"
-                    token={fromToken}
-                    chartData={fromTokenChartData}
-                    emptyMessage={fromPanelMessage}
-                    isTokenSelected={isFromTokenSelected}
-                    timeframe={fromTimeframe}
-                    onTimeframeChange={setFromTimeframe}
-                  />
-                </div>
-                <div className="flex-1">
-                  <ChartPanel
-                    title="To"
-                    token={toToken}
-                    chartData={toTokenChartData}
-                    emptyMessage={toPanelMessage}
-                    isTokenSelected={isToTokenSelected}
-                    timeframe={toTimeframe}
-                    onTimeframeChange={setToTimeframe}
-                  />
-                </div>
+                {/* To Token Chart - Takes 50% height */}
+                <ChartPanel
+                  title="To (Buy)"
+                  token={toToken}
+                  chartData={toTokenChartData}
+                  emptyMessage={toPanelMessage}
+                  isTokenSelected={isToTokenSelected}
+                  timeframe={toTimeframe}
+                  onTimeframeChange={setToTimeframe}
+                  className="flex-1 min-h-0"
+                />
               </div>
 
-              {/* Right Side - Form */}
-              <div className="h-full">
-                <StrategyFormSidebar
-                  onTokenChange={handleTokenChange}
-                  onStrategyDataChange={handleStrategyDataChange}
-                  onStepChange={handleStepChange}
-                  onCancel={handleClose}
-                  onComplete={handleComplete}
-                />
+              {/* Right Panel - Command Center (450px fixed) */}
+              <div className="w-[450px] h-full border-l border-zinc-800 bg-[#0A0A0F] flex flex-col overflow-hidden">
+                {viewMode === 'dashboard' ? (
+                  <StrategyDashboard
+                    onCreate={() => setViewMode('builder')}
+                    strategies={strategies}
+                    isLoading={isLoadingStrategies}
+                  />
+                ) : (
+                  <CompactBuilderForm
+                    onCancel={() => setViewMode('dashboard')}
+                    onComplete={() => {
+                      handleComplete();
+                      setViewMode('dashboard');
+                      refetchStrategies();
+                    }}
+                    onTokenChange={handleTokenChange}
+                    onStrategyDataChange={handleStrategyDataChange}
+                  />
+                )}
               </div>
             </div>
           </motion.div>

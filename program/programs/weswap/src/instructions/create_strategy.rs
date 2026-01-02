@@ -3,7 +3,7 @@
 use {
     crate::{
         state::{
-            strategy::{Strategy, StrategyEscrow},
+            strategy::{Strategy, StrategyEscrow, OrderDirection, StrategyStatus},
             global::Global,
         },
         events::CreateStrategyEvent,
@@ -86,6 +86,7 @@ pub struct CreateStrategy<'info> {
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy)]
 pub struct CreateStrategyParams {
     pub id: u64,
+    pub direction: OrderDirection,  // NEW: BUY or SELL order
     pub trigger_price: u64,
     pub price_precision: u8,
     pub take_profit_price: Option<u64>,
@@ -151,13 +152,13 @@ pub fn create_strategy(
     strategy.stop_loss_price = params.stop_loss_price;
     strategy.sell_amount = params.sell_amount;
     strategy.use_percentage = params.use_percentage;
-    strategy.is_active = true;
-    strategy.is_executed = false;
+    strategy.status = StrategyStatus::Active;  // NEW: Use enum instead of booleans
     strategy.boomerang_mode = params.boomerang_mode;
     strategy.created_at = current_time;
     strategy.executed_at = None;
     strategy.execution_price = None;
     strategy.tokens_received = None;
+    strategy.direction = params.direction;
 
     let escrow = &mut ctx.accounts.escrow;
     escrow.strategy = strategy.key();
@@ -168,14 +169,15 @@ pub fn create_strategy(
 
     let cpi_ctx = CpiContext::new(
         ctx.accounts.sell_token_program.to_account_info(),
-        anchor_spl::token_interface::Transfer {
+        anchor_spl::token_interface::TransferChecked {
             from: ctx.accounts.owner_token_account.to_account_info(),
+            mint: ctx.accounts.sell_token_mint.to_account_info(),
             to: ctx.accounts.escrow_token_account.to_account_info(),
             authority: ctx.accounts.owner.to_account_info(),
         },
     );
 
-    anchor_spl::token_interface::transfer(cpi_ctx, params.deposit_amount)?;
+    anchor_spl::token_interface::transfer_checked(cpi_ctx, params.deposit_amount, sell_decimals)?;
 
     msg!(
         "Strategy created: {:?} for {} -> {} at price {} (precision: {})",

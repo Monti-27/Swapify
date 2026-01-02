@@ -1,5 +1,5 @@
 {
-  "address": "AFhpyoVmDCEVofP3sqj8wCPSFYYGpL83sbXKuwMZtcoQ",
+  "address": "7UiSkmJek7KrNyUFLBi4vphdimZuYh2iGRNpAfzwKR8r",
   "metadata": {
     "name": "weswap",
     "version": "0.1.0",
@@ -471,6 +471,399 @@
               "name": "DepositEscrowParams"
             }
           }
+        }
+      ]
+    },
+    {
+      "name": "execute_exit",
+      "docs": [
+        "Execute TP/SL exit for a FILLED strategy"
+      ],
+      "discriminator": [
+        130,
+        90,
+        198,
+        58,
+        73,
+        242,
+        0,
+        236
+      ],
+      "accounts": [
+        {
+          "name": "keeper",
+          "docs": [
+            "Keeper pays gas - ONLY signer required"
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "owner"
+        },
+        {
+          "name": "global",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  108,
+                  111,
+                  98,
+                  97,
+                  108
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "strategy",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  114,
+                  97,
+                  116,
+                  101,
+                  103,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "strategy.owner",
+                "account": "Strategy"
+              },
+              {
+                "kind": "arg",
+                "path": "params.strategy_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "escrow",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  115,
+                  99,
+                  114,
+                  111,
+                  119
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "strategy"
+              }
+            ]
+          }
+        },
+        {
+          "name": "exit_sell_token_mint",
+          "docs": [
+            "The token we're selling on exit (buy_token from entry - profits held in escrow)"
+          ]
+        },
+        {
+          "name": "exit_sell_token_program"
+        },
+        {
+          "name": "exit_buy_token_mint",
+          "docs": [
+            "The token we're buying on exit (sell_token from entry - going back to base)"
+          ]
+        },
+        {
+          "name": "exit_buy_token_program"
+        },
+        {
+          "name": "escrow_exit_sell_token_account",
+          "docs": [
+            "Escrow's token account holding the profits from entry (used as source for exit swap)",
+            "This is the buy_token from entry, which becomes sell_token for exit"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "escrow"
+              },
+              {
+                "kind": "account",
+                "path": "exit_sell_token_program"
+              },
+              {
+                "kind": "account",
+                "path": "exit_sell_token_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "escrow_receive_token_account",
+          "docs": [
+            "Escrow's ATA for the exit_buy_token (used as destination in BOOMERANG mode)",
+            "When boomerang_mode is true, funds go here instead of owner",
+            "This keeps the tokens in escrow, ready for the next leg of the round trip"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "escrow"
+              },
+              {
+                "kind": "account",
+                "path": "exit_buy_token_program"
+              },
+              {
+                "kind": "account",
+                "path": "exit_buy_token_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "owner_receive_token_account",
+          "docs": [
+            "Owner's token account to receive the exit proceeds (used in NORMAL mode)",
+            "When boomerang_mode is false, funds go here (cash out to user)"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "account",
+                "path": "exit_buy_token_program"
+              },
+              {
+                "kind": "account",
+                "path": "exit_buy_token_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "treasury"
+        },
+        {
+          "name": "treasury_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "treasury"
+              },
+              {
+                "kind": "account",
+                "path": "exit_buy_token_program"
+              },
+              {
+                "kind": "account",
+                "path": "exit_buy_token_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "jupiter_program"
+        },
+        {
+          "name": "associated_token_program",
+          "docs": [
+            "Required for init_if_needed on escrow_receive_token_account"
+          ],
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "Required for init_if_needed (pays rent for new ATA)"
+          ],
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "ExecuteExitParams"
+            }
+          }
+        },
+        {
+          "name": "jupiter_instruction_data",
+          "type": "bytes"
         }
       ]
     },
@@ -1365,6 +1758,14 @@
             "type": "u64"
           },
           {
+            "name": "direction",
+            "type": {
+              "defined": {
+                "name": "OrderDirection"
+              }
+            }
+          },
+          {
             "name": "trigger_price",
             "type": "u64"
           },
@@ -1446,6 +1847,22 @@
           },
           {
             "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExecuteExitParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "strategy_id",
+            "type": "u64"
+          },
+          {
+            "name": "current_price",
             "type": "u64"
           }
         ]
@@ -1620,6 +2037,23 @@
       }
     },
     {
+      "name": "OrderDirection",
+      "docs": [
+        "Order direction - determines trigger comparison logic"
+      ],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Buy"
+          },
+          {
+            "name": "Sell"
+          }
+        ]
+      }
+    },
+    {
       "name": "Strategy",
       "type": {
         "kind": "struct",
@@ -1647,6 +2081,14 @@
           {
             "name": "buy_token_decimals",
             "type": "u8"
+          },
+          {
+            "name": "direction",
+            "type": {
+              "defined": {
+                "name": "OrderDirection"
+              }
+            }
           },
           {
             "name": "trigger_price",
@@ -1677,16 +2119,58 @@
             "type": "bool"
           },
           {
-            "name": "is_active",
-            "type": "bool"
-          },
-          {
-            "name": "is_executed",
-            "type": "bool"
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "StrategyStatus"
+              }
+            }
           },
           {
             "name": "boomerang_mode",
             "type": "bool"
+          },
+          {
+            "name": "entry_price",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "entry_tokens_received",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "entry_executed_at",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "exit_price",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "exit_tokens_received",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "exit_executed_at",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "exit_type",
+            "type": {
+              "option": "u8"
+            }
           },
           {
             "name": "created_at",
@@ -1737,6 +2221,29 @@
           {
             "name": "withdrawn_amount",
             "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "StrategyStatus",
+      "docs": [
+        "Strategy lifecycle status"
+      ],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Active"
+          },
+          {
+            "name": "Filled"
+          },
+          {
+            "name": "Closed"
+          },
+          {
+            "name": "Cancelled"
           }
         ]
       }

@@ -8,6 +8,7 @@
 export interface CreateStrategyEvent {
     strategy: { toString(): string };
     owner: { toString(): string };
+    escrow?: { toString(): string };  // Escrow PDA address
     id?: { toNumber(): number };
     sellTokenMint: { toString(): string };
     buyTokenMint: { toString(): string };

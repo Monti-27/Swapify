@@ -30,7 +30,7 @@ export class WebsocketGateway implements OnGatewayConnection, OnGatewayDisconnec
   constructor(
     private priceService: PriceService,
     private candleAggregator: CandleAggregatorService,
-  ) {}
+  ) { }
 
   handleConnection(client: Socket) {
     this.logger.log(`Client connected: ${client.id}`);
@@ -55,7 +55,7 @@ export class WebsocketGateway implements OnGatewayConnection, OnGatewayDisconnec
       for (const [timeframe, sockets] of timeframeMap.entries()) {
         if (sockets.has(client.id)) {
           sockets.delete(client.id);
-          
+
           // If no more subscribers for this timeframe, unsubscribe from aggregator
           if (sockets.size === 0) {
             timeframeMap.delete(timeframe);
@@ -67,7 +67,7 @@ export class WebsocketGateway implements OnGatewayConnection, OnGatewayDisconnec
           }
         }
       }
-      
+
       // Clean up empty token entries
       if (timeframeMap.size === 0) {
         this.chartSubscriptions.delete(tokenAddress);
@@ -81,14 +81,14 @@ export class WebsocketGateway implements OnGatewayConnection, OnGatewayDisconnec
     @ConnectedSocket() client: Socket,
   ) {
     const { userId } = data;
-    
+
     if (!this.userSockets.has(userId)) {
       this.userSockets.set(userId, new Set());
     }
-    
+
     this.userSockets.get(userId).add(client.id);
     this.logger.log(`User ${userId} authenticated with socket ${client.id}`);
-    
+
     client.emit('authenticated', { success: true });
   }
 
@@ -119,7 +119,7 @@ export class WebsocketGateway implements OnGatewayConnection, OnGatewayDisconnec
       sockets.forEach((socketId) => {
         // Send both as 'notification' and as the specific event type
         this.server.to(socketId).emit('notification', data);
-        
+
         // Also emit specific event type if available
         if (data.type) {
           this.server.to(socketId).emit(data.type, data);
@@ -180,20 +180,20 @@ export class WebsocketGateway implements OnGatewayConnection, OnGatewayDisconnec
     const timeframeMap = this.chartSubscriptions.get(tokenAddress);
     if (!timeframeMap.has(timeframe)) {
       timeframeMap.set(timeframe, new Set());
-      
+
       // Subscribe to candle aggregator for this token/timeframe
       this.candleAggregator.subscribeToCandles(
         tokenAddress,
         timeframe,
         this.handleCandleUpdate.bind(this),
       );
-      
+
       const shortAddress = `${tokenAddress.slice(0, 8)}...${tokenAddress.slice(-8)}`;
       this.logger.log(`Subscribed to live candles for ${shortAddress} (${timeframe})`);
     }
 
     timeframeMap.get(timeframe).add(client.id);
-    
+
     const shortAddress = `${tokenAddress.slice(0, 8)}...${tokenAddress.slice(-8)}`;
     this.logger.log(`Client ${client.id} subscribed to chart updates for ${shortAddress} (${timeframe})`);
 
@@ -213,10 +213,10 @@ export class WebsocketGateway implements OnGatewayConnection, OnGatewayDisconnec
 
     if (timeframeMap) {
       const sockets = timeframeMap.get(timeframe);
-      
+
       if (sockets) {
         sockets.delete(client.id);
-        
+
         // If no more subscribers, unsubscribe from aggregator
         if (sockets.size === 0) {
           timeframeMap.delete(timeframe);
@@ -227,7 +227,7 @@ export class WebsocketGateway implements OnGatewayConnection, OnGatewayDisconnec
           );
         }
       }
-      
+
       // Clean up empty token entries
       if (timeframeMap.size === 0) {
         this.chartSubscriptions.delete(tokenAddress);
@@ -244,14 +244,14 @@ export class WebsocketGateway implements OnGatewayConnection, OnGatewayDisconnec
    */
   private handleCandleUpdate(tokenAddress: string, candle: OHLCVCandle): void {
     const timeframeMap = this.chartSubscriptions.get(tokenAddress);
-    
+
     if (!timeframeMap || timeframeMap.size === 0) {
       return;
     }
 
     // Broadcast to all subscribers of this token (across all timeframes)
     let totalSubscribers = 0;
-    
+
     timeframeMap.forEach((sockets, timeframe) => {
       sockets.forEach((socketId) => {
         this.server.to(socketId).emit('chart_update', {
@@ -265,8 +265,8 @@ export class WebsocketGateway implements OnGatewayConnection, OnGatewayDisconnec
     });
 
     if (totalSubscribers > 0) {
-      const shortAddress = `${tokenAddress.slice(0, 8)}...${tokenAddress.slice(-8)}`;
-      this.logger.debug(`Broadcasted candle update for ${shortAddress} to ${totalSubscribers} clients`);
+      // const shortAddress = `${tokenAddress.slice(0, 8)}...${tokenAddress.slice(-8)}`;
+      // this.logger.debug(`Broadcasted candle update for ${shortAddress} to ${totalSubscribers} clients`);
     }
   }
 

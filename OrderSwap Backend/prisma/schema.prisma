@@ -72,6 +72,9 @@ model Strategy {
   fromToken   String   // Token address to sell
   toToken     String   // Token address to buy
   
+  // Order direction - NEW: Determines trigger comparison logic
+  orderDirection String @default("buy") // 'buy' = trigger on price drop | 'sell' = trigger on price rise
+  
   // Trigger conditions
   triggerType String   // 'price' | 'marketCap'
   triggerValue Float    // Target price or market cap
@@ -89,11 +92,29 @@ model Strategy {
   nextStrategy   Strategy? @relation("StrategyChain", fields: [nextStrategyId], references: [id])
   previousStrategy Strategy[] @relation("StrategyChain")
   
-  // Status
-  // Added 'deposited' to track when funds are locked
-  status      String   @default("created") // 'created' | 'deposited' | 'active' | 'triggered' | 'completed' | 'cancelled' | 'failed'
+  // Status - UPDATED: Now includes 'filled' for TP/SL monitoring
+  // 'created' | 'deposited' | 'active' | 'filled' | 'triggered' | 'completed' | 'cancelled' | 'failed'
+  // NEW: 'filled' = Entry executed, monitoring for TP/SL exit
+  status      String   @default("created")
   
-  // Execution
+  // Boomerang (Round Trip) Mode
+  boomerangMode Boolean @default(false)  // If true, strategy flips on TP/SL instead of completing
+  boomerangLeg  Int     @default(1)       // 1 = first leg, 2 = return leg
+  originalFromToken String?              // Original sell token (for tracking after flip)
+  originalToToken   String?              // Original buy token (for tracking after flip)
+  
+  // Entry execution details - NEW
+  entryPrice      Float?     // Price at which entry was executed
+  entryTokensReceived Float? // Tokens received on entry
+  entryExecutedAt DateTime?  // When entry was executed
+  
+  // Exit execution details - NEW (for TP/SL)
+  exitPrice       Float?     // Price at which exit was executed
+  exitTokensReceived Float?  // Tokens received on exit
+  exitExecutedAt  DateTime?  // When exit was executed
+  exitType        String?    // 'takeProfit' | 'stopLoss'
+  
+  // Execution (legacy)
   depositedAt DateTime? // When user signed the deposit tx
   triggeredAt DateTime?
   completedAt DateTime?
@@ -234,4 +255,103 @@ model Escrow {
   @@index([pdaStrategy])
   @@index([owner])
   @@map("escrows")
+}
+
+// ============================================================================
+// ZK-Privacy Tables (Non-Custodial Cloud Backup)
+// ============================================================================
+
+// Stores encrypted commitment notes for user recovery
+// SECURITY: Backend stores ONLY encrypted blobs - cannot read user's private data
+model PrivacyCommitment {
+  id              String   @id @default(uuid())
+  
+  // User identification
+  walletAddress   String   // User's public key
+  
+  // Encrypted commitment data (user encrypts client-side)
+  encryptedNote   String   // Base64 blob encrypted with user's key
+  noteHash        String   @unique // Hash of the note for deduplication
+  
+  // Tracking
+  amount          Float    // Amount in SOL (for display only)
+  isRedeemed      Boolean  @default(false)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  jobs            PrivacyJob[]
+  transactions    PrivacyTransaction[]
+  
+  @@index([walletAddress])
+  @@index([isRedeemed])
+  @@map("privacy_commitments")
+}
+
+// Tracks BullMQ jobs for audit and recovery
+model PrivacyJob {
+  id              String   @id @default(uuid())
+  
+  // Link to commitment
+  commitmentId    String?
+  commitment      PrivacyCommitment? @relation(fields: [commitmentId], references: [id], onDelete: SetNull)
+  
+  // User tracking
+  userPublicKey   String   // User's wallet for processor lookup
+  
+  // Job details
+  bullmqJobId     String?  // BullMQ internal ID
+  chunkAmount     Float
+  chunkIndex      Int
+  totalChunks     Int
+  destinationAddress String
+  
+  // Timing
+  delayMs         Int      // Scheduled delay in milliseconds
+  scheduledAt     DateTime @default(now())
+  processedAt     DateTime?
+  
+  // Status
+  status          String   @default("pending") // 'pending' | 'processing' | 'completed' | 'failed'
+  txSignature     String?  // Transaction signature if completed
+  error           String?  // Error message if failed
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([userPublicKey])
+  @@index([commitmentId])
+  @@index([status])
+  @@index([scheduledAt])
+  @@map("privacy_jobs")
+}
+
+// Audit trail for all privacy transactions
+model PrivacyTransaction {
+  id              String   @id @default(uuid())
+  
+  // Link to commitment
+  commitmentId    String?
+  commitment      PrivacyCommitment? @relation(fields: [commitmentId], references: [id], onDelete: SetNull)
+  
+  // User tracking
+  walletAddress   String
+  
+  // Transaction details
+  type            String   // 'shield' | 'unshield'
+  amount          Float
+  destinationAddress String?
+  
+  // Blockchain data
+  txSignature     String?  @unique
+  status          String   @default("pending") // 'pending' | 'confirmed' | 'failed'
+  
+  createdAt       DateTime @default(now())
+  confirmedAt     DateTime?
+  
+  @@index([walletAddress])
+  @@index([type])
+  @@index([createdAt])
+  @@map("privacy_transactions")
 }

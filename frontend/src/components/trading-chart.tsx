@@ -4,6 +4,7 @@ import React, { useRef, useMemo, useCallback } from 'react';
 import { IChartApi, ISeriesApi } from 'lightweight-charts';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, AlertCircle, RefreshCw, CandlestickChart } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useChartData } from '@/hooks/useChartData';
 import {
   getChartOptions,
@@ -183,7 +184,7 @@ export function TradingChart({
       />
 
       {/* Chart Area Container */}
-      <div className="relative flex-1 flex flex-col">
+      <div className="relative flex-1 flex flex-col min-h-[400px]">
         {/* Top Controls Row */}
         <div className="absolute top-2 left-2 right-2 z-20 flex items-center justify-between gap-2">
           {/* Timeframe Selector */}
@@ -201,6 +202,84 @@ export function TradingChart({
           />
         </div>
 
+        {/* Actual Chart Canvas - only render when we have data */}
+        {!error && formattedCandles.length > 0 && (
+          <div className="absolute inset-0 pt-12">
+            <Chart
+              ref={chartRef}
+              {...chartOptions}
+              layout={{
+                background: { color: 'transparent' },
+                textColor: '#A1A1AA',
+              }}
+              grid={{
+                vertLines: { color: 'rgba(255, 255, 255, 0.03)' },
+                horzLines: { color: 'rgba(255, 255, 255, 0.03)' },
+              }}
+              width={undefined}
+              height={undefined}
+              autoSize
+            >
+              {/* Candlestick Series */}
+              <CandlestickSeries
+                ref={candleSeriesRef}
+                data={formattedCandles}
+                {...candlestickOptions}
+                upColor="#10B981"
+                downColor="#EF4444"
+                borderUpColor="#10B981"
+                borderDownColor="#EF4444"
+                wickUpColor="#10B981"
+                wickDownColor="#EF4444"
+              />
+
+              {/* Volume Series */}
+              <HistogramSeries
+                data={volumeData}
+                priceScaleId="volume"
+                priceFormat={{ type: 'volume' }}
+                {...volumeOptions}
+              />
+
+              {/* Trigger Price Line */}
+              {triggerPrice && candleSeriesRef.current && (
+                <PriceLine
+                  price={triggerPrice}
+                  color="#FBBF24"
+                  lineWidth={1}
+                  lineStyle={2}
+                  axisLabelVisible={true}
+                  title="Trigger"
+                />
+              )}
+
+              {/* Take Profit Price Line */}
+              {takeProfitPrice && candleSeriesRef.current && (
+                <PriceLine
+                  price={takeProfitPrice}
+                  color="#10B981"
+                  lineWidth={1}
+                  lineStyle={2}
+                  axisLabelVisible={true}
+                  title="TP"
+                />
+              )}
+
+              {/* Stop Loss Price Line */}
+              {stopLossPrice && candleSeriesRef.current && (
+                <PriceLine
+                  price={stopLossPrice}
+                  color="#EF4444"
+                  lineWidth={1}
+                  lineStyle={2}
+                  axisLabelVisible={true}
+                  title="SL"
+                />
+              )}
+            </Chart>
+          </div>
+        )}
+
         {/* Loading Overlay (initial load) */}
         <AnimatePresence>
           {loading && candles.length === 0 && (
@@ -209,23 +288,9 @@ export function TradingChart({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-gray-900/95 to-gray-950/95 backdrop-blur-xl rounded-2xl border border-purple-500/20"
+              className="absolute inset-0 z-20 bg-background/50 backdrop-blur-sm"
             >
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, delay: 0.1 }}
-              >
-                <Loader2 className="w-8 h-8 text-purple-400 animate-spin mb-4" />
-              </motion.div>
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-                className="text-gray-400 text-sm"
-              >
-                Loading chart data for {tokenSymbol}...
-              </motion.p>
+              <Skeleton className="w-full h-full rounded-2xl bg-zinc-900/50" />
             </motion.div>
           )}
         </AnimatePresence>
@@ -286,7 +351,7 @@ export function TradingChart({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute top-4 right-4 flex items-center gap-2 px-3 py-2 bg-gray-900/80 backdrop-blur-lg rounded-lg border border-gray-700/50"
+              className="absolute top-14 right-4 z-30 flex items-center gap-2 px-3 py-2 bg-gray-900/80 backdrop-blur-lg rounded-lg border border-gray-700/50"
             >
               <Loader2 className="w-3 h-3 text-purple-400 animate-spin" />
               <span className="text-xs text-gray-400">Updating...</span>
@@ -319,7 +384,7 @@ export function TradingChart({
             </motion.div>
           )
         }
-      </div >
+      </div>
     </motion.div >
   );
 }

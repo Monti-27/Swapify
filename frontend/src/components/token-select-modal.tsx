@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Search, Zap, Loader2 } from 'lucide-react';
 import { useTokens, type Token } from '@/hooks/useTokens';
 
+import { Skeleton } from '@/components/ui/skeleton';
+
 interface TokenSelectModalProps {
   open: boolean;
   onClose: () => void;
@@ -82,14 +84,15 @@ export function TokenSelectModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
+      <DialogContent className="max-w-md p-0 flex flex-col h-[500px] max-h-[80vh] overflow-hidden">
+        <DialogHeader className="flex-none p-6 pb-4 border-b border-zinc-800">
           <DialogTitle>Select Token</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {/* Search Input */}
-          <div className="relative">
+        {/* Main content with flex layout */}
+        <div className="flex flex-col flex-1 min-h-0 p-6 pt-4">
+          {/* Search Input - Fixed */}
+          <div className="flex-none relative mb-4">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="text"
@@ -100,9 +103,9 @@ export function TokenSelectModal({
             />
           </div>
 
-          {/* Popular Tokens */}
+          {/* Popular Tokens - Fixed */}
           {!searchQuery && popularTokens.length > 0 && (
-            <div>
+            <div className="flex-none mb-4">
               <p className="text-sm font-medium text-muted-foreground mb-3">Popular Tokens</p>
               <div className="flex flex-wrap gap-2">
                 {popularTokens.slice(0, 6).map((token) => (
@@ -120,49 +123,63 @@ export function TokenSelectModal({
             </div>
           )}
 
-          {/* Token List */}
-          <div className="space-y-1 max-h-[400px] overflow-y-auto">
-            {isLoading || isSearching ? (
-              <div className="text-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
-                <p className="text-sm text-muted-foreground mt-2">Loading tokens...</p>
-              </div>
-            ) : displayedTokens.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-sm text-muted-foreground">No tokens found</p>
-              </div>
-            ) : (
-              displayedTokens.map((token) => (
-                <button
-                  key={token.address}
-                  onClick={() => handleSelectToken(token)}
-                  className={`w-full flex items-center justify-between p-3 rounded-xl hover:bg-muted transition-colors ${
-                    (selectedToken?.address === token.address || selectedToken?.id === token.id || 
-                     selectedToken?.address === token.id || selectedToken?.id === token.address) ? 'bg-muted' : ''
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    {getTokenIcon(token)}
-                    <div className="text-left">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold">{token.symbol}</span>
-                        {token.tags?.includes('popular') && (
-                          <Zap className="h-3 w-3 text-yellow-500" />
+          {/* THE FLEXBOX JAIL - Critical for proper scrolling */}
+          <div className="flex-1 min-h-0 relative">
+            {/* THE SCROLLABLE ZONE with absolute positioning */}
+            <div className="absolute inset-0 overflow-y-auto overscroll-contain">
+              <div className="space-y-1">
+                {isLoading || isSearching ? (
+                  <div className="space-y-2 p-1">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <div key={i} className="flex items-center justify-between p-2">
+                        <div className="flex items-center gap-3">
+                          <Skeleton className="h-8 w-8 rounded-full" />
+                          <div className="space-y-1">
+                            <Skeleton className="h-4 w-[100px]" />
+                            <Skeleton className="h-3 w-[60px]" />
+                          </div>
+                        </div>
+                        <Skeleton className="h-4 w-[80px]" />
+                      </div>
+                    ))}
+                  </div>
+                ) : displayedTokens.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-sm text-muted-foreground">No tokens found</p>
+                  </div>
+                ) : (
+                  displayedTokens.map((token) => (
+                    <button
+                      key={token.address}
+                      onClick={() => handleSelectToken(token)}
+                      className={`w-full flex items-center justify-between p-3 rounded-xl hover:bg-muted transition-colors ${(selectedToken?.address === token.address || selectedToken?.id === token.id ||
+                        selectedToken?.address === token.id || selectedToken?.id === token.address) ? 'bg-muted' : ''
+                        }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        {getTokenIcon(token)}
+                        <div className="text-left">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold">{token.symbol}</span>
+                            {token.tags?.includes('popular') && (
+                              <Zap className="h-3 w-3 text-yellow-500" />
+                            )}
+                          </div>
+                          <span className="text-xs text-muted-foreground">{token.name}</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        {token.tags?.includes('stablecoin') && (
+                          <Badge variant="secondary" className="text-xs">
+                            Stablecoin
+                          </Badge>
                         )}
                       </div>
-                      <span className="text-xs text-muted-foreground">{token.name}</span>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    {token.tags?.includes('stablecoin') && (
-                      <Badge variant="secondary" className="text-xs">
-                        Stablecoin
-                      </Badge>
-                    )}
-                  </div>
-                </button>
-              ))
-            )}
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </DialogContent>

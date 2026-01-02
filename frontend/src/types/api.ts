@@ -32,7 +32,7 @@ export interface Strategy {
   stopLoss?: number;
   takeProfit?: number;
   nextStrategyId?: string;
-  status: 'active' | 'triggered' | 'completed' | 'cancelled' | 'failed';
+  status: 'active' | 'triggered' | 'completed' | 'cancelled' | 'failed' | 'filled';  // Added 'filled'
   triggeredAt?: string;
   completedAt?: string;
   metadata?: Record<string, any>;
@@ -43,6 +43,7 @@ export interface Strategy {
   pdaEscrow?: string;       // On-chain address of the Escrow Account
   programId?: string;       // Which contract version
   strategyIndex?: number;   // The 0-9 index used in the contract
+  boomerangMode?: boolean;  // NEW: Whether this strategy uses Boomerang (Round Trip) mode
 }
 
 
@@ -200,6 +201,7 @@ export interface PriceHistoryResponse {
 export interface ChartUpdateEvent {
   tokenAddress: string;
   candle: OHLCVCandle;
+  timeframe: ChartTimeframe;
   timestamp: number;
 }
 

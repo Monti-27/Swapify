@@ -239,10 +239,10 @@ export class StrategyService {
       return false;
     }
 
-    const tokenShort = `${strategy.toToken.slice(0, 8)}...${strategy.toToken.slice(-8)}`;
+    const tokenShort = `${strategy.fromToken.slice(0, 8)}...${strategy.fromToken.slice(-8)}`;
 
     try {
-      const currentPrice = await this.priceService.getTokenPrice(strategy.toToken);
+      const currentPrice = await this.priceService.getTokenPrice(strategy.fromToken);  // ✅ Check SELL token price
 
       switch (strategy.triggerType) {
         case 'price':
@@ -264,7 +264,7 @@ export class StrategyService {
           return shouldTrigger;
 
         case 'marketCap':
-          const marketCap = await this.priceService.getTokenMarketCap(strategy.toToken);
+          const marketCap = await this.priceService.getTokenMarketCap(strategy.fromToken);  // ✅ Check SELL token market cap
           const mcTrigger = marketCap >= strategy.triggerValue;
 
           if (marketCap === 0) {
@@ -303,11 +303,11 @@ export class StrategyService {
       return false;
     }
 
-    const tokenShort = `${strategy.toToken.slice(0, 8)}...${strategy.toToken.slice(-8)}`;
+    const tokenShort = `${strategy.fromToken.slice(0, 8)}...${strategy.fromToken.slice(-8)}`;
 
     switch (strategy.triggerType) {
       case 'price':
-        const currentPrice = priceMap.get(strategy.toToken) || 0;
+        const currentPrice = priceMap.get(strategy.fromToken) || 0;  // ✅ Look up SELL token price
         const shouldTrigger = currentPrice >= strategy.triggerValue;
 
         if (currentPrice === 0) {
@@ -326,7 +326,7 @@ export class StrategyService {
         return shouldTrigger;
 
       case 'marketCap':
-        const marketCap = marketCapMap?.get(strategy.toToken) || 0;
+        const marketCap = marketCapMap?.get(strategy.fromToken) || 0;  // ✅ Look up SELL token market cap
         const mcTrigger = marketCap >= strategy.triggerValue;
 
         if (marketCap === 0) {
