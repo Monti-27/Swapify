@@ -159,7 +159,7 @@ export function useUserAssets() {
                 })
             );
 
-            const validAssets = parsedAssets.filter((a): a is Asset => a !== null);
+            const validAssets = parsedAssets.filter((a) => a !== null) as Asset[];
 
             // Add SOL if balance > 0
             if (solBalance > 0) {
