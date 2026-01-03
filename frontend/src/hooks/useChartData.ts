@@ -123,10 +123,10 @@ export function useChartData({
             throw new Error('No chart data available for this token');
           }
 
-          // Validate candles have proper structure (support both 'time' and 'timestamp')
+          // Validate candles have proper structure
           const firstCandle = response.data.candles[0];
-          const hasTime = typeof firstCandle?.time === 'number' || typeof firstCandle?.timestamp === 'number';
-          const hasPrice = typeof firstCandle?.close === 'number' || typeof firstCandle?.value === 'number';
+          const hasTime = typeof firstCandle?.timestamp === 'number';
+          const hasPrice = typeof firstCandle?.close === 'number';
 
           if (!firstCandle || !hasTime || !hasPrice) {
             console.error('📊 [useChartData] Invalid candle data structure:', firstCandle);

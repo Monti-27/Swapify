@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useMemo, useCallback } from 'react';
-import { IChartApi, ISeriesApi } from 'lightweight-charts';
+import { IChartApi, ISeriesApi, UTCTimestamp } from 'lightweight-charts';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, AlertCircle, RefreshCw, CandlestickChart } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -106,7 +106,7 @@ export function TradingChart({
       })
       .sort((a, b) => a.timestamp - b.timestamp)
       .map((candle) => ({
-        time: candle.timestamp,
+        time: candle.timestamp as UTCTimestamp,
         open: Number(candle.open),
         high: Number(candle.high),
         low: Number(candle.low),
@@ -121,7 +121,7 @@ export function TradingChart({
     return candles.map((candle) => {
       const isUp = candle.close >= candle.open;
       return {
-        time: candle.timestamp,
+        time: candle.timestamp as UTCTimestamp,
         value: candle.volume || 0,
         color: isUp ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)',
       };
