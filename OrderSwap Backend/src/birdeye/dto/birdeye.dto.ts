@@ -159,3 +159,36 @@ export interface CandleSubscription {
   startTime: number;
 }
 
+export interface BirdeyePriceResponse {
+  success: boolean;
+  data: {
+    value: number;
+    updateUnixTime: number;
+    updateHumanTime: string;
+    priceChange24h: number;
+    liquidity?: number;
+  };
+}
+
+export interface BirdeyeMultiPriceResponse {
+  success: boolean;
+  data: {
+    [address: string]: {
+      value: number;
+      updateUnixTime: number;
+      updateHumanTime: string;
+      priceChange24h: number;
+      liquidity?: number;
+    };
+  };
+}
+
+export interface TokenPriceData {
+  address: string;
+  price: number;
+  priceChange24h: number;
+  liquidity?: number;
+  volume24h?: number;
+  updateTime: number;
+}
+
