@@ -97,19 +97,21 @@ export async function encryptNote(
     const message = new TextEncoder().encode('WeSwap Privacy Key Derivation v1');
     const signature = await wallet.signMessage(message);
 
-    // Use signature as key material
+    // Use signature as key material - cast to BufferSource for TypeScript compatibility
+    const signatureBuffer = Uint8Array.from(signature) as unknown as BufferSource;
     const keyMaterial = await crypto.subtle.importKey(
         'raw',
-        signature,
+        signatureBuffer,
         { name: 'PBKDF2' },
         false,
         ['deriveBits', 'deriveKey']
     );
 
+    const saltBuffer = new TextEncoder().encode('weswap-privacy-salt') as unknown as BufferSource;
     const key = await crypto.subtle.deriveKey(
         {
             name: 'PBKDF2',
-            salt: new TextEncoder().encode('weswap-privacy-salt'),
+            salt: saltBuffer,
             iterations: 100000,
             hash: 'SHA-256',
         },
@@ -123,9 +125,9 @@ export async function encryptNote(
     const iv = crypto.getRandomValues(new Uint8Array(12));
     const noteData = new TextEncoder().encode(JSON.stringify(note));
     const encrypted = await crypto.subtle.encrypt(
-        { name: 'AES-GCM', iv },
+        { name: 'AES-GCM', iv: iv as unknown as BufferSource },
         key,
-        noteData
+        noteData as unknown as BufferSource
     );
 
     // Combine IV + encrypted data
@@ -134,7 +136,7 @@ export async function encryptNote(
     combined.set(new Uint8Array(encrypted), iv.length);
 
     // Generate hash for deduplication
-    const hashBuffer = await crypto.subtle.digest('SHA-256', noteData);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', noteData as unknown as BufferSource);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
@@ -159,18 +161,20 @@ export async function decryptNote(
     const message = new TextEncoder().encode('WeSwap Privacy Key Derivation v1');
     const signature = await wallet.signMessage(message);
 
+    const signatureBuffer = Uint8Array.from(signature) as unknown as BufferSource;
     const keyMaterial = await crypto.subtle.importKey(
         'raw',
-        signature,
+        signatureBuffer,
         { name: 'PBKDF2' },
         false,
         ['deriveBits', 'deriveKey']
     );
 
+    const saltBuffer = new TextEncoder().encode('weswap-privacy-salt') as unknown as BufferSource;
     const key = await crypto.subtle.deriveKey(
         {
             name: 'PBKDF2',
-            salt: new TextEncoder().encode('weswap-privacy-salt'),
+            salt: saltBuffer,
             iterations: 100000,
             hash: 'SHA-256',
         },
@@ -186,9 +190,9 @@ export async function decryptNote(
     const data = combined.slice(12);
 
     const decrypted = await crypto.subtle.decrypt(
-        { name: 'AES-GCM', iv },
+        { name: 'AES-GCM', iv: iv as unknown as BufferSource },
         key,
-        data
+        data as unknown as BufferSource
     );
 
     return JSON.parse(new TextDecoder().decode(decrypted));
@@ -1044,19 +1048,18 @@ export async function createChunkedUnshieldTransactions(
     console.log("✅ All transactions signed!");
 
     const serializedTxs = signedTransactions.map(tx => {
-        // Partial Sign for Privacy (Relayer adds gas signature later)
         // Handle both Transaction and VersionedTransaction
-        if ('serialize' in tx) {
-            try {
-                // Legacy Transaction supports requireAllSignatures option
-                return Buffer.from(
-                    (tx as Transaction).serialize({ requireAllSignatures: false })
-                ).toString('base64');
-            } catch {
-                return Buffer.from(tx.serialize()).toString('base64');
-            }
+        try {
+            // Try Legacy Transaction with requireAllSignatures false
+            return Buffer.from(
+                (tx as Transaction).serialize({ requireAllSignatures: false })
+            ).toString('base64');
+        } catch {
+            // Fall back to VersionedTransaction serialization
+            return Buffer.from(
+                (tx as VersionedTransaction).serialize()
+            ).toString('base64');
         }
-        return Buffer.from(tx.serialize()).toString('base64');
     });
 
     console.log("------------------------------------------");
