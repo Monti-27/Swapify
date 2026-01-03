@@ -209,6 +209,7 @@ export function StrategyFormSidebar({
         triggerPrice: parseFloat(triggerValue),
         amount: parseFloat(amount),
         amountType,
+        direction: 'sell',  // Strategy is selling fromToken to buy toToken
         stopLoss: stopLoss ? parseFloat(stopLoss) : undefined,
         takeProfit: takeProfit ? parseFloat(takeProfit) : undefined,
         name: name,
