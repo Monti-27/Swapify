@@ -10,6 +10,9 @@ import {
   BirdeyeWSMessage,
   BirdeyeTradeEvent,
   BirdeyeWSTxsDataMessage,
+  BirdeyePriceResponse,
+  BirdeyeMultiPriceResponse,
+  TokenPriceData,
 } from './dto/birdeye.dto';
 import { ChartTimeframe } from '../price/dto/price-history.dto';
 import { OHLCVCandle } from '../price/dto/price-history.dto';
@@ -17,6 +20,11 @@ import { OHLCVCandle } from '../price/dto/price-history.dto';
 // Cache interface for OHLCV data
 interface CachedOHLCV {
   data: OHLCVCandle[];
+  timestamp: number;
+}
+
+interface CachedPrice {
+  data: TokenPriceData;
   timestamp: number;
 }
 
@@ -31,6 +39,10 @@ export class BirdeyeService implements OnModuleDestroy {
   // OHLCV Cache with 60s TTL to save Birdeye CUs
   private ohlcvCache = new Map<string, CachedOHLCV>();
   private readonly CACHE_TTL_MS = 60 * 1000; // 60 seconds
+
+  // Price Cache with 2s TTL for real-time dashboard prices
+  private priceCache = new Map<string, CachedPrice>();
+  private readonly PRICE_CACHE_TTL_MS = 2 * 1000; // 2 seconds
 
   // WebSocket connection management
   private ws: WebSocket | null = null;
@@ -241,6 +253,141 @@ export class BirdeyeService implements OnModuleDestroy {
       }
 
       return [];
+    }
+  }
+
+  /**
+   * Get single token price from Birdeye
+   */
+  async getTokenPrice(tokenAddress: string): Promise<TokenPriceData | null> {
+    if (!this.isEnabled) {
+      this.logger.debug('Birdeye service disabled, returning null price');
+      return null;
+    }
+
+    const shortAddress = `${tokenAddress.slice(0, 8)}...${tokenAddress.slice(-8)}`;
+    const cached = this.priceCache.get(tokenAddress);
+    
+    if (cached && Date.now() - cached.timestamp < this.PRICE_CACHE_TTL_MS) {
+      this.logger.debug(`📦 Price cache HIT for ${shortAddress}`);
+      return cached.data;
+    }
+
+    try {
+      this.logger.log(`🔄 Fetching price from Birdeye for ${shortAddress}`);
+      
+      const response = await this.axiosInstance.get<BirdeyePriceResponse>(
+        '/defi/price',
+        {
+          params: {
+            address: tokenAddress,
+            include_liquidity: true,
+          },
+          headers: {
+            'x-chain': 'solana',
+          },
+        },
+      );
+
+      if (!response.data || !response.data.success || !response.data.data) {
+        this.logger.warn(`Birdeye API returned unsuccessful for ${shortAddress}`);
+        return null;
+      }
+
+      const priceData: TokenPriceData = {
+        address: tokenAddress,
+        price: response.data.data.value,
+        priceChange24h: response.data.data.priceChange24h || 0,
+        liquidity: response.data.data.liquidity,
+        updateTime: response.data.data.updateUnixTime,
+      };
+
+      this.priceCache.set(tokenAddress, { data: priceData, timestamp: Date.now() });
+      this.logger.log(`✅ Fetched price for ${shortAddress}: $${priceData.price.toFixed(6)}`);
+      
+      return priceData;
+    } catch (error) {
+      this.logger.error(`Error fetching price for ${shortAddress}: ${error.message}`);
+      return null;
+    }
+  }
+
+  /**
+   * Get multiple token prices from Birdeye (batch endpoint)
+   */
+  async getMultipleTokenPrices(tokenAddresses: string[]): Promise<TokenPriceData[]> {
+    if (!this.isEnabled) {
+      this.logger.debug('Birdeye service disabled, returning empty prices');
+      return [];
+    }
+
+    if (tokenAddresses.length === 0) {
+      return [];
+    }
+
+    if (tokenAddresses.length > 100) {
+      this.logger.warn('Birdeye multi_price supports max 100 tokens, truncating');
+      tokenAddresses = tokenAddresses.slice(0, 100);
+    }
+
+    const results: TokenPriceData[] = [];
+    const addressesToFetch: string[] = [];
+
+    for (const addr of tokenAddresses) {
+      const cached = this.priceCache.get(addr);
+      if (cached && Date.now() - cached.timestamp < this.PRICE_CACHE_TTL_MS) {
+        results.push(cached.data);
+      } else {
+        addressesToFetch.push(addr);
+      }
+    }
+
+    if (addressesToFetch.length === 0) {
+      this.logger.debug(`📦 All ${tokenAddresses.length} prices from cache`);
+      return results;
+    }
+
+    try {
+      this.logger.log(`🔄 Fetching ${addressesToFetch.length} prices from Birdeye multi_price`);
+      
+      const response = await this.axiosInstance.get<BirdeyeMultiPriceResponse>(
+        '/defi/multi_price',
+        {
+          params: {
+            list_address: addressesToFetch.join(','),
+            include_liquidity: true,
+          },
+          headers: {
+            'x-chain': 'solana',
+          },
+        },
+      );
+
+      if (!response.data || !response.data.success || !response.data.data) {
+        this.logger.warn('Birdeye multi_price API returned unsuccessful');
+        return results;
+      }
+
+      for (const [address, priceInfo] of Object.entries(response.data.data)) {
+        if (priceInfo && priceInfo.value !== undefined) {
+          const priceData: TokenPriceData = {
+            address,
+            price: priceInfo.value,
+            priceChange24h: priceInfo.priceChange24h || 0,
+            liquidity: priceInfo.liquidity,
+            updateTime: priceInfo.updateUnixTime,
+          };
+
+          this.priceCache.set(address, { data: priceData, timestamp: Date.now() });
+          results.push(priceData);
+        }
+      }
+
+      this.logger.log(`✅ Fetched ${results.length} prices from Birdeye`);
+      return results;
+    } catch (error) {
+      this.logger.error(`Error fetching multi prices: ${error.message}`);
+      return results;
     }
   }
 
