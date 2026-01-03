@@ -459,10 +459,9 @@ export default function KLineChart({
                 console.log(`📊 [KLineChart] Loading KLineChartPro dynamically...`);
 
                 // Dynamically import the module and CSS
-                const [{ KLineChartPro }] = await Promise.all([
-                    import('@klinecharts/pro'),
-                    import('@klinecharts/pro/dist/klinecharts-pro.css'),
-                ]);
+                // @ts-ignore - CSS import handled at runtime
+                await import('@klinecharts/pro/dist/klinecharts-pro.css');
+                const { KLineChartPro } = await import('@klinecharts/pro');
 
                 // Check if component was unmounted or token changed during loading
                 if (!isActive || !containerRef.current) {
