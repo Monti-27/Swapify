@@ -187,12 +187,14 @@ export function useUserAssets() {
         } finally {
             setLoading(false);
         }
-    }, [publicKey, connected, connection, allTokens.length]);
+    }, [publicKey, connected, connection]);
 
-    // Fetch on mount and when wallet connects
+    // Fetch only once when wallet connects, not on token list changes
     useEffect(() => {
-        fetchAssets();
-    }, [publicKey, connected]);
+        if (connected && publicKey) {
+            fetchAssets();
+        }
+    }, [connected, publicKey?.toBase58()]);
 
     return {
         assets,

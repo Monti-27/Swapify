@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap');
 @import "tw-animate-css";
 
 @import "tailwindcss";
@@ -38,6 +39,10 @@
   --swap-border: #E4E4E7;
   --swap-input: #E4E4E7;
   --swap-ring: #5850EC;
+
+  --gold: #d4af37;
+  --gold-dark: #b8972e;
+  --gold-light: #e6c65c;
 }
 
 .dark {
@@ -114,6 +119,10 @@
   --color-swap-border: var(--swap-border);
   --color-swap-input: var(--swap-input);
   --color-swap-ring: var(--swap-ring);
+
+  --color-gold: var(--gold);
+  --color-gold-dark: var(--gold-dark);
+  --color-gold-light: var(--gold-light);
 
   --shadow-card: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
 
@@ -193,4 +202,62 @@
       opacity: 0.15;
     }
   }
+}
+
+@layer base {
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+  }
+}
+
+.font-display {
+  font-family: 'Syne', sans-serif;
+}
+
+.glass-card {
+  background: linear-gradient(135deg, rgba(20, 20, 20, 0.9) 0%, rgba(10, 10, 10, 0.95) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.gold-gradient {
+  background: linear-gradient(135deg, #d4af37 0%, #e6c65c 50%, #d4af37 100%);
+}
+
+.gold-text {
+  background: linear-gradient(135deg, #d4af37 0%, #e6c65c 50%, #d4af37 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glow-gold {
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.3), 0 0 40px rgba(212, 175, 55, 0.1);
+}
+
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(212, 175, 55, 0.1);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #444;
 }

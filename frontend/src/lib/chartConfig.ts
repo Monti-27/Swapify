@@ -394,8 +394,18 @@ export function getStopLossLineOptions() {
 export function formatPrice(price: number): string {
   if (price === 0) return '$0.00';
 
-  if (price < 0.00001) {
-    return `$${price.toExponential(2)}`;
+  if (price < 0.00000001) {
+    return `$${price.toFixed(12)}`;
+  } else if (price < 0.0000001) {
+    return `$${price.toFixed(11)}`;
+  } else if (price < 0.000001) {
+    return `$${price.toFixed(10)}`;
+  } else if (price < 0.00001) {
+    return `$${price.toFixed(9)}`;
+  } else if (price < 0.0001) {
+    return `$${price.toFixed(8)}`;
+  } else if (price < 0.001) {
+    return `$${price.toFixed(7)}`;
   } else if (price < 0.01) {
     return `$${price.toFixed(6)}`;
   } else if (price < 1) {
