@@ -61,11 +61,10 @@ export function PriceChart() {
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                activeFilter === filter
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${activeFilter === filter
                   ? "bg-[#d4af37] text-black"
                   : "text-gray-500 hover:text-gray-900 dark:hover:text-white"
-              }`}
+                }`}
             >
               {filter}
             </button>
@@ -107,7 +106,7 @@ export function PriceChart() {
               }}
               labelStyle={{ color: isDark ? "#888" : "#666" }}
               itemStyle={{ color: "#d4af37" }}
-              formatter={(value: number) => [`$${value.toLocaleString()}`, "Price"]}
+              formatter={(value) => [`$${(value as number)?.toLocaleString() ?? '0'}`, "Price"]}
             />
             <Area
               type="monotone"
