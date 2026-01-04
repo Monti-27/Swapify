@@ -1,15 +1,12 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { HeliusService } from './helius.service';
+import { HeliusService, EnhancedTransaction } from './helius.service';
 import { AnalysisService, TransferEdge } from './analysis.service';
 import { RiskReportDto, getRiskLevel } from './dto';
 
 @Injectable()
 export class TransparencyService {
     private readonly logger = new Logger(TransparencyService.name);
-
-    // Maximum signatures to fetch per scan (to limit API usage)
-    private readonly MAX_SIGNATURES_PER_SCAN = 500;
 
     constructor(
         private prisma: PrismaService,
@@ -34,6 +31,7 @@ export class TransparencyService {
 
     /**
      * Trigger a fresh scan and update risk report
+     * Uses the new Helius Paid API with incremental scanning
      */
     async scanWallet(address: string): Promise<RiskReportDto> {
         this.logger.log(`🔍 Starting scan for wallet: ${address.slice(0, 8)}...`);
@@ -49,16 +47,17 @@ export class TransparencyService {
         });
         const lastSignature = existingWallet?.lastSignature || null;
 
-        // Fetch new signatures (incremental)
-        const signatures = await this.heliusService.fetchSignatures(
+        // Fetch new transactions using the Paid API (incremental)
+        const fetchResult = await this.heliusService.fetchNewTransactions(
             address,
             lastSignature,
-            this.MAX_SIGNATURES_PER_SCAN,
         );
 
-        if (signatures.length === 0 && existingWallet) {
+        const { transactions } = fetchResult;
+
+        // Handle case where no new transactions
+        if (transactions.length === 0 && existingWallet) {
             this.logger.log(`No new transactions found for ${address.slice(0, 8)}...`);
-            // Update scan timestamp but keep existing data
             await this.prisma.monitoredWallet.update({
                 where: { address },
                 data: { lastScannedAt: new Date() },
@@ -66,15 +65,11 @@ export class TransparencyService {
             return this.toRiskReport(existingWallet, false);
         }
 
-        // Analyze signatures
-        let analysisResult = this.analysisService.analyzeSignatures(signatures);
+        // Analyze transactions
+        let analysisResult = this.analysisService.analyzeTransactions(transactions);
 
-        // Fetch enhanced transactions for circular transfer detection
-        const signatureStrings = signatures.map(s => s.signature);
-        const enhancedTxs = await this.heliusService.getEnhancedTransactions(signatureStrings);
-
-        // Extract transfer edges
-        const edges = this.analysisService.extractTransferEdges(enhancedTxs, address);
+        // Extract transfer edges for graph analysis
+        const edges = this.analysisService.extractTransferEdges(transactions, address);
 
         // Store edges in graph table
         await this.storeTransferEdges(address, edges);
@@ -91,21 +86,24 @@ export class TransparencyService {
             analysisResult.txCount += existingWallet.txCount;
             analysisResult.failedTxCount += existingWallet.failedTxCount;
             analysisResult.burstCount += existingWallet.burstCount;
+
             // Recalculate TPS as weighted average
-            if (existingWallet.txCount > 0 && analysisResult.txCount > 0) {
-                const totalTxs = existingWallet.txCount + signatures.length;
+            if (existingWallet.txCount > 0 && transactions.length > 0) {
+                const totalTxs = existingWallet.txCount + transactions.length;
                 analysisResult.avgTps = (
                     (existingWallet.avgTps * existingWallet.txCount) +
-                    (analysisResult.avgTps * signatures.length)
+                    (analysisResult.avgTps * transactions.length)
                 ) / totalTxs;
             }
 
-            // 🔧 FIX: Recalculate score with cumulative metrics
+            // 🔧 Recalculate score with cumulative metrics
             analysisResult = this.analysisService.recalculateFromCumulativeData(analysisResult);
         }
 
-        // Update checkpoint to newest signature
-        const newLastSignature = signatures.length > 0 ? signatures[0].signature : lastSignature;
+        // Update checkpoint to newest signature (first in array = most recent)
+        const newLastSignature = transactions.length > 0
+            ? transactions[0].signature
+            : lastSignature;
 
         // Upsert wallet data
         const updatedWallet = await this.prisma.monitoredWallet.upsert({
@@ -135,7 +133,10 @@ export class TransparencyService {
             },
         });
 
-        this.logger.log(`✅ Scan complete for ${address.slice(0, 8)}... - Score: ${analysisResult.riskScore}`);
+        this.logger.log(
+            `✅ Scan complete for ${address.slice(0, 8)}... ` +
+            `Score: ${analysisResult.riskScore}, Labels: [${analysisResult.labels.join(', ')}]`
+        );
 
         return this.toRiskReport(updatedWallet, false);
     }
@@ -161,10 +162,9 @@ export class TransparencyService {
                         timestamp: edge.timestamp,
                         walletAddress,
                     },
-                    update: {}, // No update needed if exists
+                    update: {},
                 });
-            } catch (error) {
-                // Ignore duplicate errors
+            } catch (error: any) {
                 if (!error.message?.includes('Unique constraint')) {
                     this.logger.warn(`Failed to store edge: ${error.message}`);
                 }
