@@ -57,6 +57,7 @@ export function Footer() {
     { label: "Strategies", href: "/strategies" },
     { label: "Dashboard", href: "/dashboard" },
     { label: "Privacy", href: "/privacy" },
+    { label: "Risk Scanner", href: "/transparency" },
     { label: "Docs", href: "/docs" },
   ];
 
