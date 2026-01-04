@@ -205,3 +205,19 @@ export interface ChartUpdateEvent {
   timestamp: number;
 }
 
+// Transparency Engine Types
+export type RiskLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+
+export interface WalletRiskReport {
+  address: string;
+  riskScore: number;
+  riskLevel: RiskLevel;
+  labels: string[];
+  txCount: number;
+  failedTxCount: number;
+  burstCount: number;
+  avgTps: number;
+  circularCount: number;
+  lastScannedAt: string | null;
+  isCached: boolean;
+}

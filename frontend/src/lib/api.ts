@@ -248,6 +248,15 @@ class ApiClient {
   async getTokenByMint(mint: string): Promise<any> {
     return this.request(`/tokens/${mint}`);
   }
+
+  // Transparency API
+  async getWalletRisk(address: string): Promise<import('@/types/api').WalletRiskReport> {
+    return this.request(`/transparency/${address}`);
+  }
+
+  async scanWalletRisk(address: string): Promise<import('@/types/api').WalletRiskReport> {
+    return this.request(`/transparency/scan/${address}`, { method: 'POST' });
+  }
 }
 
 // Export singleton instance
