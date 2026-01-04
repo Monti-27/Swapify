@@ -16,6 +16,7 @@ import { HealthModule } from './health/health.module';
 import { BirdeyeModule } from './birdeye/birdeye.module';
 import { BlockchainModule } from './blockchain/blockchain.module';
 import { PrivacyModule } from './privacy/privacy.module';
+import { TransparencyModule } from './transparency/transparency.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { PrivacyModule } from './privacy/privacy.module';
     WebsocketModule,
     BlockchainModule,
     PrivacyModule,
+    TransparencyModule,
   ],
 })
 export class AppModule { }
