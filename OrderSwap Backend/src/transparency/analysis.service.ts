@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { HeliusSignature, HeliusEnhancedTransaction } from './helius.service';
+import { EnhancedTransaction, NativeTransfer, TokenTransfer } from './helius.service';
 
 export interface AnalysisResult {
     riskScore: number;
@@ -55,19 +55,20 @@ export class AnalysisService {
     };
 
     /**
-     * Analyze transaction signatures and calculate risk metrics
+     * Analyze enhanced transactions and calculate risk metrics
+     * Uses the new Helius Paid API EnhancedTransaction format
      */
-    analyzeSignatures(signatures: HeliusSignature[]): AnalysisResult {
-        if (signatures.length === 0) {
+    analyzeTransactions(transactions: EnhancedTransaction[]): AnalysisResult {
+        if (transactions.length === 0) {
             return this.createEmptyResult();
         }
 
-        const txCount = signatures.length;
-        const failedTxCount = signatures.filter(sig => sig.err !== null).length;
-        const burstCount = this.detectBursts(signatures);
-        const avgTps = this.calculateTps(signatures);
+        const txCount = transactions.length;
+        const failedTxCount = transactions.filter(tx => tx.transactionError !== null).length;
+        const burstCount = this.detectBursts(transactions);
+        const avgTps = this.calculateTps(transactions);
 
-        // Calculate risk score using the new tuned weights
+        // Calculate risk score using the tuned weights
         const { riskScore, labels } = this.calculateRiskScore(
             avgTps,
             burstCount,
@@ -187,7 +188,7 @@ export class AnalysisService {
     }
 
     /**
-     * Recalculate score from cumulative metrics (called after merging with existing data)
+     * Recalculate score from cumulative metrics
      */
     recalculateFromCumulativeData(result: AnalysisResult): AnalysisResult {
         const { riskScore, labels } = this.calculateRiskScore(
@@ -205,10 +206,10 @@ export class AnalysisService {
     }
 
     /**
-     * Analyze enhanced transactions for circular transfers (Sybil detection)
+     * Extract transfer edges from enhanced transactions for graph analysis
      */
     extractTransferEdges(
-        transactions: HeliusEnhancedTransaction[],
+        transactions: EnhancedTransaction[],
         targetAddress: string,
     ): TransferEdge[] {
         const edges: TransferEdge[] = [];
@@ -221,7 +222,7 @@ export class AnalysisService {
                         fromAddress: transfer.fromUserAccount,
                         toAddress: transfer.toUserAccount,
                         signature: tx.signature,
-                        amount: transfer.amount / 1e9,
+                        amount: transfer.amount / 1e9, // lamports to SOL
                         timestamp: new Date(tx.timestamp * 1000),
                     });
                 }
@@ -285,7 +286,6 @@ export class AnalysisService {
             return result;
         }
 
-        // Recalculate with circular count included
         const { riskScore, labels } = this.calculateRiskScore(
             result.avgTps,
             result.burstCount,
@@ -302,30 +302,25 @@ export class AnalysisService {
     }
 
     /**
-     * Detect sub-second transaction bursts
+     * Detect sub-second transaction bursts using enhanced transaction timestamps
      */
-    private detectBursts(signatures: HeliusSignature[]): number {
-        if (signatures.length < 2) {
+    private detectBursts(transactions: EnhancedTransaction[]): number {
+        if (transactions.length < 2) {
             return 0;
         }
 
-        const sorted = [...signatures]
-            .filter(sig => sig.blockTime !== null)
-            .sort((a, b) => (a.blockTime || 0) - (b.blockTime || 0));
+        // Sort by timestamp (ascending)
+        const sorted = [...transactions].sort((a, b) => a.timestamp - b.timestamp);
 
         let burstCount = 0;
 
         for (let i = 1; i < sorted.length; i++) {
-            const current = sorted[i].blockTime;
-            const previous = sorted[i - 1].blockTime;
+            const current = sorted[i].timestamp;
+            const previous = sorted[i - 1].timestamp;
 
-            if (current !== null && previous !== null) {
-                // blockTime is in seconds, so delta in seconds
-                const deltaSec = current - previous;
-                // Sub-second means same second (delta = 0) or within same block
-                if (deltaSec === 0) {
-                    burstCount++;
-                }
+            // Timestamps are in seconds, so delta = 0 means same second (sub-second burst)
+            if (current - previous === 0) {
+                burstCount++;
             }
         }
 
@@ -335,26 +330,21 @@ export class AnalysisService {
     /**
      * Calculate average transactions per second
      */
-    private calculateTps(signatures: HeliusSignature[]): number {
-        if (signatures.length < 2) {
+    private calculateTps(transactions: EnhancedTransaction[]): number {
+        if (transactions.length < 2) {
             return 0;
         }
 
-        const withTime = signatures.filter(sig => sig.blockTime !== null);
-        if (withTime.length < 2) {
-            return 0;
-        }
-
-        const times = withTime.map(sig => sig.blockTime!);
-        const minTime = Math.min(...times);
-        const maxTime = Math.max(...times);
+        const timestamps = transactions.map(tx => tx.timestamp);
+        const minTime = Math.min(...timestamps);
+        const maxTime = Math.max(...timestamps);
         const timeSpanSeconds = maxTime - minTime;
 
         if (timeSpanSeconds <= 0) {
             return 0;
         }
 
-        return withTime.length / timeSpanSeconds;
+        return transactions.length / timeSpanSeconds;
     }
 
     /**
