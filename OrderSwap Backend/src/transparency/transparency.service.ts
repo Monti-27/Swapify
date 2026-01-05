@@ -32,9 +32,17 @@ export class TransparencyService {
     /**
      * Trigger a fresh scan and update risk report
      * Uses the new Helius Paid API with incremental scanning
+     * 
+     * @param address - Wallet address to scan
+     * @param options - Optional scan options
+     * @param options.limit - Limit number of transactions to fetch (for quick scans)
      */
-    async scanWallet(address: string): Promise<RiskReportDto> {
-        this.logger.log(`🔍 Starting scan for wallet: ${address.slice(0, 8)}...`);
+    async scanWallet(address: string, options?: { limit?: number }): Promise<RiskReportDto> {
+        const limit = options?.limit;
+        this.logger.log(
+            `🔍 Starting scan for wallet: ${address.slice(0, 8)}...` +
+            (limit ? ` (quick scan: ${limit} txs)` : '')
+        );
 
         // Check if Helius is available
         if (!this.heliusService.checkAvailability()) {
@@ -48,9 +56,11 @@ export class TransparencyService {
         const lastSignature = existingWallet?.lastSignature || null;
 
         // Fetch new transactions using the Paid API (incremental)
+        // Pass limit for quick scan mode
         const fetchResult = await this.heliusService.fetchNewTransactions(
             address,
             lastSignature,
+            limit,
         );
 
         const { transactions } = fetchResult;
@@ -143,35 +153,76 @@ export class TransparencyService {
 
     /**
      * Store transfer edges in the graph table
+     * 🚀 OPTIMIZED: Uses batched parallel processing instead of a single transaction
+     * This prevents timeout errors and processes thousands of edges in seconds
      */
     private async storeTransferEdges(walletAddress: string, edges: TransferEdge[]): Promise<void> {
         if (edges.length === 0) {
             return;
         }
 
-        // Use upsert to avoid duplicates (signature is unique)
-        for (const edge of edges) {
-            try {
-                await this.prisma.transactionGraph.upsert({
-                    where: { signature: edge.signature },
-                    create: {
-                        fromAddress: edge.fromAddress,
-                        toAddress: edge.toAddress,
-                        signature: edge.signature,
-                        amount: edge.amount,
-                        timestamp: edge.timestamp,
-                        walletAddress,
-                    },
-                    update: {},
-                });
-            } catch (error: any) {
-                if (!error.message?.includes('Unique constraint')) {
-                    this.logger.warn(`Failed to store edge: ${error.message}`);
-                }
-            }
-        }
+        const BATCH_SIZE = 50; // Process 50 edges at a time
+        const startTime = Date.now();
+        let successCount = 0;
+        let errorCount = 0;
 
-        this.logger.debug(`Stored ${edges.length} transfer edges`);
+        try {
+            // Step 1: Ensure parent wallet exists FIRST (single upsert, not in transaction)
+            await this.prisma.monitoredWallet.upsert({
+                where: { address: walletAddress },
+                create: {
+                    address: walletAddress,
+                    riskScore: 0,
+                    labels: [],
+                    txCount: 0,
+                    failedTxCount: 0,
+                    burstCount: 0,
+                    avgTps: 0,
+                    circularCount: 0,
+                },
+                update: {}, // If exists, do nothing
+            });
+
+            // Step 2: Process edges in batches using Promise.all
+            for (let i = 0; i < edges.length; i += BATCH_SIZE) {
+                const batch = edges.slice(i, i + BATCH_SIZE);
+
+                // Create array of upsert promises for this batch
+                const upsertPromises = batch.map(edge =>
+                    this.prisma.transactionGraph.upsert({
+                        where: { signature: edge.signature },
+                        create: {
+                            fromAddress: edge.fromAddress,
+                            toAddress: edge.toAddress,
+                            signature: edge.signature,
+                            amount: edge.amount,
+                            timestamp: edge.timestamp,
+                            walletAddress,
+                        },
+                        update: {},
+                    }).then(() => {
+                        successCount++;
+                    }).catch((err: any) => {
+                        // Silently ignore unique constraint violations
+                        if (!err.message?.includes('Unique constraint')) {
+                            errorCount++;
+                        }
+                    })
+                );
+
+                // 🚀 Execute batch in parallel!
+                await Promise.all(upsertPromises);
+            }
+
+            const elapsed = Date.now() - startTime;
+            this.logger.debug(
+                `⚡ Stored ${successCount}/${edges.length} edges for ${walletAddress.slice(0, 8)}... ` +
+                `in ${elapsed}ms (${errorCount} errors)`
+            );
+
+        } catch (error: any) {
+            this.logger.error(`Failed to store edges: ${error.message}`);
+        }
     }
 
     /**

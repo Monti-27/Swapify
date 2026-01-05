@@ -1,6 +1,7 @@
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios, { AxiosInstance } from 'axios';
+import bs58 from 'bs58';
 
 // ============================================================
 // 📦 Helius Enhanced Transaction Types (Paid API Response)
@@ -108,11 +109,13 @@ export class HeliusService {
      * 
      * @param address - Solana wallet address to scan
      * @param stopAtSignature - Stop fetching when this signature is encountered (checkpoint)
+     * @param limit - Optional: Stop after fetching this many transactions (for quick scans)
      * @returns FetchResult with new transactions and metadata
      */
     async fetchNewTransactions(
         address: string,
         stopAtSignature?: string | null,
+        limit?: number,
     ): Promise<FetchResult> {
         if (!this.isAvailable) {
             throw new HttpException(
@@ -126,12 +129,18 @@ export class HeliusService {
         let reachedCheckpoint = false;
         let pagesProcessed = 0;
 
+        // Calculate max pages based on limit if provided
+        const effectiveMaxPages = limit
+            ? Math.ceil(limit / this.TRANSACTIONS_PER_PAGE)
+            : this.MAX_PAGES;
+
         this.logger.log(
             `🔍 Fetching transactions for ${address.slice(0, 8)}...` +
-            (stopAtSignature ? ` (until: ${stopAtSignature.slice(0, 8)}...)` : ' (full scan)')
+            (limit ? ` (quick scan: limit ${limit})` : '') +
+            (stopAtSignature ? ` (until: ${stopAtSignature.slice(0, 8)}...)` : '')
         );
 
-        while (pagesProcessed < this.MAX_PAGES) {
+        while (pagesProcessed < effectiveMaxPages) {
             try {
                 // Build request URL with query params
                 const url = this.buildTransactionsUrl(address, beforeSignature);
@@ -177,6 +186,12 @@ export class HeliusService {
                     `Page ${pagesProcessed}: Fetched ${transactions.length} transactions ` +
                     `(total: ${allTransactions.length})`
                 );
+
+                // 🚀 QUICK SCAN: Stop if we've reached the limit
+                if (limit && allTransactions.length >= limit) {
+                    this.logger.log(`Quick scan complete: reached ${limit} transaction limit`);
+                    break;
+                }
 
                 // If we got fewer than requested, we've reached the end
                 if (transactions.length < this.TRANSACTIONS_PER_PAGE) {
@@ -271,4 +286,272 @@ export class HeliusService {
             return false;
         }
     }
+
+    // ============================================================
+    // 🔍 CLUSTER ANALYSIS METHODS
+    // ============================================================
+
+    /**
+     * Mode A: Snapshot - Get current token holders using SHARDED PREFIX SAMPLING
+     * 
+     * CRITICAL: For large tokens (100k+ holders), a single getProgramAccounts call
+     * will crash Node.js due to V8's string size limit. Instead, we query in shards
+     * by filtering on the first byte of the owner address (256 possible prefixes).
+     * 
+     * This approach:
+     * 1. Queries small batches (each shard typically returns <1000 accounts)
+     * 2. Stops as soon as we hit the limit (no wasted requests)
+     * 3. Never crashes regardless of token size
+     * 
+     * @param mint - Token mint address
+     * @param limit - Max number of holders to fetch (safety limit)
+     */
+    async getTokenHolders(mint: string, limit: number = 2000): Promise<string[]> {
+        if (!this.isAvailable) {
+            throw new HttpException(
+                'Helius API not configured',
+                HttpStatus.SERVICE_UNAVAILABLE,
+            );
+        }
+
+        this.logger.log(`📊 Fetching token holders for ${mint.slice(0, 8)}... (limit: ${limit}) using sharded sampling`);
+
+        const rpcUrl = this.configService.get<string>('HELIUS_RPC_URL') ||
+            `https://mainnet.helius-rpc.com/?api-key=${this.apiKey}`;
+
+        const TOKEN_PROGRAM_ID = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
+        const allHolders = new Set<string>();
+
+        // Generate shuffled prefix bytes (0-255) for random sampling
+        const prefixBytes = this.shuffleArray([...Array(256).keys()]);
+
+        let shardsProcessed = 0;
+        let shardsWithData = 0;
+        let shardsFailed = 0;
+
+        for (const prefixByte of prefixBytes) {
+            // Stop if we have enough holders
+            if (allHolders.size >= limit) {
+                this.logger.debug(`🎯 Reached limit of ${limit} holders after ${shardsProcessed} shards`);
+                break;
+            }
+
+            try {
+                // Convert prefix byte to base58 for memcmp filter
+                // CRITICAL: Must use proper bs58 encoding for Helius to accept the filter
+                const prefixBuffer = Buffer.from([prefixByte]);
+                const prefixBase58 = bs58.encode(prefixBuffer);
+
+                const response = await this.client.post(rpcUrl, {
+                    jsonrpc: '2.0',
+                    id: `shard-${prefixByte}`,
+                    method: 'getProgramAccounts',
+                    params: [
+                        TOKEN_PROGRAM_ID,
+                        {
+                            encoding: 'base64',
+                            // Only fetch owner address (32 bytes at offset 32)
+                            dataSlice: {
+                                offset: 32,
+                                length: 32,
+                            },
+                            filters: [
+                                { dataSize: 165 }, // SPL Token Account size
+                                { memcmp: { offset: 0, bytes: mint } }, // Match mint
+                                { memcmp: { offset: 32, bytes: prefixBase58 } }, // Match owner prefix
+                            ],
+                        },
+                    ],
+                }, {
+                    timeout: 15000, // 15s per shard (much faster than 60s for full query)
+                    maxContentLength: 50 * 1024 * 1024, // 50MB max per shard
+                });
+
+                shardsProcessed++;
+
+                // Check for RPC error
+                if (response.data?.error) {
+                    this.logger.debug(`Shard ${prefixByte} RPC error: ${response.data.error.message}`);
+                    shardsFailed++;
+                    continue;
+                }
+
+                const accounts = response.data?.result || [];
+
+                if (accounts.length > 0) {
+                    shardsWithData++;
+
+                    for (const account of accounts) {
+                        if (allHolders.size >= limit) break;
+
+                        try {
+                            const ownerData = account.account?.data;
+                            if (!ownerData || !ownerData[0]) continue;
+
+                            const ownerBytes = Buffer.from(ownerData[0], 'base64');
+                            if (ownerBytes.length !== 32) continue;
+
+                            const owner = bs58.encode(ownerBytes);
+                            allHolders.add(owner);
+                        } catch {
+                            // Skip malformed accounts
+                        }
+                    }
+                }
+
+                // Progress logging every 32 shards
+                if (shardsProcessed % 32 === 0) {
+                    this.logger.debug(
+                        `Progress: ${shardsProcessed}/256 shards | ${allHolders.size}/${limit} holders | ${shardsWithData} with data`
+                    );
+                }
+
+            } catch (error: any) {
+                shardsFailed++;
+                shardsProcessed++;
+
+                // Log but continue - one shard failure shouldn't stop the whole query
+                if (error.code !== 'ECONNABORTED') {
+                    this.logger.debug(`Shard ${prefixByte} failed: ${error.message?.slice(0, 50)}`);
+                }
+            }
+        }
+
+        this.logger.log(
+            `✅ Sharded sampling complete: ${allHolders.size} unique holders ` +
+            `(${shardsProcessed} shards, ${shardsWithData} with data, ${shardsFailed} failed)`
+        );
+
+        // If we got very few results despite processing many shards, the token might not exist
+        if (allHolders.size === 0 && shardsProcessed > 50) {
+            this.logger.warn(`No holders found for token ${mint.slice(0, 8)}... - token may not exist`);
+        }
+
+        return Array.from(allHolders).slice(0, limit);
+    }
+
+    /**
+     * Fisher-Yates shuffle for random sampling
+     */
+    private shuffleArray<T>(array: T[]): T[] {
+        const shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+    }
+
+    /**
+     * Mode B: Historical - Get wallets that have interacted with a token
+     * Uses transaction history of the mint address
+     * @param mint - Token mint address
+     * @param limit - Max number of unique interactors to fetch
+     */
+    async getTokenInteractors(mint: string, limit: number = 2000): Promise<string[]> {
+        if (!this.isAvailable) {
+            throw new HttpException(
+                'Helius API not configured',
+                HttpStatus.SERVICE_UNAVAILABLE,
+            );
+        }
+
+        this.logger.log(`🕰️ Fetching token interactors for ${mint.slice(0, 8)}... (limit: ${limit})`);
+
+        const interactors = new Set<string>();
+        let beforeSignature: string | undefined = undefined;
+        let pagesProcessed = 0;
+        const maxPages = Math.ceil(limit / this.TRANSACTIONS_PER_PAGE);
+
+        while (pagesProcessed < maxPages && interactors.size < limit) {
+            try {
+                const url = this.buildTransactionsUrl(mint, beforeSignature);
+                const response = await this.client.get<EnhancedTransaction[]>(url);
+                const transactions: EnhancedTransaction[] = response.data || [];
+
+                if (transactions.length === 0) break;
+
+                // Extract unique signers (fee payers are the transaction initiators)
+                for (const tx of transactions) {
+                    if (interactors.size >= limit) break;
+
+                    // Add fee payer (main signer)
+                    if (tx.feePayer) {
+                        interactors.add(tx.feePayer);
+                    }
+
+                    // Also extract from token transfers
+                    for (const transfer of tx.tokenTransfers || []) {
+                        if (interactors.size >= limit) break;
+                        if (transfer.fromUserAccount) interactors.add(transfer.fromUserAccount);
+                        if (transfer.toUserAccount) interactors.add(transfer.toUserAccount);
+                    }
+                }
+
+                pagesProcessed++;
+                beforeSignature = transactions[transactions.length - 1].signature;
+
+                if (transactions.length < this.TRANSACTIONS_PER_PAGE) break;
+
+            } catch (error: any) {
+                this.logger.error(`Error fetching interactors page ${pagesProcessed}: ${error.message}`);
+                break;
+            }
+        }
+
+        this.logger.log(`✅ Found ${interactors.size} unique interactors (${pagesProcessed} pages processed)`);
+        return Array.from(interactors);
+    }
+
+    // ============================================================
+    // 🔧 Helper Methods for Binary Parsing
+    // ============================================================
+
+    private readonly BASE58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+
+    private encodeBase58(bytes: Buffer): string {
+        if (bytes.length === 0) return '';
+
+        // Count leading zeros
+        let zeros = 0;
+        for (const byte of bytes) {
+            if (byte === 0) zeros++;
+            else break;
+        }
+
+        // Convert to base58
+        const digits = [0];
+        for (const byte of bytes) {
+            let carry = byte;
+            for (let i = 0; i < digits.length; i++) {
+                carry += digits[i] << 8;
+                digits[i] = carry % 58;
+                carry = Math.floor(carry / 58);
+            }
+            while (carry > 0) {
+                digits.push(carry % 58);
+                carry = Math.floor(carry / 58);
+            }
+        }
+
+        // Build result string
+        let result = '';
+        for (let i = 0; i < zeros; i++) {
+            result += this.BASE58_ALPHABET[0];
+        }
+        for (let i = digits.length - 1; i >= 0; i--) {
+            result += this.BASE58_ALPHABET[digits[i]];
+        }
+
+        return result;
+    }
+
+    private readUint64LE(buffer: Buffer): bigint {
+        let result = 0n;
+        for (let i = 0; i < 8; i++) {
+            result += BigInt(buffer[i]) << BigInt(i * 8);
+        }
+        return result;
+    }
 }
+
