@@ -22,14 +22,14 @@ const formatAddress = (addr: string) => {
   return `${addr.slice(0, 4)}...${addr.slice(-4)}`;
 };
 
-  const AnimatedThemeToggle = ({ className }: { className?: string }) => {
-    const { isDark, toggleTheme } = useThemeToggle({
-      variant: "polygon",
-      start: "top-left",
-      blur: true,
-    });
+const AnimatedThemeToggle = ({ className }: { className?: string }) => {
+  const { isDark, toggleTheme } = useThemeToggle({
+    variant: "polygon",
+    start: "top-left",
+    blur: true,
+  });
 
-    return (
+  return (
     <button
       type="button"
       aria-label="Toggle theme"
@@ -137,7 +137,7 @@ export const Navbar = React.memo(function Navbar() {
     { name: "Swap", url: "/swap", icon: ArrowRightLeft },
     { name: "Strategies", url: "/strategies", icon: Layers },
     { name: "Privacy", url: "/privacy", icon: Shield },
-    { name: "Risk", url: "/transparency", icon: Eye },
+    { name: "Anti-Privacy", url: "/transparency", icon: Eye },
     { name: "Docs", url: "https://docs.weswap.fun/", icon: Book },
   ];
 
