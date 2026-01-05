@@ -7,6 +7,7 @@ interface RiskScoreGaugeProps {
     score: number;
     riskLevel: RiskLevel;
     size?: 'sm' | 'md' | 'lg';
+    animated?: boolean;
 }
 
 const RISK_COLORS: Record<RiskLevel, { primary: string; secondary: string; glow: string }> = {
@@ -22,7 +23,7 @@ const sizes = {
     lg: { width: 240, strokeWidth: 16, fontSize: '3rem' },
 };
 
-export function RiskScoreGauge({ score, riskLevel, size = 'md' }: RiskScoreGaugeProps) {
+export function RiskScoreGauge({ score, riskLevel, size = 'md', animated = false }: RiskScoreGaugeProps) {
     const { width, strokeWidth, fontSize } = sizes[size];
     const colors = RISK_COLORS[riskLevel];
 
