@@ -241,7 +241,7 @@ export default function StrategiesPage() {
 
   return (
     <div className="min-h-screen flex flex-col relative bg-background">
-      <div className="absolute inset-0 gradient-emerald-radial pointer-events-none" />
+      <div className="absolute inset-0 gradient-purple-radial pointer-events-none" />
       <div className="relative z-10 flex-1 flex flex-col">
         <Navbar />
         <main className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 pt-24 sm:pt-28 lg:pt-32 pb-12 sm:pb-16 max-w-7xl">

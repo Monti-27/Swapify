@@ -33,8 +33,8 @@ export default function PrivacyPolicyPage() {
     ];
 
     return (
-        <div className="min-h-screen flex flex-col relative bg-background selection:bg-emerald-500/30">
-            <div className="absolute inset-0 gradient-emerald-radial pointer-events-none opacity-50 dark:opacity-40" />
+        <div className="min-h-screen flex flex-col relative bg-background selection:bg-primary/30">
+            <div className="absolute inset-0 gradient-purple-radial pointer-events-none opacity-50 dark:opacity-40" />
             <div className="relative z-10 flex-1 flex flex-col">
                 <Navbar />
                 <main className="flex-1 pt-40 pb-32 px-6">
@@ -43,9 +43,9 @@ export default function PrivacyPolicyPage() {
                             <h1 className="text-7xl md:text-9xl font-display font-bold tracking-tighter mb-12 bg-gradient-to-b from-foreground to-foreground/40 bg-clip-text text-transparent leading-[1.0]">
                                 Privacy<br />Policy
                             </h1>
-                            <div className="flex items-center gap-6 text-xs font-mono tracking-[0.2em] text-emerald-600 dark:text-emerald-400 uppercase">
+                            <div className="flex items-center gap-6 text-xs font-mono tracking-[0.2em] text-primary uppercase">
                                 <span className="opacity-80">Last Revision</span>
-                                <div className="h-[1px] w-12 bg-emerald-500/30" />
+                                <div className="h-[1px] w-12 bg-primary/30" />
                                 <span className="font-semibold">Jan 04, 2026</span>
                             </div>
                         </header>
@@ -54,20 +54,20 @@ export default function PrivacyPolicyPage() {
                             {sections.map((section, index) => (
                                 <React.Fragment key={index}>
                                     <div className="hidden lg:block">
-                                        <span className="text-xs font-mono text-emerald-600/60 dark:text-emerald-400/40 sticky top-40 tracking-widest uppercase">
+                                        <span className="text-xs font-mono text-primary/60 sticky top-40 tracking-widest uppercase">
                                             Section_{String(index + 1).padStart(2, '0')}
                                         </span>
                                     </div>
                                     <section className="group">
                                         <div className="lg:hidden mb-4">
-                                            <span className="text-xs font-mono text-emerald-600/60 dark:text-emerald-400/40 tracking-widest uppercase">
+                                            <span className="text-xs font-mono text-primary/60 tracking-widest uppercase">
                                                 Section_{String(index + 1).padStart(2, '0')}
                                             </span>
                                         </div>
-                                        <h2 className="text-3xl md:text-4xl font-display font-medium mb-8 text-foreground group-hover:text-emerald-500 transition-colors duration-500 ease-out tracking-tight">
+                                        <h2 className="text-3xl md:text-4xl font-display font-medium mb-8 text-foreground group-hover:text-primary transition-colors duration-500 ease-out tracking-tight">
                                             {section.title.split('. ')[1]}
                                         </h2>
-                                        <div className="prose prose-emerald dark:prose-invert max-w-none">
+                                        <div className="prose prose-indigo dark:prose-invert max-w-none">
                                             <p className="text-xl text-muted-foreground leading-relaxed font-light">
                                                 {section.content}
                                             </p>

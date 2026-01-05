@@ -33,15 +33,15 @@ export default function TermsOfServicePage() {
     ];
 
     return (
-        <div className="min-h-screen flex flex-col relative bg-background selection:bg-emerald-500/30">
-            <div className="absolute inset-0 gradient-emerald-radial pointer-events-none opacity-50 dark:opacity-40" />
+        <div className="min-h-screen flex flex-col relative bg-background selection:bg-primary/30">
+            <div className="absolute inset-0 gradient-purple-radial pointer-events-none opacity-50 dark:opacity-40" />
             <div className="relative z-10 flex-1 flex flex-col">
                 <Navbar />
                 <main className="flex-1 pt-40 pb-32 px-6">
                     <div className="max-w-6xl mx-auto">
                         <header className="mb-40 flex flex-col md:flex-row md:items-end justify-between gap-12">
                             <div className="max-w-2xl">
-                                <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.3em] mb-6 block">Legal Documentation</span>
+                                <span className="text-xs font-mono text-primary uppercase tracking-[0.3em] mb-6 block">Legal Documentation</span>
                                 <h1 className="text-8xl md:text-[10rem] font-display font-bold tracking-[ -0.05em] leading-[1.0] text-foreground">
                                     Terms<br />
                                     <span className="text-muted-foreground/20">Of Service</span>
@@ -53,8 +53,8 @@ export default function TermsOfServicePage() {
                             {sections.map((section, index) => (
                                 <section key={index} className="flex flex-col">
                                     <div className="flex items-center gap-4 mb-8">
-                                        <div className="w-8 h-[1px] bg-emerald-500/40" />
-                                        <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.4em]">0{index + 1}</span>
+                                        <div className="w-8 h-[1px] bg-primary/40" />
+                                        <span className="text-[10px] font-mono text-primary uppercase tracking-[0.4em]">0{index + 1}</span>
                                     </div>
                                     <h2 className="text-3xl font-display font-semibold mb-6 text-foreground tracking-tight max-w-[15ch]">
                                         {section.title}

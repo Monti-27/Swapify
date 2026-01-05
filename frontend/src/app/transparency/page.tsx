@@ -65,7 +65,7 @@ export default function TransparencyPage() {
     return (
         <div className="min-h-screen relative bg-background w-full overflow-x-hidden flex flex-col">
             {/* Background gradient matching other pages */}
-            <div className="absolute inset-0 gradient-emerald-radial pointer-events-none" style={{ willChange: 'auto' }} />
+            <div className="absolute inset-0 gradient-purple-radial pointer-events-none" style={{ willChange: 'auto' }} />
 
             <div className="relative z-10 flex flex-col min-h-screen" style={{ willChange: 'auto' }}>
                 <Navbar />
@@ -76,8 +76,8 @@ export default function TransparencyPage() {
                         {/* Page Header */}
                         <section className="mb-12 text-center">
                             <div className="inline-flex items-center justify-center gap-3 mb-4">
-                                <div className="p-3 rounded-2xl bg-gradient-to-br from-emerald-600/20 to-teal-600/20 border border-emerald-500/20">
-                                    <Shield className="h-8 w-8 text-emerald-400" />
+                                <div className="p-3 rounded-2xl bg-gradient-to-br from-primary/20 to-purple-600/20 border border-primary/20">
+                                    <Shield className="h-8 w-8 text-primary" />
                                 </div>
                             </div>
                             <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
