@@ -74,22 +74,22 @@ export function useChartData({
   const fetchChartData = useCallback(
     async (isRetry = false) => {
       if (!enabled || !tokenAddress) {
-        console.log(
-          '📊 [useChartData] Skipping fetch - enabled:',
-          enabled,
-          'tokenAddress:',
-          tokenAddress
-        );
+        // console.log(
+        //   '📊 [useChartData] Skipping fetch - enabled:',
+        //   enabled,
+        //   'tokenAddress:',
+        //   tokenAddress
+        // );
         return;
       }
 
       try {
-        console.log(
-          `📊 [useChartData] Fetching chart data (attempt ${retryCountRef.current + 1}/${retryAttempts}) for:`,
-          tokenAddress,
-          'timeframe:',
-          currentTimeframe
-        );
+        // console.log(
+        //   `📊 [useChartData] Fetching chart data (attempt ${retryCountRef.current + 1}/${retryAttempts}) for:`,
+        //   tokenAddress,
+        //   'timeframe:',
+        //   currentTimeframe
+        // );
 
         if (!isRetry) {
           setLoading(true);
@@ -110,16 +110,16 @@ export function useChartData({
           maxCandles
         );
 
-        console.log('📊 [useChartData] API Response:', response);
+        // console.log('📊 [useChartData] API Response:', response);
 
         if (!isMountedRef.current) return;
 
         if (response.success && response.data) {
-          console.log('📊 [useChartData] Candles received:', response.data.candles.length);
+          // console.log('📊 [useChartData] Candles received:', response.data.candles.length);
 
           // Validate we have actual data
           if (!response.data.candles || response.data.candles.length === 0) {
-            console.warn('📊 [useChartData] API returned empty candles array');
+            // console.warn('📊 [useChartData] API returned empty candles array');
             throw new Error('No chart data available for this token');
           }
 
@@ -133,11 +133,11 @@ export function useChartData({
             throw new Error('Invalid chart data format');
           }
 
-          console.log('📊 [useChartData] First candle:', firstCandle);
-          console.log(
-            '📊 [useChartData] Last candle:',
-            response.data.candles[response.data.candles.length - 1]
-          );
+          // console.log('📊 [useChartData] First candle:', firstCandle);
+          // console.log(
+          //   '📊 [useChartData] Last candle:',
+          //   response.data.candles[response.data.candles.length - 1]
+          // );
 
           setCandles(response.data.candles);
           setCurrentPrice(response.data.currentPrice || null);
@@ -229,7 +229,7 @@ export function useChartData({
 
       setCandles((prevCandles) => {
         if (prevCandles.length === 0) {
-          console.log('📊 [useChartData] First candle received');
+          // console.log('📊 [useChartData] First candle received');
           return [data.candle];
         }
 
@@ -239,20 +239,20 @@ export function useChartData({
         // If the timestamp is the same, update the last candle (real-time update)
         if (lastCandle.timestamp === data.candle.timestamp) {
           const updated = [...prevCandles.slice(0, -1), data.candle];
-          console.log('📊 [useChartData] Updated last candle:', data.candle);
+          // console.log('📊 [useChartData] Updated last candle:', data.candle);
           return updated;
         }
 
         // Otherwise, add a new candle (new timeframe)
-        console.log('📊 [useChartData] New candle added:', data.candle);
+        // console.log('📊 [useChartData] New candle added:', data.candle);
         let newCandles = [...prevCandles, data.candle];
 
         // Keep only the last maxCandles to prevent memory issues
         if (newCandles.length > maxCandles) {
           newCandles = newCandles.slice(-maxCandles);
-          console.log(
-            `📊 [useChartData] Trimmed candles to ${maxCandles} (memory management)`
-          );
+          // console.log(
+          //   `📊 [useChartData] Trimmed candles to ${maxCandles} (memory management)`
+          // );
         }
 
         return newCandles;
@@ -274,12 +274,12 @@ export function useChartData({
 
     // Only subscribe to websocket if connected
     if (!wsClient.isConnected()) {
-      console.log('📊 [useChartData] WebSocket not connected, skipping subscription');
+      // console.log('📊 [useChartData] WebSocket not connected, skipping subscription');
       return;
     }
 
     const shortAddress = `${tokenAddress.slice(0, 8)}...${tokenAddress.slice(-8)}`;
-    console.log(`📊 [useChartData] Subscribing to chart updates for ${shortAddress} (${currentTimeframe})`);
+    // console.log(`📊 [useChartData] Subscribing to chart updates for ${shortAddress} (${currentTimeframe})`);
 
     try {
       // Subscribe with timeframe parameter
@@ -291,7 +291,7 @@ export function useChartData({
         try {
           wsClient.send('unsubscribe_chart', { tokenAddress, timeframe: currentTimeframe });
           wsClient.off(WS_EVENTS.CHART_UPDATE, handleChartUpdate);
-          console.log(`📊 [useChartData] Unsubscribed from chart updates for ${shortAddress}`);
+          // console.log(`📊 [useChartData] Unsubscribed from chart updates for ${shortAddress}`);
         } catch (error) {
           console.error('📊 [useChartData] Error unsubscribing from WebSocket:', error);
         }
