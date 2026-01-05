@@ -51,7 +51,7 @@ export default function AboutPage() {
     ];
 
     return (
-        <div className="min-h-screen flex flex-col relative bg-[#030712] text-slate-200 overflow-x-hidden">
+        <div className="min-h-screen flex flex-col relative bg-black text-slate-200 overflow-x-hidden">
             {/* Ambient Background */}
             <div className="fixed inset-0 z-0">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-emerald-500/10 blur-[120px] rounded-full opacity-50" />
@@ -123,7 +123,7 @@ export default function AboutPage() {
                             {/* Refined Mission Visual */}
                             <div className="relative">
                                 <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-3xl blur opacity-20" />
-                                <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-[#0c111d]/80 backdrop-blur-2xl p-16 flex flex-col items-center justify-center shadow-2xl">
+                                <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-background/40 backdrop-blur-2xl p-16 flex flex-col items-center justify-center shadow-2xl">
                                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,0.05),transparent)] pointer-events-none" />
                                     <motion.div 
                                         animate={{ 
@@ -160,7 +160,7 @@ export default function AboutPage() {
                                     <motion.div 
                                         key={i} 
                                         whileHover={{ y: -5 }}
-                                        className="p-10 rounded-3xl border border-white/5 bg-[#0c111d]/50 hover:bg-[#0c111d]/80 transition-all group"
+                                        className="p-10 rounded-3xl border border-white/5 bg-background/40 hover:bg-background/60 transition-all group"
                                     >
                                         <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform border border-emerald-500/20">
                                             <val.icon className="w-7 h-7 text-emerald-400" />
@@ -189,7 +189,7 @@ export default function AboutPage() {
                                     </div>
                                 </div>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 rounded-[40px] overflow-hidden border border-white/10 bg-[#0c111d]/50 backdrop-blur-md divide-x divide-y divide-white/5">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 rounded-[40px] overflow-hidden border border-white/10 bg-background/40 backdrop-blur-md divide-x divide-y divide-white/5">
                                 {features.map((feature, index) => (
                                     <FeatureCard 
                                         key={index} 
