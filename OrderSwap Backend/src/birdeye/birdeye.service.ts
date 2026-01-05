@@ -74,12 +74,14 @@ export class BirdeyeService implements OnModuleDestroy {
     this.logger.log('✅ Birdeye service ENABLED for Mainnet charts');
 
     // Create axios instance with default config
+    // CRITICAL: x-chain header is REQUIRED for all Birdeye API calls
     this.axiosInstance = axios.create({
       baseURL: this.restUrl,
       timeout: 15000,
       headers: {
         'X-API-KEY': this.apiKey,
-        'Accept': 'application/json',
+        'x-chain': 'solana',
+        'accept': 'application/json',
       },
     });
 
@@ -267,7 +269,7 @@ export class BirdeyeService implements OnModuleDestroy {
 
     const shortAddress = `${tokenAddress.slice(0, 8)}...${tokenAddress.slice(-8)}`;
     const cached = this.priceCache.get(tokenAddress);
-    
+
     if (cached && Date.now() - cached.timestamp < this.PRICE_CACHE_TTL_MS) {
       this.logger.debug(`📦 Price cache HIT for ${shortAddress}`);
       return cached.data;
@@ -275,7 +277,7 @@ export class BirdeyeService implements OnModuleDestroy {
 
     try {
       this.logger.log(`🔄 Fetching price from Birdeye for ${shortAddress}`);
-      
+
       const response = await this.axiosInstance.get<BirdeyePriceResponse>(
         '/defi/price',
         {
@@ -304,7 +306,7 @@ export class BirdeyeService implements OnModuleDestroy {
 
       this.priceCache.set(tokenAddress, { data: priceData, timestamp: Date.now() });
       this.logger.log(`✅ Fetched price for ${shortAddress}: $${priceData.price.toFixed(6)}`);
-      
+
       return priceData;
     } catch (error) {
       this.logger.error(`Error fetching price for ${shortAddress}: ${error.message}`);
@@ -349,7 +351,7 @@ export class BirdeyeService implements OnModuleDestroy {
 
     try {
       this.logger.log(`🔄 Fetching ${addressesToFetch.length} prices from Birdeye multi_price`);
-      
+
       const response = await this.axiosInstance.get<BirdeyeMultiPriceResponse>(
         '/defi/multi_price',
         {
@@ -758,6 +760,93 @@ export class BirdeyeService implements OnModuleDestroy {
     };
 
     return mapping[timeframe] || 3600;
+  }
+
+  /**
+   * Get top holders for a token (for Cluster Analysis whale discovery)
+   * Uses Birdeye's pre-indexed holder data with PARALLEL PAGINATION
+   * NOTE: Birdeye v3/token/holder has a hard limit of 100 items per request
+   * @param tokenAddress - Token mint address
+   * @param targetCount - Target number of top holders to fetch (max 500)
+   */
+  async getTopHolders(tokenAddress: string, targetCount: number = 500): Promise<string[]> {
+    if (!this.isEnabled) {
+      this.logger.warn('Birdeye service disabled, cannot fetch top holders');
+      return [];
+    }
+
+    // CRITICAL: Sanitize input - trim whitespace that can cause 400 errors
+    const cleanAddress = tokenAddress.trim();
+
+    if (!cleanAddress || cleanAddress.length < 32) {
+      this.logger.error(`Invalid token address: "${tokenAddress}" (length: ${tokenAddress?.length})`);
+      return [];
+    }
+
+    const shortAddress = `${cleanAddress.slice(0, 8)}...${cleanAddress.slice(-8)}`;
+    this.logger.log(`🐋 Fetching top ${targetCount} holders for ${shortAddress} from Birdeye (PARALLEL)...`);
+
+    const PAGE_SIZE = 100; // Birdeye's HARD limit per request - DO NOT CHANGE
+    const maxPages = Math.ceil(Math.min(targetCount, 500) / PAGE_SIZE); // Max 5 pages for 500 holders
+
+    try {
+      // 🚀 PARALLEL: Create an array of promises for all pages
+      const pagePromises = Array.from({ length: maxPages }, (_, page) => {
+        const offset = page * PAGE_SIZE;
+
+        return this.axiosInstance.get('/defi/v3/token/holder', {
+          params: {
+            address: cleanAddress,
+            offset,
+            limit: PAGE_SIZE,
+          },
+        }).then(response => {
+          if (!response.data || !response.data.success) {
+            this.logger.warn(`Birdeye holder API unsuccessful for ${shortAddress} at offset ${offset}`);
+            return [];
+          }
+
+          const items = response.data.data?.items || [];
+          return items.map((item: any) => item.owner || item.address).filter((addr: string) => addr && addr.length > 0);
+        }).catch(err => {
+          this.logger.warn(`Page ${page} failed for ${shortAddress}: ${err.message}`);
+          return [];
+        });
+      });
+
+      // 🚀 Fire all requests simultaneously!
+      const startTime = Date.now();
+      const results = await Promise.all(pagePromises);
+      const elapsed = Date.now() - startTime;
+
+      // Merge and deduplicate results
+      const allHolders = new Set<string>();
+      for (const pageHolders of results) {
+        for (const addr of pageHolders) {
+          allHolders.add(addr);
+        }
+      }
+
+      this.logger.log(`✅ Fetched ${allHolders.size} unique top holders for ${shortAddress} in ${elapsed}ms (PARALLEL)`);
+      return Array.from(allHolders).slice(0, targetCount);
+
+    } catch (error: any) {
+      // 🛑 CRITICAL DEBUG LOGGING - Capture Birdeye's actual error message
+      if (error.response) {
+        this.logger.error(`🚨 BIRDEYE ERROR [${shortAddress}]:`);
+        this.logger.error(`   Status: ${error.response.status}`);
+        this.logger.error(`   Response Body: ${JSON.stringify(error.response.data, null, 2)}`);
+        this.logger.error(`   Request URL: ${error.config?.url}`);
+        this.logger.error(`   Request Params: ${JSON.stringify(error.config?.params)}`);
+      } else if (error.request) {
+        this.logger.error(`🚨 BIRDEYE NETWORK ERROR [${shortAddress}]: No response received`);
+        this.logger.error(`   Message: ${error.message}`);
+      } else {
+        this.logger.error(`🚨 BIRDEYE REQUEST SETUP ERROR [${shortAddress}]: ${error.message}`);
+      }
+
+      return [];
+    }
   }
 
   /**
