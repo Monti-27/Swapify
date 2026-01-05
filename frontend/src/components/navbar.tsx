@@ -22,25 +22,14 @@ const formatAddress = (addr: string) => {
   return `${addr.slice(0, 4)}...${addr.slice(-4)}`;
 };
 
-const AnimatedThemeToggle = ({ className }: { className?: string }) => {
-  const pathname = usePathname();
-  const { setTheme } = useTheme();
-  const { isDark, toggleTheme } = useThemeToggle({
-    variant: "polygon",
-    start: "top-left",
-    blur: true,
-  });
+  const AnimatedThemeToggle = ({ className }: { className?: string }) => {
+    const { isDark, toggleTheme } = useThemeToggle({
+      variant: "polygon",
+      start: "top-left",
+      blur: true,
+    });
 
-  // Force dark mode if not on /about
-  useEffect(() => {
-    if (pathname !== '/about') {
-      setTheme('dark');
-    }
-  }, [pathname, setTheme]);
-
-  if (pathname !== '/about') return null;
-
-  return (
+    return (
     <button
       type="button"
       aria-label="Toggle theme"
