@@ -51,7 +51,8 @@ export const ModemAnimatedFooter = ({
         { title: 'Swap', href: '/swap' },
         { title: 'Strategies', href: '/strategies' },
         { title: 'Dashboard', href: '/dashboard' },
-
+        { title: 'Privacy', href: '/privacy' },
+        { title: 'Risk', href: '/transparency' },
     ];
 
     const companyLinks = [
@@ -70,9 +71,9 @@ export const ModemAnimatedFooter = ({
                     <div className="bg-[radial-gradient(35%_80%_at_30%_0%,var(--color-foreground)/0.1,transparent)] mx-auto max-w-6xl md:border-x border-border/40">
                         <div className="bg-border/40 absolute inset-x-0 top-0 h-px w-full" />
 
-                        <div className="grid grid-cols-2 gap-8 p-6 md:p-8 md:grid-cols-6 lg:gap-12">
+                        <div className="grid grid-cols-2 gap-8 p-6 md:p-8 md:grid-cols-5 lg:gap-12">
                             {/* Brand Column */}
-                            <div className="col-span-2 md:col-span-4 flex flex-col gap-6">
+                            <div className="col-span-2 md:col-span-3 flex flex-col gap-6">
                                 <div className="flex items-center gap-2 opacity-90">
                                     {/* Small Brand Icon if needed, or just text */}
                                     <div className="relative w-8 h-8">
@@ -107,7 +108,7 @@ export const ModemAnimatedFooter = ({
 
                             {/* Product Links */}
                             <div className="col-span-1 md:col-span-1">
-                                <span className="text-foreground/90 font-semibold mb-4 block text-sm">
+                                <span className="text-foreground/90 font-semibold mb-4 block text-sm mt-1.5">
                                     Product
                                 </span>
                                 <div className="flex flex-col gap-2.5">
@@ -127,7 +128,7 @@ export const ModemAnimatedFooter = ({
 
                             {/* Company Links */}
                             <div className="col-span-1 md:col-span-1">
-                                <span className="text-foreground/90 font-semibold mb-4 block text-sm">
+                                <span className="text-foreground/90 font-semibold mb-4 block text-sm mt-1.5">
                                     Company
                                 </span>
                                 <div className="flex flex-col gap-2.5">
