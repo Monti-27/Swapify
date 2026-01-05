@@ -364,17 +364,6 @@
   --sidebar-ring: #5850EC;
 }
 
-/* Prevent theme flash on load - Critical styles */
-html {
-  background-color: #0a0a0a !important;
-  color-scheme: dark;
-}
-
-html.light {
-  background-color: #ffffff !important;
-  color-scheme: light;
-}
-
 @layer base {
   * {
     @apply border-border outline-ring/50;

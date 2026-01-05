@@ -3,6 +3,8 @@
 import React, { useCallback, useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
 import { Moon, Sun, Wallet, Home, LayoutDashboard, ArrowRightLeft, Layers, Menu, X, Book, Shield, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -21,11 +23,22 @@ const formatAddress = (addr: string) => {
 };
 
 const AnimatedThemeToggle = ({ className }: { className?: string }) => {
+  const pathname = usePathname();
+  const { setTheme } = useTheme();
   const { isDark, toggleTheme } = useThemeToggle({
     variant: "polygon",
     start: "top-left",
     blur: true,
   });
+
+  // Force dark mode if not on /about
+  useEffect(() => {
+    if (pathname !== '/about') {
+      setTheme('dark');
+    }
+  }, [pathname, setTheme]);
+
+  if (pathname !== '/about') return null;
 
   return (
     <button
