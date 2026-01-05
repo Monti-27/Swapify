@@ -17,12 +17,12 @@ class WebSocketClient {
 
   connect(token?: string) {
     if (this.socket?.connected) {
-      console.log('✅ Socket.IO already connected');
+      // console.log('✅ Socket.IO already connected');
       return;
     }
 
-    console.log('🔌 Connecting to Socket.IO server:', this.url);
-    
+    // console.log('🔌 Connecting to Socket.IO server:', this.url);
+
     // Create Socket.IO connection
     this.socket = io(this.url, {
       transports: ['websocket', 'polling'], // Try WebSocket first, fallback to polling
@@ -34,17 +34,17 @@ class WebSocketClient {
     });
 
     this.socket.on('connect', () => {
-      console.log('✅ Socket.IO connected!', this.socket?.id);
-      
+      // console.log('✅ Socket.IO connected!', this.socket?.id);
+
       // Auto-authenticate if token is provided
       if (token) {
         try {
           const payload = JSON.parse(atob(token.split('.')[1]));
           const userId = payload.userId || payload.sub;
           this.currentUserId = userId;
-          
-          console.log('🔐 Authenticating with userId:', userId);
-          
+
+          // console.log('🔐 Authenticating with userId:', userId);
+
           // Send authenticate message
           this.socket?.emit('authenticate', { userId, token });
         } catch (error) {
@@ -58,7 +58,7 @@ class WebSocketClient {
 
     this.socket.on('authenticated', (data: any) => {
       if (data.success) {
-        console.log('✅ Socket.IO authenticated successfully!');
+        // console.log('✅ Socket.IO authenticated successfully!');
       }
     });
 
@@ -137,7 +137,7 @@ class WebSocketClient {
       this.handlers.set(event, new Set());
     }
     this.handlers.get(event)!.add(handler);
-    console.log(`📡 Registered handler for event: ${event}`);
+    // console.log(`📡 Registered handler for event: ${event}`);
   }
 
   off(event: string, handler: WebSocketMessageHandler) {

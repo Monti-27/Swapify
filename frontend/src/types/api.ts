@@ -221,3 +221,30 @@ export interface WalletRiskReport {
   lastScannedAt: string | null;
   isCached: boolean;
 }
+
+// Cluster Analysis Types
+export type ClusterMode = 'SNAPSHOT' | 'HISTORY';
+
+export interface ClusterWallet {
+  address: string;
+  riskScore: number;
+  riskLevel: string;
+  labels: string[];
+  isCached: boolean;
+  scanSkipped: boolean;
+}
+
+export interface ClusterResult {
+  tokenCount: number;
+  mints: string[];
+  mode: ClusterMode;
+  mutualWalletCount: number;
+  wallets: ClusterWallet[];
+  stats: {
+    addressesPerToken: Record<string, number>;
+    intersectionSize: number;
+    scannedCount: number;
+    cachedCount: number;
+    skippedCount: number;
+  };
+}

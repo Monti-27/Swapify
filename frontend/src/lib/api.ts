@@ -257,6 +257,16 @@ class ApiClient {
   async scanWalletRisk(address: string): Promise<import('@/types/api').WalletRiskReport> {
     return this.request(`/transparency/scan/${address}`, { method: 'POST' });
   }
+
+  async analyzeCluster(
+    mints: string[],
+    mode: import('@/types/api').ClusterMode,
+  ): Promise<import('@/types/api').ClusterResult> {
+    return this.request('/transparency/cluster', {
+      method: 'POST',
+      body: JSON.stringify({ mints, mode }),
+    });
+  }
 }
 
 // Export singleton instance
