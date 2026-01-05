@@ -52,7 +52,7 @@ export const ModemAnimatedFooter = ({
         { title: 'Strategies', href: '/strategies' },
         { title: 'Dashboard', href: '/dashboard' },
         { title: 'Privacy', href: '/privacy' },
-        { title: 'Risk', href: '/transparency' },
+        { title: 'Anti-Privacy', href: '/transparency' },
     ];
 
     const companyLinks = [
