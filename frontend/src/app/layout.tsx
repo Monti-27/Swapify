@@ -26,16 +26,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-      <html lang="en" suppressHydrationWarning>
-        <head />
-        <body className={`${kanit.variable} font-sans antialiased overflow-x-hidden`}>
+    <html lang="en" suppressHydrationWarning>
+      <head />
+      <body className={`${kanit.variable} font-sans antialiased overflow-x-hidden`}>
         <Providers>
           <SmoothScroll>
             {children}
           </SmoothScroll>
         </Providers>
         <Analytics />
-        <SpeedInsights />
+        <SpeedInsights debug={false} />
       </body>
     </html>
   );
