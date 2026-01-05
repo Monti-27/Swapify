@@ -73,7 +73,7 @@ export default function StrategiesPage() {
     // Connect to WebSocket with authentication token
     const token = localStorage.getItem('auth_token');
     if (token) {
-      console.log('🔌 Connecting to WebSocket with auth token...');
+      // console.log('🔌 Connecting to WebSocket with auth token...');
       wsClient.connect(token);
     } else {
       console.warn('⚠️ No auth token found for WebSocket connection');
