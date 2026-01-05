@@ -57,33 +57,33 @@ export function AuthProvider({ children, mountTime, isInitialMount }: AuthProvid
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
-  
+
   // Use ref to track last authentication to prevent rapid re-auth
   const lastAuthAttempt = useRef<{ wallet: string; timestamp: number } | null>(null);
-  
+
   // Track if we've authenticated this session to prevent re-auth on navigation
   const hasAuthenticatedThisSession = useRef<boolean>(false);
   const currentWalletRef = useRef<string | null>(null);
-  
+
   // Track connection state for debouncing
   const disconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const wasEverConnectedRef = useRef<boolean>(false);
   const lastConnectedTimeRef = useRef<number>(0);
-  
+
   // Log AuthProvider mounting for debugging
   useEffect(() => {
-    console.log('🔐 AuthProvider mounted', {
-      environment: process.env.NODE_ENV,
-      timestamp: new Date().toISOString(),
-      mountTime,
-      hasWindow: typeof window !== 'undefined'
-    });
-    
+    // console.log('🔐 AuthProvider mounted', {
+    //   environment: process.env.NODE_ENV,
+    //   timestamp: new Date().toISOString(),
+    //   mountTime,
+    //   hasWindow: typeof window !== 'undefined'
+    // });
+
     return () => {
-      console.log('🔐 AuthProvider unmounting', {
-        timestamp: new Date().toISOString()
-      });
-      
+      // console.log('🔐 AuthProvider unmounting', {
+      //   timestamp: new Date().toISOString()
+      // });
+
       // Clear any pending disconnect timeout
       if (disconnectTimeoutRef.current) {
         clearTimeout(disconnectTimeoutRef.current);
@@ -93,15 +93,15 @@ export function AuthProvider({ children, mountTime, isInitialMount }: AuthProvid
 
   // Debounced disconnect handler to filter out false disconnects
   const handleDisconnect = useCallback((reason: string) => {
-    console.log('🔌 Disconnect event received', {
-      reason,
-      timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV,
-      wasEverConnected: wasEverConnectedRef.current,
-      isInitialMount: isInitialMount.current,
-      timeSinceMount: Date.now() - mountTime,
-      timeSinceLastConnect: Date.now() - lastConnectedTimeRef.current
-    });
+    // console.log('🔌 Disconnect event received', {
+    //   reason,
+    //   timestamp: new Date().toISOString(),
+    //   environment: process.env.NODE_ENV,
+    //   wasEverConnected: wasEverConnectedRef.current,
+    //   isInitialMount: isInitialMount.current,
+    //   timeSinceMount: Date.now() - mountTime,
+    //   timeSinceLastConnect: Date.now() - lastConnectedTimeRef.current
+    // });
 
     // Clear any existing timeout
     if (disconnectTimeoutRef.current) {
@@ -110,24 +110,24 @@ export function AuthProvider({ children, mountTime, isInitialMount }: AuthProvid
 
     // If this is during initial mount or very soon after mount, ignore
     if (isInitialMount.current || (Date.now() - mountTime) < 2000) {
-      console.log('🚫 Ignoring disconnect during initialization');
+      // console.log('🚫 Ignoring disconnect during initialization');
       return;
     }
 
     // If wallet was never actually connected, ignore
     if (!wasEverConnectedRef.current) {
-      console.log('🚫 Ignoring disconnect - wallet was never connected');
+      // console.log('🚫 Ignoring disconnect - wallet was never connected');
       return;
     }
 
     // Debounce the actual disconnect handling
     disconnectTimeoutRef.current = setTimeout(() => {
-      console.log('🔌 Processing debounced disconnect', {
-        reason,
-        timestamp: new Date().toISOString(),
-        wasAuthenticated: isAuthenticated,
-        hadSession: hasAuthenticatedThisSession.current
-      });
+      //   console.log('🔌 Processing debounced disconnect', {
+      //     reason,
+      //     timestamp: new Date().toISOString(),
+      //     wasAuthenticated: isAuthenticated,
+      //     hadSession: hasAuthenticatedThisSession.current
+      //   });
 
       setIsAuthenticated(false);
       api.clearToken();
@@ -136,7 +136,7 @@ export function AuthProvider({ children, mountTime, isInitialMount }: AuthProvid
       hasAuthenticatedThisSession.current = false;
       currentWalletRef.current = null;
       wasEverConnectedRef.current = false;
-      
+
       if (typeof window !== 'undefined') {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('last_wallet_address');
@@ -151,7 +151,7 @@ export function AuthProvider({ children, mountTime, isInitialMount }: AuthProvid
       const expirationTime = payload.exp * 1000;
       const currentTime = Date.now();
       const timeUntilExpiry = expirationTime - currentTime;
-      
+
       // Token is valid if it expires more than 5 minutes from now
       // Backend JWT expires in 7 days, so this gives us a good buffer
       return timeUntilExpiry > 5 * 60 * 1000;
@@ -160,7 +160,7 @@ export function AuthProvider({ children, mountTime, isInitialMount }: AuthProvid
       return false;
     }
   }, []);
-  
+
   // Helper to get token expiry timestamp
   const getTokenExpiry = useCallback((token: string): number => {
     try {
@@ -178,18 +178,18 @@ export function AuthProvider({ children, mountTime, isInitialMount }: AuthProvid
     const existingToken = localStorage.getItem('auth_token');
     const lastWallet = localStorage.getItem('last_wallet_address');
     const authSession = getAuthSession();
-    
+
     if (existingToken && isTokenValid(existingToken)) {
       const tokenExpiry = getTokenExpiry(existingToken);
-      
+
       // Restore API token
       api.setToken(existingToken);
       setIsAuthenticated(true);
-      
+
       // Mark as authenticated this session to prevent re-auth
       hasAuthenticatedThisSession.current = true;
       currentWalletRef.current = lastWallet;
-      
+
       // Update session if wallet address is available
       if (lastWallet) {
         setAuthSession({
@@ -197,14 +197,14 @@ export function AuthProvider({ children, mountTime, isInitialMount }: AuthProvid
           timestamp: Date.now(),
           tokenExpiry
         });
-        
+
         lastAuthAttempt.current = {
           wallet: lastWallet,
           timestamp: Date.now()
         };
       }
-      
-      console.log('✅ Restored authentication session for wallet:', lastWallet?.slice(0, 8) + '...');
+
+      // console.log('✅ Restored authentication session for wallet:', lastWallet?.slice(0, 8) + '...');
     } else if (existingToken) {
       console.log('❌ Token expired, clearing auth state');
       localStorage.removeItem('auth_token');
@@ -212,7 +212,7 @@ export function AuthProvider({ children, mountTime, isInitialMount }: AuthProvid
       api.clearToken();
       clearAuthSession();
     }
-    
+
     setIsInitialized(true);
   }, [isTokenValid, getTokenExpiry]);
 
@@ -220,30 +220,30 @@ export function AuthProvider({ children, mountTime, isInitialMount }: AuthProvid
   const authenticate = useCallback(async () => {
     if (!publicKey || !signMessage) return;
     if (isAuthenticating) return;
-    
+
     const currentWallet = publicKey.toString();
     const authSession = getAuthSession();
-    
+
     // GUARD 1: Check if already authenticated for this wallet in this session
     if (isAuthenticated && hasAuthenticatedThisSession.current && currentWalletRef.current === currentWallet) {
-      console.log('🔒 Already authenticated this session, skipping');
+      // console.log('🔒 Already authenticated this session, skipping');
       return;
     }
-    
+
     // GUARD 2: Check if already authenticated for this wallet with valid session
     if (isAuthenticated && authSession?.walletAddress === currentWallet) {
       const timeSinceAuth = Date.now() - authSession.timestamp;
       if (timeSinceAuth < 5 * 60 * 1000) {
-        console.log('🔒 Recently authenticated, skipping');
+        // console.log('🔒 Recently authenticated, skipping');
         return;
       }
     }
-    
+
     // GUARD 3: Cooldown - prevent rapid re-authentication attempts
     if (lastAuthAttempt.current?.wallet === currentWallet) {
       const timeSinceLastAttempt = Date.now() - lastAuthAttempt.current.timestamp;
       if (timeSinceLastAttempt < 5 * 60 * 1000) {
-        console.log('🔒 Cooldown active, skipping');
+        // console.log('🔒 Cooldown active, skipping');
         return;
       }
     }
@@ -257,11 +257,11 @@ export function AuthProvider({ children, mountTime, isInitialMount }: AuthProvid
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ publicKey: publicKey.toString() }),
       });
-      
+
       if (!messageRes.ok) {
         throw new Error(`Failed to get auth message: ${messageRes.status}`);
       }
-      
+
       const { message } = await messageRes.json();
 
       // Sign the message with wallet
@@ -294,54 +294,54 @@ export function AuthProvider({ children, mountTime, isInitialMount }: AuthProvid
       // Store token and wallet address
       const walletAddress = publicKey.toString();
       const tokenExpiry = getTokenExpiry(accessToken);
-      
+
       api.setToken(accessToken);
-      
+
       if (typeof window !== 'undefined') {
         localStorage.setItem('last_wallet_address', walletAddress);
       }
-      
+
       // Update session storage with comprehensive auth state
       setAuthSession({
         walletAddress,
         timestamp: Date.now(),
         tokenExpiry
       });
-      
+
       // Update last auth attempt ref
       lastAuthAttempt.current = {
         wallet: walletAddress,
         timestamp: Date.now()
       };
-      
+
       // Mark as authenticated this session
       hasAuthenticatedThisSession.current = true;
       currentWalletRef.current = walletAddress;
-      
+
       setIsAuthenticated(true);
-      
-      console.log('✅ Authentication successful for wallet:', walletAddress.slice(0, 8) + '...');
-      
+
+      // console.log('✅ Authentication successful for wallet:', walletAddress.slice(0, 8) + '...');
+
       toast.success('Wallet Connected', {
         description: 'Authentication successful!',
         duration: 3000
       });
     } catch (error: any) {
       console.error('❌ Authentication failed:', error.message);
-      
+
       setIsAuthenticated(false);
       api.clearToken();
       clearAuthSession();
-      
+
       // Clear session tracking
       hasAuthenticatedThisSession.current = false;
       currentWalletRef.current = null;
-      
+
       if (typeof window !== 'undefined') {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('last_wallet_address');
       }
-      
+
       // Update last attempt even on failure to prevent spam
       if (publicKey) {
         lastAuthAttempt.current = {
@@ -349,7 +349,7 @@ export function AuthProvider({ children, mountTime, isInitialMount }: AuthProvid
           timestamp: Date.now()
         };
       }
-      
+
       // Only show error if it's not a user rejection
       if (!error.message?.includes('User rejected') && !error.message?.includes('rejected')) {
         toast.error('Authentication Failed', {
@@ -363,22 +363,22 @@ export function AuthProvider({ children, mountTime, isInitialMount }: AuthProvid
 
   // Explicit logout function
   const logout = useCallback(() => {
-    console.log('🚪 Logging out user');
-    
+    // console.log('🚪 Logging out user');
+
     setIsAuthenticated(false);
     api.clearToken();
     clearAuthSession();
-    
+
     // Clear session tracking
     hasAuthenticatedThisSession.current = false;
     currentWalletRef.current = null;
     lastAuthAttempt.current = null;
-    
+
     if (typeof window !== 'undefined') {
       localStorage.removeItem('auth_token');
       localStorage.removeItem('last_wallet_address');
     }
-    
+
     toast.info('Logged out', {
       description: 'Authentication cleared'
     });
@@ -388,23 +388,23 @@ export function AuthProvider({ children, mountTime, isInitialMount }: AuthProvid
   useEffect(() => {
     // Don't run until initialization is complete
     if (!isInitialized) return;
-    
+
     // Track connection state
     if (connected) {
       wasEverConnectedRef.current = true;
       lastConnectedTimeRef.current = Date.now();
-      
+
       // Clear any pending disconnect timeout
       if (disconnectTimeoutRef.current) {
         clearTimeout(disconnectTimeoutRef.current);
         disconnectTimeoutRef.current = null;
       }
-      
-      console.log('🔌 Wallet connected', {
-        timestamp: new Date().toISOString(),
-        environment: process.env.NODE_ENV,
-        publicKey: publicKey?.toString().slice(0, 8) + '...'
-      });
+
+      // console.log('🔌 Wallet connected', {
+      //   timestamp: new Date().toISOString(),
+      //   environment: process.env.NODE_ENV,
+      //   publicKey: publicKey?.toString().slice(0, 8) + '...'
+      // });
     } else {
       // Use debounced disconnect handler
       handleDisconnect('wallet_disconnected');
@@ -416,16 +416,16 @@ export function AuthProvider({ children, mountTime, isInitialMount }: AuthProvid
     const currentAddress = publicKey.toString();
     const authSession = getAuthSession();
     const existingToken = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-    
+
     // CRITICAL: If already authenticated with valid session, DO NOTHING
     if (isAuthenticated && hasAuthenticatedThisSession.current && currentWalletRef.current === currentAddress) {
-      console.log('🔒 Already authenticated this session, skipping re-auth');
+      // console.log('🔒 Already authenticated this session, skipping re-auth');
       return;
     }
-    
+
     // Check if wallet changed
     const walletChanged = currentWalletRef.current && currentAddress !== currentWalletRef.current;
-    
+
     if (walletChanged) {
       console.log('🔄 Wallet changed, clearing previous auth');
       setIsAuthenticated(false);
@@ -433,7 +433,7 @@ export function AuthProvider({ children, mountTime, isInitialMount }: AuthProvid
       clearAuthSession();
       lastAuthAttempt.current = null;
       hasAuthenticatedThisSession.current = false;
-      
+
       if (typeof window !== 'undefined') {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('last_wallet_address');
@@ -449,7 +449,7 @@ export function AuthProvider({ children, mountTime, isInitialMount }: AuthProvid
         setIsAuthenticated(true);
         hasAuthenticatedThisSession.current = true;
         currentWalletRef.current = currentAddress;
-        
+
         // Update last auth attempt to prevent immediate re-auth
         lastAuthAttempt.current = {
           wallet: currentAddress,

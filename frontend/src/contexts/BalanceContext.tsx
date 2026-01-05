@@ -56,15 +56,17 @@ export function BalanceProvider({ children }: { children: ReactNode }) {
     setIsLoadingBalance(true);
 
     try {
-      console.log('💰 Fetching balance for:', publicKey.toBase58().slice(0, 8) + '...');
-      console.log('🔗 RPC endpoint:', connection.rpcEndpoint);
+      // console.log('💰 Fetching balance for:', publicKey.toBase58().slice(0, 8) + '...');
+      // console.log('🔗 RPC endpoint:', connection.rpcEndpoint);
       const balanceLamports = await connection.getBalance(publicKey);
       const solBalance = (balanceLamports / LAMPORTS_PER_SOL).toFixed(4);
 
       setBalance(solBalance);
       setLastFetched(Date.now());
 
-      console.log('✅ Balance fetched:', solBalance, 'SOL');
+      setLastFetched(Date.now());
+
+      // console.log('✅ Balance fetched:', solBalance, 'SOL');
     } catch (error: any) {
       console.error('❌ Failed to fetch balance:', error.message);
 
@@ -92,7 +94,7 @@ export function BalanceProvider({ children }: { children: ReactNode }) {
   // Fetch balance ONLY when wallet connects (not on every render/navigation)
   useEffect(() => {
     if (connected && publicKey) {
-      console.log('🔌 Wallet connected - fetching initial balance');
+      // console.log('🔌 Wallet connected - fetching initial balance');
       fetchBalance(true); // Force fetch on connect
     } else {
       // Clear balance when disconnected
