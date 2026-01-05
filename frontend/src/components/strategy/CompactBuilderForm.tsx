@@ -601,7 +601,7 @@ export function CompactBuilderForm({
                 <div className={`border rounded-xl p-4 space-y-3 transition-colors ${boomerangEnabled
                     ? 'bg-cyan-950/10 border-cyan-500/30 shadow-[0_0_20px_rgba(6,182,212,0.05)]'
                     : 'bg-[#131316] border-zinc-800'
-                    }`}>
+                    } ${!(takeProfitEnabled || stopLossEnabled) ? 'opacity-50' : ''}`}>
                     <div className="flex items-center gap-2 mb-2">
                         <RotateCcw className="h-4 w-4 text-cyan-400" />
                         <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Section 3 - Boomerang Mode</span>
@@ -610,26 +610,39 @@ export function CompactBuilderForm({
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-sm text-white font-medium">BOOMERANG:</p>
-                            <p className="text-xs text-zinc-400">Safety Landing</p>
+                            <p className="text-xs text-zinc-400">
+                                {(takeProfitEnabled || stopLossEnabled)
+                                    ? 'Safety Landing'
+                                    : '⚠️ Enable TP or SL first'}
+                            </p>
                         </div>
                         <Switch
-                            checked={boomerangEnabled}
-                            onCheckedChange={setBoomerangEnabled}
+                            checked={boomerangEnabled && (takeProfitEnabled || stopLossEnabled)}
+                            onCheckedChange={(checked) => {
+                                // Only allow enabling if TP or SL is on
+                                if (takeProfitEnabled || stopLossEnabled) {
+                                    setBoomerangEnabled(checked);
+                                }
+                            }}
+                            disabled={!(takeProfitEnabled || stopLossEnabled)}
+                            className={!(takeProfitEnabled || stopLossEnabled) ? 'opacity-50 cursor-not-allowed' : ''}
                         />
                     </div>
 
-                    {boomerangEnabled && (
+                    {boomerangEnabled && (takeProfitEnabled || stopLossEnabled) && (
                         <div className="mt-2 p-2 bg-zinc-900/50 rounded-lg border border-zinc-800">
                             <p className="text-xs text-cyan-400 font-medium">🪃 Round Trip Active</p>
                             <p className="text-[10px] text-zinc-500 mt-1">
                                 After TP/SL triggers, strategy will flip tokens and reset to Active.
                             </p>
-                            {/* Max Deviation - Coming Soon (Not connected to contract yet)
-                            <div className="flex items-center gap-3 mt-2 opacity-50">
-                                <span className="text-xs text-zinc-400">Max Deviation:</span>
-                                <span className="text-xs text-zinc-500">Coming Soon</span>
-                            </div>
-                            */}
+                        </div>
+                    )}
+
+                    {!(takeProfitEnabled || stopLossEnabled) && (
+                        <div className="mt-2 p-2 bg-zinc-800/30 rounded-lg border border-zinc-700/50">
+                            <p className="text-[10px] text-zinc-500">
+                                🔒 Boomerang requires Take Profit or Stop Loss to be enabled.
+                            </p>
                         </div>
                     )}
                 </div>

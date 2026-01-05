@@ -5,7 +5,7 @@ import { PrivacyDashboard } from '@/components/privacy/privacy-dashboard';
 export default function PrivacyPage() {
     return (
         <div className="min-h-screen flex flex-col relative bg-background">
-            <div className="absolute inset-0 gradient-purple-radial pointer-events-none" />
+            <div className="absolute inset-0 gradient-emerald-radial pointer-events-none" />
             <div className="relative z-10 flex-1 flex flex-col">
                 <Navbar />
                 <main className="flex-1 container mx-auto px-4 pt-32 pb-20">

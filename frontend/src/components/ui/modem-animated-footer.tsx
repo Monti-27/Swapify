@@ -57,7 +57,7 @@ export const ModemAnimatedFooter = ({
     const companyLinks = [
         { title: 'About Us', href: '/about' },
         { title: 'Docs', href: 'https://docs.weswap.fun/' },
-        { title: 'Privacy Policy', href: '/privacy' },
+        { title: 'Privacy Policy', href: '/privacy-policy' },
         { title: 'Terms of Service', href: '/terms' },
     ];
 

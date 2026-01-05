@@ -14,7 +14,7 @@ export default function SwapV2Page() {
   return (
     <SwapProvider>
       <div className="min-h-screen relative bg-background">
-        <div className="absolute inset-0 gradient-purple-radial pointer-events-none" style={{ willChange: 'auto' }} />
+        <div className="absolute inset-0 gradient-emerald-radial pointer-events-none" style={{ willChange: 'auto' }} />
         <div className="relative z-10" style={{ willChange: 'auto' }}>
           <Navbar />
           

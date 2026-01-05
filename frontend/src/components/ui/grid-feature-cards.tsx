@@ -1,17 +1,22 @@
+"use client";
+
 import { cn } from '@/lib/utils';
 import React from 'react';
+import { LucideIcon } from 'lucide-react';
 
 type FeatureType = {
     title: string;
-    icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
     description: string;
+    icon?: LucideIcon;
 };
 
-type FeatureCardPorps = React.ComponentProps<'div'> & {
+type FeatureCardProps = React.ComponentProps<'div'> & {
     feature: FeatureType;
+    icon?: LucideIcon;
 };
 
-export function FeatureCard({ feature, className, ...props }: FeatureCardPorps) {
+export function FeatureCard({ feature, icon, className, ...props }: FeatureCardProps) {
+    const Icon = icon || feature.icon;
     const [p, setP] = React.useState<number[][]>([]);
 
     React.useEffect(() => {
@@ -32,7 +37,7 @@ export function FeatureCard({ feature, className, ...props }: FeatureCardPorps) 
                     />
                 </div>
             </div>
-            <feature.icon className="text-foreground/75 size-6" strokeWidth={1} aria-hidden />
+            {Icon && <Icon className="text-foreground/75 size-6" strokeWidth={1} aria-hidden />}
             <h3 className="mt-10 text-sm md:text-base font-semibold">{feature.title}</h3>
             <p className="text-muted-foreground relative z-20 mt-2 text-xs font-light leading-relaxed">{feature.description}</p>
         </div>

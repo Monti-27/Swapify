@@ -62,6 +62,7 @@ export function FeaturesGridSection() {
                         <FeatureCard
                             key={i}
                             feature={feature}
+                            icon={feature.icon}
                             className="border-r border-b border-border bg-card/20 hover:bg-accent/50 transition-colors duration-300"
                         />
                     ))}

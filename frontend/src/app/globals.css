@@ -605,6 +605,26 @@ html.light {
   }
 }
 
+/* Emerald & Arctic Silver Gradient Utilities */
+.gradient-emerald-radial {
+  background: radial-gradient(circle at top center, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+}
+
+.light .gradient-emerald-radial {
+  background: radial-gradient(circle at top center, rgba(16, 185, 129, 0.08) 0%, transparent 70%);
+}
+
+.gradient-emerald-subtle {
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.02) 100%);
+}
+
+.text-gradient-emerald {
+  background: linear-gradient(135deg, #10B981 0%, #059669 50%, #34D399 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 /* Purple Gradient Utilities */
 .gradient-purple-hero {
   background: linear-gradient(135deg, #6a329f 0%, #601f9e 50%, #522081 100%);
