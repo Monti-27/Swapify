@@ -98,7 +98,7 @@ export class WebsocketGateway implements OnGatewayConnection, OnGatewayDisconnec
     @ConnectedSocket() client: Socket,
   ) {
     client.join(`strategy:${data.strategyId}`);
-    this.logger.log(`Client ${client.id} subscribed to strategy ${data.strategyId}`);
+    // this.logger.log(`Client ${client.id} subscribed to strategy ${data.strategyId}`);
   }
 
   @SubscribeMessage('unsubscribe_strategy')
@@ -107,7 +107,7 @@ export class WebsocketGateway implements OnGatewayConnection, OnGatewayDisconnec
     @ConnectedSocket() client: Socket,
   ) {
     client.leave(`strategy:${data.strategyId}`);
-    this.logger.log(`Client ${client.id} unsubscribed from strategy ${data.strategyId}`);
+    // this.logger.log(`Client ${client.id} unsubscribed from strategy ${data.strategyId}`);
   }
 
   /**
@@ -195,7 +195,7 @@ export class WebsocketGateway implements OnGatewayConnection, OnGatewayDisconnec
     timeframeMap.get(timeframe).add(client.id);
 
     const shortAddress = `${tokenAddress.slice(0, 8)}...${tokenAddress.slice(-8)}`;
-    this.logger.log(`Client ${client.id} subscribed to chart updates for ${shortAddress} (${timeframe})`);
+    // this.logger.log(`Client ${client.id} subscribed to chart updates for ${shortAddress} (${timeframe})`);
 
     client.emit('chart_subscribed', { tokenAddress, timeframe, success: true });
   }
@@ -235,7 +235,7 @@ export class WebsocketGateway implements OnGatewayConnection, OnGatewayDisconnec
     }
 
     const shortAddress = `${tokenAddress.slice(0, 8)}...${tokenAddress.slice(-8)}`;
-    this.logger.log(`Client ${client.id} unsubscribed from chart updates for ${shortAddress} (${timeframe})`);
+    // this.logger.log(`Client ${client.id} unsubscribed from chart updates for ${shortAddress} (${timeframe})`);
     client.emit('chart_unsubscribed', { tokenAddress, timeframe, success: true });
   }
 
