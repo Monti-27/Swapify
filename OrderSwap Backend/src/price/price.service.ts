@@ -43,10 +43,8 @@ export class PriceService {
     this.jupiterPriceUrl = 'https://api.jup.ag/price/v2';
 
     // Log mock prices on startup
-    this.logger.log('🕵️ [TEST MODE] Mock prices active for Devnet tokens:');
-    for (const [address, data] of Object.entries(this.MOCK_PRICES)) {
-      this.logger.log(`   ${data.symbol} (${address.slice(0, 8)}...): $${data.price}`);
-    }
+    // Log startup
+    this.logger.log('✅ Price Service initialized');
   }
 
   /**

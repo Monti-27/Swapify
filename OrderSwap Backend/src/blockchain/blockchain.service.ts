@@ -109,25 +109,13 @@ export class BlockchainService implements OnModuleInit, OnModuleDestroy {
     ) { }
 
     async onModuleInit() {
-        this.logger.log('═══════════════════════════════════════');
-        this.logger.log('  🤖 WESWAP KEEPER SERVICE STARTING');
-        this.logger.log('═══════════════════════════════════════');
-
         try {
             await this.initialize();
             await this.initializeKeeper();
             await this.listenToProgramEvents();
             this.startKeeperLoop();
 
-            // Heartbeat logs
-            this.logger.log('─────────────────────────────────────');
-            this.logger.log(`[Keeper] 🤖 Execution Loop: ${this.keeperEnabled ? 'ACTIVE' : 'DISABLED'}`);
-            if (this.keeperKeypair) {
-                this.logger.log(`[Keeper] 🔑 Operator: ${this.keeperKeypair.publicKey.toString()}`);
-            }
-            this.logger.log(`[Keeper] 📡 Program ID: ${this.program.programId.toString()}`);
-            this.logger.log(`[Keeper] ⏱️  Poll Interval: ${KEEPER_POLL_INTERVAL_MS / 1000}s`);
-            this.logger.log('─────────────────────────────────────');
+            this.logger.log('✅ Blockchain Keeper Service initialized');
 
         } catch (error) {
             this.logger.error('Failed to initialize blockchain service:', error.message);
@@ -158,8 +146,7 @@ export class BlockchainService implements OnModuleInit, OnModuleDestroy {
             finalWsUrl = rpcUrl.replace('https://', 'wss://').replace('http://', 'ws://');
         }
 
-        this.logger.log(`📡 RPC URL: ${rpcUrl}`);
-        this.logger.log(`🔌 WebSocket URL: ${finalWsUrl}`);
+
 
         this.connection = new Connection(rpcUrl, {
             commitment: 'confirmed',
@@ -177,7 +164,7 @@ export class BlockchainService implements OnModuleInit, OnModuleDestroy {
         anchor.setProvider(provider);
 
         this.program = new Program(idl as any, provider);
-        this.logger.log(`🔗 Program ID: ${programId}`);
+
     }
 
     // ============================================================
@@ -362,7 +349,7 @@ export class BlockchainService implements OnModuleInit, OnModuleDestroy {
                 );
 
                 if (!price) {
-                    this.logger.debug(`Could not fetch price for ${pdaStrategy.slice(0, 8)}`);
+                    // Silent failure - new/devnet tokens often lack price data on Jupiter/Coingecko
                     return;
                 }
 
