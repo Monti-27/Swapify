@@ -19,16 +19,16 @@ import '@solana/wallet-adapter-react-ui/styles.css';
 export const SolanaWalletProvider: FC<{ children: ReactNode }> = ({ children }) => {
   // Log wallet provider mounting for debugging
   useEffect(() => {
-    console.log('💰 SolanaWalletProvider mounted', {
-      environment: process.env.NODE_ENV,
-      timestamp: new Date().toISOString(),
-      endpoint: process.env.NEXT_PUBLIC_SOLANA_RPC_URL ? 'custom' : 'default'
-    });
+    // console.log('💰 SolanaWalletProvider mounted', {
+    //   environment: process.env.NODE_ENV,
+    //   timestamp: new Date().toISOString(),
+    //   endpoint: process.env.NEXT_PUBLIC_SOLANA_RPC_URL ? 'custom' : 'default'
+    // });
 
     return () => {
-      console.log('💰 SolanaWalletProvider unmounting', {
-        timestamp: new Date().toISOString()
-      });
+      // console.log('💰 SolanaWalletProvider unmounting', {
+      //   timestamp: new Date().toISOString()
+      // });
     };
   }, []);
 
@@ -41,9 +41,9 @@ export const SolanaWalletProvider: FC<{ children: ReactNode }> = ({ children }) 
     // DEVNET RPC - Helius
     const devnetUrl = 'https://devnet.helius-rpc.com/?api-key=6bf8928b-1c63-412a-9334-73bdfc2b18b5';
 
-    console.log('🌐 RPC ENDPOINT CONFIG:');
-    console.log('   Network:', network);
-    console.log('   Using:', devnetUrl.slice(0, 50) + '...');
+    // console.log('🌐 RPC ENDPOINT CONFIG:');
+    // console.log('   Network:', network);
+    // console.log('   Using:', devnetUrl.slice(0, 50) + '...');
 
     return devnetUrl;
   }, [network]);
