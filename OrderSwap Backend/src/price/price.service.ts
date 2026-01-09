@@ -123,6 +123,51 @@ export class PriceService {
   }
 
   /**
+   * Get token overview with market cap data from Birdeye
+   * Used for MCAP chart display
+   */
+  async getTokenOverview(tokenAddress: string) {
+    // Try Birdeye first (most accurate for MCAP)
+    const birdeyeData = await this.birdeyeService.getTokenOverview(tokenAddress);
+    if (birdeyeData) {
+      return {
+        address: birdeyeData.address,
+        symbol: birdeyeData.symbol,
+        name: birdeyeData.name,
+        price: birdeyeData.price,
+        priceChange24h: birdeyeData.priceChange24h,
+        marketCap: birdeyeData.mc,
+        fdv: birdeyeData.fdv,
+        circulatingSupply: birdeyeData.circulatingSupply,
+        totalSupply: birdeyeData.totalSupply,
+        liquidity: birdeyeData.liquidity,
+        volume24h: birdeyeData.volume24h,
+      };
+    }
+
+    // Fallback to DexScreener
+    try {
+      const data = await this.fetchTokenDataFromDexScreener(tokenAddress);
+      return {
+        address: tokenAddress,
+        symbol: 'UNKNOWN',
+        name: 'Unknown Token',
+        price: data.priceUsd,
+        priceChange24h: (data as any).priceChange24h || 0,
+        marketCap: data.marketCap || 0,
+        fdv: data.marketCap || 0, // Use marketCap as FDV fallback
+        circulatingSupply: 0,
+        totalSupply: 0,
+        liquidity: (data as any).liquidity || 0,
+        volume24h: data.volume24h || 0,
+      };
+    } catch (error) {
+      this.logger.error(`Failed to get token overview: ${error.message}`);
+      return null;
+    }
+  }
+
+  /**
    * Fetch price from DexScreener
    */
   private async fetchPriceFromDexScreener(tokenAddress: string): Promise<number> {
