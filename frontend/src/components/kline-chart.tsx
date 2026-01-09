@@ -372,24 +372,24 @@ const calculatePrecision = (price: number): { pricePrecision: number; volumePrec
  * Used for Y-axis labels in MCAP mode
  */
 const formatMcapValue = (value: number, unit: string = ''): string => {
-    if (value === 0) return '$0';
+    if (value === 0) return '0';
     const absValue = Math.abs(value);
     const sign = value < 0 ? '-' : '';
 
     if (unit) {
-        return `${sign}$${absValue.toFixed(2)}${unit}`;
+        return `${sign}${absValue.toFixed(2)} ${unit}`;
     }
 
     if (absValue >= 1e9) {
-        return `${sign}$${(absValue / 1e9).toFixed(2)}B`;
+        return `${sign}${(absValue / 1e9).toFixed(2)} B`;
     }
     if (absValue >= 1e6) {
-        return `${sign}$${(absValue / 1e6).toFixed(2)}M`;
+        return `${sign}${(absValue / 1e6).toFixed(2)} M`;
     }
     if (absValue >= 1e3) {
-        return `${sign}$${(absValue / 1e3).toFixed(2)}K`;
+        return `${sign}${(absValue / 1e3).toFixed(2)} K`;
     }
-    return `${sign}$${absValue.toFixed(2)}`;
+    return `${sign}${absValue.toFixed(2)}`;
 };
 
 // ============================================
@@ -649,7 +649,29 @@ export default function KLineChart({
                             axisLine: {
                                 color: '#27272a',
                             },
+                            ...(localChartMode === 'mcap' ? {
+                                tickText: {
+                                    formatter: (params: any) => {
+                                        const value = typeof params === 'object' ? params.value : params;
+                                        return formatMcapValue(value, displayScale);
+                                    }
+                                }
+                            } : {})
                         },
+                        crosshair: {
+                            horizontal: {
+                                label: {
+                                    text: {
+                                        ...(localChartMode === 'mcap' ? {
+                                            formatter: (params: any) => {
+                                                const value = typeof params === 'object' ? params.value : params;
+                                                return formatMcapValue(value, displayScale);
+                                            }
+                                        } : {})
+                                    }
+                                }
+                            }
+                        }
                     },
                     // Price formatter for MCAP mode (K/M/B notation)
                     ...(localChartMode === 'mcap' ? {
