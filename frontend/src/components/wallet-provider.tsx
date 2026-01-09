@@ -17,35 +17,27 @@ import { toast } from 'sonner';
 import '@solana/wallet-adapter-react-ui/styles.css';
 
 export const SolanaWalletProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  // Log wallet provider mounting for debugging
-  useEffect(() => {
-    // console.log('💰 SolanaWalletProvider mounted', {
-    //   environment: process.env.NODE_ENV,
-    //   timestamp: new Date().toISOString(),
-    //   endpoint: process.env.NEXT_PUBLIC_SOLANA_RPC_URL ? 'custom' : 'default'
-    // });
 
+  useEffect(() => {
     return () => {
-      // console.log('💰 SolanaWalletProvider unmounting', {
-      //   timestamp: new Date().toISOString()
-      // });
+
     };
   }, []);
+  // Production: Mainnet
+  const network = WalletAdapterNetwork.Mainnet;
 
-  // Set to 'devnet' for testing
-  // 🧪 DEVNET - TESTING MODE
-  const network = WalletAdapterNetwork.Devnet;
-
-  // Use Helius Devnet RPC for testing
+  // Use Helius Mainnet RPC from environment variable
   const endpoint = useMemo(() => {
-    // DEVNET RPC - Helius
-    const devnetUrl = 'https://devnet.helius-rpc.com/?api-key=6bf8928b-1c63-412a-9334-73bdfc2b18b5';
+    const rpcUrl = process.env.NEXT_PUBLIC_HELIUS_RPC_URL;
 
-    // console.log('🌐 RPC ENDPOINT CONFIG:');
-    // console.log('   Network:', network);
-    // console.log('   Using:', devnetUrl.slice(0, 50) + '...');
+    if (!rpcUrl) {
+      throw new Error(
+        'Missing NEXT_PUBLIC_HELIUS_RPC_URL environment variable. ' +
+        'Please configure your mainnet RPC endpoint.'
+      );
+    }
 
-    return devnetUrl;
+    return rpcUrl;
   }, [network]);
 
   const wallets = useMemo(
