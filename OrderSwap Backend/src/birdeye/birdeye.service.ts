@@ -13,6 +13,8 @@ import {
   BirdeyePriceResponse,
   BirdeyeMultiPriceResponse,
   TokenPriceData,
+  TokenOverviewData,
+  BirdeyeTokenOverviewResponse,
 } from './dto/birdeye.dto';
 import { ChartTimeframe } from '../price/dto/price-history.dto';
 import { OHLCVCandle } from '../price/dto/price-history.dto';
@@ -390,6 +392,63 @@ export class BirdeyeService implements OnModuleDestroy {
     } catch (error) {
       this.logger.error(`Error fetching multi prices: ${error.message}`);
       return results;
+    }
+  }
+
+  /**
+   * Get token overview with market cap data from Birdeye
+   * Used for MCAP chart display
+   */
+  async getTokenOverview(tokenAddress: string): Promise<TokenOverviewData | null> {
+    if (!this.isEnabled) {
+      this.logger.debug('Birdeye service disabled, returning null overview');
+      return null;
+    }
+
+    const shortAddress = `${tokenAddress.slice(0, 8)}...${tokenAddress.slice(-8)}`;
+
+    try {
+      this.logger.log(`🔄 Fetching token overview from Birdeye for ${shortAddress}`);
+
+      const response = await this.axiosInstance.get<BirdeyeTokenOverviewResponse>(
+        '/defi/token_overview',
+        {
+          params: {
+            address: tokenAddress,
+          },
+          headers: {
+            'x-chain': 'solana',
+          },
+        },
+      );
+
+      if (!response.data || !response.data.success || !response.data.data) {
+        this.logger.warn(`Birdeye token overview API returned unsuccessful for ${shortAddress}`);
+        return null;
+      }
+
+      const data = response.data.data;
+      const overviewData: TokenOverviewData = {
+        address: data.address,
+        symbol: data.symbol,
+        name: data.name,
+        price: data.price,
+        priceChange24h: data.priceChange24hPercent || 0,
+        mc: data.mc || data.realMc || 0,
+        fdv: data.fdv || 0,
+        circulatingSupply: data.circulatingSupply || 0,
+        totalSupply: data.supply || 0,
+        liquidity: data.liquidity || 0,
+        volume24h: data.v24hUSD || 0,
+        updateTime: data.lastTradeUnixTime || Math.floor(Date.now() / 1000),
+      };
+
+      this.logger.log(`✅ Fetched overview for ${shortAddress}: MC=$${(overviewData.mc / 1e6).toFixed(2)}M, Supply=${overviewData.circulatingSupply.toLocaleString()}`);
+
+      return overviewData;
+    } catch (error) {
+      this.logger.error(`Error fetching token overview for ${shortAddress}: ${error.message}`);
+      return null;
     }
   }
 

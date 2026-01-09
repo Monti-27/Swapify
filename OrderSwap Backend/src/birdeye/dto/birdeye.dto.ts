@@ -192,3 +192,41 @@ export interface TokenPriceData {
   updateTime: number;
 }
 
+/**
+ * Token overview data with market cap from Birdeye
+ */
+export interface TokenOverviewData {
+  address: string;
+  symbol: string;
+  name: string;
+  price: number;
+  priceChange24h: number;
+  mc: number;              // Market Cap in USD
+  fdv: number;             // Fully Diluted Valuation
+  circulatingSupply: number;
+  totalSupply: number;
+  liquidity: number;
+  volume24h: number;
+  updateTime: number;
+}
+
+export interface BirdeyeTokenOverviewResponse {
+  success: boolean;
+  data: {
+    address: string;
+    symbol: string;
+    name: string;
+    decimals: number;
+    liquidity: number;
+    price: number;
+    priceChange24hPercent: number;
+    mc: number;
+    realMc: number;
+    fdv: number;
+    circulatingSupply: number;
+    supply: number;
+    v24hUSD: number;
+    holder: number;
+    lastTradeUnixTime: number;
+  };
+}
