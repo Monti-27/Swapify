@@ -1358,16 +1358,14 @@
           }
         },
         {
-          "name": "sell_token_mint"
+          "name": "withdraw_token_mint",
+          "docs": [
+            "The token mint to withdraw - MUST be either sell_token_mint OR buy_token_mint from strategy",
+            "This allows withdrawing whichever token is currently in the escrow (for mid-trade cancellation)"
+          ]
         },
         {
-          "name": "sell_token_program"
-        },
-        {
-          "name": "buy_token_mint"
-        },
-        {
-          "name": "buy_token_program"
+          "name": "withdraw_token_program"
         },
         {
           "name": "owner_token_account",
@@ -1380,11 +1378,11 @@
               },
               {
                 "kind": "account",
-                "path": "sell_token_program"
+                "path": "withdraw_token_program"
               },
               {
                 "kind": "account",
-                "path": "sell_token_mint"
+                "path": "withdraw_token_mint"
               }
             ],
             "program": {
@@ -1428,6 +1426,9 @@
         },
         {
           "name": "escrow_token_account",
+          "docs": [
+            "Escrow's token account for the withdraw_token_mint"
+          ],
           "writable": true,
           "pda": {
             "seeds": [
@@ -1437,11 +1438,11 @@
               },
               {
                 "kind": "account",
-                "path": "sell_token_program"
+                "path": "withdraw_token_program"
               },
               {
                 "kind": "account",
-                "path": "sell_token_mint"
+                "path": "withdraw_token_mint"
               }
             ],
             "program": {
@@ -1632,23 +1633,138 @@
   "errors": [
     {
       "code": 6000,
-      "name": "KeeperAlreadyExists",
-      "msg": "Keeper already exists in the list"
+      "name": "InvalidMints",
+      "msg": "Sell and buy tokens must be different"
     },
     {
       "code": 6001,
-      "name": "KeeperNotFound",
-      "msg": "Keeper not found in the list"
+      "name": "InvalidTriggerPrice",
+      "msg": "Trigger price must be greater than 0"
     },
     {
       "code": 6002,
-      "name": "CannotRemoveLastKeeper",
-      "msg": "Cannot remove the last keeper"
+      "name": "InvalidPrecision",
+      "msg": "Price precision cannot exceed 18"
     },
     {
       "code": 6003,
-      "name": "TooManyKeepers",
-      "msg": "Too many keepers (max 10 allowed)"
+      "name": "InsufficientDeposit",
+      "msg": "Must deposit at least some tokens to escrow"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidTakeProfit",
+      "msg": "Take profit price must be >= trigger price"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidStopLoss",
+      "msg": "Stop loss price must be <= trigger price"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidSellAmount",
+      "msg": "Invalid sell amount configuration"
+    },
+    {
+      "code": 6007,
+      "name": "StrategyNotActive",
+      "msg": "Strategy is not active"
+    },
+    {
+      "code": 6008,
+      "name": "StrategyAlreadyExecuted",
+      "msg": "Strategy already executed"
+    },
+    {
+      "code": 6009,
+      "name": "StrategyNotFound",
+      "msg": "Strategy not found or unauthorized"
+    },
+    {
+      "code": 6010,
+      "name": "InvalidCurrentPrice",
+      "msg": "Invalid current price for execution"
+    },
+    {
+      "code": 6011,
+      "name": "InsufficientEscrow",
+      "msg": "Insufficient funds in escrow"
+    },
+    {
+      "code": 6012,
+      "name": "NoEscrowTokens",
+      "msg": "Strategy has no escrow or tokens"
+    },
+    {
+      "code": 6013,
+      "name": "ProtocolNotInitialized",
+      "msg": "Protocol is not initialized"
+    },
+    {
+      "code": 6014,
+      "name": "ProtocolPaused",
+      "msg": "Protocol is paused"
+    },
+    {
+      "code": 6015,
+      "name": "NewStrategiesDisabled",
+      "msg": "New strategies are disabled"
+    },
+    {
+      "code": 6016,
+      "name": "UnauthorizedKeeper",
+      "msg": "Keeper is not authorized"
+    },
+    {
+      "code": 6017,
+      "name": "InvalidAuthority",
+      "msg": "Invalid authority"
+    },
+    {
+      "code": 6018,
+      "name": "InvalidAmount",
+      "msg": "Cannot withdraw all funds - use cancel_strategy instead"
+    },
+    {
+      "code": 6019,
+      "name": "InvalidProgram",
+      "msg": "Invalid program"
+    },
+    {
+      "code": 6020,
+      "name": "InvalidAccountCount",
+      "msg": "Invalid account count"
+    },
+    {
+      "code": 6021,
+      "name": "NoTokensReceived",
+      "msg": "No tokens received from swap"
+    },
+    {
+      "code": 6022,
+      "name": "MaxStrategiesExceeded",
+      "msg": "Strategy ID exceeds maximum allowed strategies"
+    },
+    {
+      "code": 6023,
+      "name": "InvalidTokenProgram",
+      "msg": "Token program does not match mint's owner"
+    },
+    {
+      "code": 6024,
+      "name": "StrategyNotFilled",
+      "msg": "Strategy is not in Filled state - cannot execute exit"
+    },
+    {
+      "code": 6025,
+      "name": "ExitConditionNotMet",
+      "msg": "Neither Take Profit nor Stop Loss condition is met"
+    },
+    {
+      "code": 6026,
+      "name": "InvalidTokenMint",
+      "msg": "Token mint must be either sell_token_mint or buy_token_mint from strategy"
     }
   ],
   "types": [
@@ -2286,7 +2402,7 @@
             "type": "pubkey"
           },
           {
-            "name": "sell_token_mint",
+            "name": "withdraw_token_mint",
             "type": "pubkey"
           },
           {
