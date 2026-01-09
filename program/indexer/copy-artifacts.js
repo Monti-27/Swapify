@@ -29,4 +29,4 @@ if (fs.existsSync(typesSource)) {
 } else {
   console.error('❌ Types file not found at:', typesSource);
   console.log('💡 Run "anchor build" in the parent directory first');
-}
+};
