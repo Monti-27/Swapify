@@ -371,10 +371,14 @@ const calculatePrecision = (price: number): { pricePrecision: number; volumePrec
  * Format MCAP value with K/M/B notation
  * Used for Y-axis labels in MCAP mode
  */
-const formatMcapValue = (value: number): string => {
+const formatMcapValue = (value: number, unit: string = ''): string => {
     if (value === 0) return '$0';
     const absValue = Math.abs(value);
     const sign = value < 0 ? '-' : '';
+
+    if (unit) {
+        return `${sign}$${absValue.toFixed(2)}${unit}`;
+    }
 
     if (absValue >= 1e9) {
         return `${sign}$${(absValue / 1e9).toFixed(2)}B`;
@@ -532,13 +536,14 @@ export default function KLineChart({
                 // Determine dynamic precision
                 let pricePrecision = 2;
                 let volumePrecision = 2;
+                let sampleCandle: any = null;
 
                 try {
                     // Fetch just 1 candle to check the price magnitude
                     // We use the current timeframe to be consistent
                     const history = await api.getPriceHistory(tokenAddress, timeframe, 1);
                     // Check last candle or first candle
-                    const sampleCandle = history?.data?.candles?.[history.data.candles.length - 1];
+                    sampleCandle = history?.data?.candles?.[history.data.candles.length - 1];
 
                     if (sampleCandle && sampleCandle.close) {
                         const p = calculatePrecision(sampleCandle.close);
@@ -551,13 +556,15 @@ export default function KLineChart({
                 }
 
                 // Create new datafeed for this token
-                // For MCAP mode: multiply by supply, then divide by 1B to show readable values
+                // For MCAP mode: multiply by supply, then divide by scale to show readable values
                 // This shows MCAP in billions (e.g., 77.5 instead of 77,500,000,000)
                 let multiplier = 1;
                 let displayScale = '';
                 if (localChartMode === 'mcap' && circulatingSupply > 0) {
-                    // Calculate raw MCAP scale to determine display unit
-                    const estimatedMcap = 100 * circulatingSupply; // rough estimate
+                    // Use actual price if available for accurate MCAP estimate
+                    const currentPrice = sampleCandle?.close || 0;
+                    const estimatedMcap = currentPrice > 0 ? currentPrice * circulatingSupply : 100 * circulatingSupply;
+                    
                     if (estimatedMcap >= 1e9) {
                         multiplier = circulatingSupply / 1e9; // Show in Billions
                         displayScale = 'B';
@@ -646,7 +653,7 @@ export default function KLineChart({
                     },
                     // Price formatter for MCAP mode (K/M/B notation)
                     ...(localChartMode === 'mcap' ? {
-                        priceFormatter: (value: number) => formatMcapValue(value),
+                        priceFormatter: (value: number) => formatMcapValue(value, displayScale),
                     } : {}),
                 });
 
