@@ -30,7 +30,8 @@ pub struct WithdrawEscrow<'info> {
         seeds = [b"strategy", owner.key().as_ref(), &params.id.to_le_bytes()],
         bump,
         constraint = strategy.owner == owner.key() @ WeswapError::StrategyNotFound,
-        constraint = strategy.status == StrategyStatus::Active @ WeswapError::StrategyNotActive,
+        // Allow withdrawal from BOTH Active AND Filled strategies (for mid-trade emergency exit)
+        constraint = strategy.status == StrategyStatus::Active || strategy.status == StrategyStatus::Filled @ WeswapError::StrategyNotActive,
     )]
     pub strategy: Box<Account<'info, Strategy>>,
 
@@ -41,29 +42,31 @@ pub struct WithdrawEscrow<'info> {
     )]
     pub escrow: Box<Account<'info, StrategyEscrow>>,
 
-    pub sell_token_mint: InterfaceAccount<'info, Mint>,
+    /// The token mint to withdraw - MUST be either sell_token_mint OR buy_token_mint from strategy
+    /// This allows withdrawing whichever token is currently in the escrow (for mid-trade cancellation)
+    #[account(
+        constraint = withdraw_token_mint.key() == strategy.sell_token_mint || 
+                     withdraw_token_mint.key() == strategy.buy_token_mint @ WeswapError::InvalidTokenMint,
+    )]
+    pub withdraw_token_mint: InterfaceAccount<'info, Mint>,
 
-    pub sell_token_program: Interface<'info, TokenInterface>,
-
-    pub buy_token_mint: InterfaceAccount<'info, Mint>,
-
-    pub buy_token_program: Interface<'info, TokenInterface>,
+    pub withdraw_token_program: Interface<'info, TokenInterface>,
 
     #[account(
         init_if_needed,
         payer = owner,
-        associated_token::mint = sell_token_mint,
+        associated_token::mint = withdraw_token_mint,
         associated_token::authority = owner,
-        associated_token::token_program = sell_token_program,
+        associated_token::token_program = withdraw_token_program,
     )]
     pub owner_token_account: InterfaceAccount<'info, TokenAccount>,
 
-    /// CHECK: Escrow token account - ATA owned by escrow PDA (per-strategy)
+    /// Escrow's token account for the withdraw_token_mint
     #[account(
         mut,
-        associated_token::mint = sell_token_mint,
+        associated_token::mint = withdraw_token_mint,
         associated_token::authority = escrow,
-        associated_token::token_program = sell_token_program,
+        associated_token::token_program = withdraw_token_program,
     )]
     pub escrow_token_account: InterfaceAccount<'info, TokenAccount>,
 
@@ -142,20 +145,20 @@ pub fn withdraw_escrow(
             &[ctx.bumps.escrow]
         ]];
 
-        let sell_decimals = ctx.accounts.sell_token_mint.decimals;
+        let withdraw_decimals = ctx.accounts.withdraw_token_mint.decimals;
 
         let cpi_ctx = CpiContext::new_with_signer(
-            ctx.accounts.sell_token_program.to_account_info(),
+            ctx.accounts.withdraw_token_program.to_account_info(),
             anchor_spl::token_interface::TransferChecked {
                 from: ctx.accounts.escrow_token_account.to_account_info(),
-                mint: ctx.accounts.sell_token_mint.to_account_info(),
+                mint: ctx.accounts.withdraw_token_mint.to_account_info(),
                 to: ctx.accounts.owner_token_account.to_account_info(),
                 authority: ctx.accounts.escrow.to_account_info(),
             },
             escrow_seeds,
         );
 
-        anchor_spl::token_interface::transfer_checked(cpi_ctx, withdraw_amount, sell_decimals)?;
+        anchor_spl::token_interface::transfer_checked(cpi_ctx, withdraw_amount, withdraw_decimals)?;
 
         ctx.accounts.escrow.withdrawn_amount = ctx.accounts.escrow
             .withdrawn_amount
@@ -168,7 +171,7 @@ pub fn withdraw_escrow(
         emit!(WithdrawEscrowEvent {
             strategy: ctx.accounts.strategy.key(),
             owner: ctx.accounts.owner.key(),
-            sell_token_mint: ctx.accounts.sell_token_mint.key(),
+            withdraw_token_mint: ctx.accounts.withdraw_token_mint.key(),
             amount: withdraw_amount,
             new_total_withdrawn: ctx.accounts.escrow.withdrawn_amount,
             withdrawn_at: current_time,
@@ -188,7 +191,7 @@ pub fn withdraw_escrow(
             ]];
 
             let close_cpi_ctx = CpiContext::new_with_signer(
-                ctx.accounts.sell_token_program.to_account_info(),
+                ctx.accounts.withdraw_token_program.to_account_info(),
                 anchor_spl::token_interface::CloseAccount {
                     account: ctx.accounts.escrow_token_account.to_account_info(),
                     destination: ctx.accounts.owner.to_account_info(),

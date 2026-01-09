@@ -61,7 +61,7 @@ pub struct DepositEscrowEvent {
 pub struct WithdrawEscrowEvent {
     pub strategy: Pubkey,
     pub owner: Pubkey,
-    pub sell_token_mint: Pubkey,
+    pub withdraw_token_mint: Pubkey,
     pub amount: u64,
     pub new_total_withdrawn: u64,
     pub withdrawn_at: i64,
