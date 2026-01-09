@@ -213,6 +213,27 @@ class ApiClient {
     return this.request(`/prices/market-cap?token=${tokenAddress}`);
   }
 
+  async getTokenOverview(tokenAddress: string): Promise<{
+    address: string;
+    symbol: string;
+    name: string;
+    price: number;
+    priceChange24h: number;
+    marketCap: number;
+    fdv: number;
+    circulatingSupply: number;
+    totalSupply: number;
+    liquidity: number;
+    volume24h: number;
+  } | null> {
+    try {
+      return this.request(`/prices/overview?token=${tokenAddress}`);
+    } catch (error) {
+      console.error('Failed to fetch token overview:', error);
+      return null;
+    }
+  }
+
   async getPriceHistory(
     tokenAddress: string,
     timeframe: ChartTimeframe = ChartTimeframe.ONE_HOUR,
