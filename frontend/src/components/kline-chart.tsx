@@ -564,7 +564,7 @@ export default function KLineChart({
                     // Use actual price if available for accurate MCAP estimate
                     const currentPrice = sampleCandle?.close || 0;
                     const estimatedMcap = currentPrice > 0 ? currentPrice * circulatingSupply : 100 * circulatingSupply;
-                    
+
                     if (estimatedMcap >= 1e9) {
                         multiplier = circulatingSupply / 1e9; // Show in Billions
                         displayScale = 'B';
@@ -649,29 +649,7 @@ export default function KLineChart({
                             axisLine: {
                                 color: '#27272a',
                             },
-                            ...(localChartMode === 'mcap' ? {
-                                tickText: {
-                                    formatter: (params: any) => {
-                                        const value = typeof params === 'object' ? params.value : params;
-                                        return formatMcapValue(value, displayScale);
-                                    }
-                                }
-                            } : {})
                         },
-                        crosshair: {
-                            horizontal: {
-                                label: {
-                                    text: {
-                                        ...(localChartMode === 'mcap' ? {
-                                            formatter: (params: any) => {
-                                                const value = typeof params === 'object' ? params.value : params;
-                                                return formatMcapValue(value, displayScale);
-                                            }
-                                        } : {})
-                                    }
-                                }
-                            }
-                        }
                     },
                     // Price formatter for MCAP mode (K/M/B notation)
                     ...(localChartMode === 'mcap' ? {
