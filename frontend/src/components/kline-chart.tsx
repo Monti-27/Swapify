@@ -6,6 +6,8 @@ import { api } from '@/lib/api';
 import { ChartTimeframe, OHLCVCandle, ChartUpdateEvent } from '@/types/api';
 import { wsClient, WS_EVENTS } from '@/lib/websocket';
 
+type ChartDisplayMode = 'price' | 'mcap';
+
 // ============================================
 // Types & Interfaces
 // ============================================
@@ -121,14 +123,15 @@ const periodToTimeframe = (period: Period): ChartTimeframe => {
 /**
  * Maps our OHLCVCandle data to KLineChart format
  * Birdeye provides timestamp in SECONDS, KLineChart expects MILLISECONDS
+ * @param multiplier - optional multiplier for MCAP mode (circulating supply)
  */
-const mapToKLineData = (candles: OHLCVCandle[]): KLineData[] => {
+const mapToKLineData = (candles: OHLCVCandle[], multiplier: number = 1): KLineData[] => {
     return candles.map((c) => ({
         timestamp: (c.timestamp ?? 0) * 1000, // Convert seconds to milliseconds
-        open: c.open,
-        high: c.high,
-        low: c.low,
-        close: c.close,
+        open: c.open * multiplier,
+        high: c.high * multiplier,
+        low: c.low * multiplier,
+        close: c.close * multiplier,
         volume: c.volume ?? 0,
     }));
 };
@@ -139,6 +142,7 @@ const mapToKLineData = (candles: OHLCVCandle[]): KLineData[] => {
 
 class BirdeyeDatafeed implements Datafeed {
     private tokenAddress: string;
+    private multiplier: number; // For MCAP mode: circulatingSupply, for price mode: 1
     private subscriptions: Map<string, NodeJS.Timeout> = new Map();
     // Track if we've reached the end of history for a specific period
     private noMoreHistory: Map<string, boolean> = new Map();
@@ -146,8 +150,9 @@ class BirdeyeDatafeed implements Datafeed {
     // Keep track of loaded history to prevent overlapping fetches/duplicates
     // However, KLineChart handles data storage, we just need to provide correct ranges
 
-    constructor(tokenAddress: string) {
+    constructor(tokenAddress: string, multiplier: number = 1) {
         this.tokenAddress = tokenAddress;
+        this.multiplier = multiplier;
     }
 
     // Not implemented - we don't have search functionality
@@ -210,7 +215,7 @@ class BirdeyeDatafeed implements Datafeed {
 
             // Deduplication and Sorting (Uniqueness/Order Contract)
             // Ideally the API returns sorted unique data, but we enforce it here
-            const klineData = mapToKLineData(response.data.candles);
+            const klineData = mapToKLineData(response.data.candles, this.multiplier);
 
             // Deduplicate by timestamp
             const uniqueMap = new Map<number, KLineData>();
@@ -330,13 +335,13 @@ class BirdeyeDatafeed implements Datafeed {
         // KLineChart expects milliseconds
         const candleTimestampMs = (event.candle.timestamp ?? 0) * 1000;
 
-        // Construct KLineData
+        // Construct KLineData - apply multiplier for MCAP mode
         const klineData: KLineData = {
             timestamp: candleTimestampMs,
-            open: event.candle.open,
-            high: event.candle.high,
-            low: event.candle.low,
-            close: event.candle.close,
+            open: event.candle.open * this.multiplier,
+            high: event.candle.high * this.multiplier,
+            low: event.candle.low * this.multiplier,
+            close: event.candle.close * this.multiplier,
             volume: event.candle.volume ?? 0,
         };
 
@@ -362,6 +367,27 @@ const calculatePrecision = (price: number): { pricePrecision: number; volumePrec
     return { pricePrecision: 10, volumePrecision: 2 };
 };
 
+/**
+ * Format MCAP value with K/M/B notation
+ * Used for Y-axis labels in MCAP mode
+ */
+const formatMcapValue = (value: number): string => {
+    if (value === 0) return '$0';
+    const absValue = Math.abs(value);
+    const sign = value < 0 ? '-' : '';
+
+    if (absValue >= 1e9) {
+        return `${sign}$${(absValue / 1e9).toFixed(2)}B`;
+    }
+    if (absValue >= 1e6) {
+        return `${sign}$${(absValue / 1e6).toFixed(2)}M`;
+    }
+    if (absValue >= 1e3) {
+        return `${sign}$${(absValue / 1e3).toFixed(2)}K`;
+    }
+    return `${sign}$${absValue.toFixed(2)}`;
+};
+
 // ============================================
 // KLineChart Component
 // ============================================
@@ -371,6 +397,8 @@ interface KLineChartProps {
     symbol: string;
     timeframe?: ChartTimeframe;
     onTimeframeChange?: (timeframe: ChartTimeframe) => void;
+    chartMode?: ChartDisplayMode;
+    onChartModeChange?: (mode: ChartDisplayMode) => void;
 }
 
 export default function KLineChart({
@@ -378,6 +406,8 @@ export default function KLineChart({
     symbol,
     timeframe = ChartTimeframe.ONE_HOUR,
     onTimeframeChange,
+    chartMode = 'price',
+    onChartModeChange,
 }: KLineChartProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const chartRef = useRef<any>(null); // Type will be KLineChartPro but loaded dynamically
@@ -386,6 +416,28 @@ export default function KLineChart({
     const [error, setError] = useState<string | null>(null);
     // Track current token to detect changes
     const currentTokenRef = useRef<string>('');
+    // Store circulating supply for MCAP calculation
+    const [circulatingSupply, setCirculatingSupply] = useState<number>(0);
+    const [localChartMode, setLocalChartMode] = useState<ChartDisplayMode>(chartMode);
+
+    // Fetch token overview for MCAP support (silent on error)
+    useEffect(() => {
+        if (!tokenAddress) return;
+        let isMounted = true;
+        const fetchOverview = async () => {
+            try {
+                const overview = await api.getTokenOverview(tokenAddress);
+                if (isMounted && overview && overview.circulatingSupply) {
+                    setCirculatingSupply(overview.circulatingSupply);
+                }
+            } catch {
+                // Silent fail - MCAP toggle will be disabled if supply unavailable
+                if (isMounted) setCirculatingSupply(0);
+            }
+        };
+        fetchOverview();
+        return () => { isMounted = false; };
+    }, [tokenAddress]);
 
     // ============================================
     // Cleanup function - extracted for reuse
@@ -499,7 +551,33 @@ export default function KLineChart({
                 }
 
                 // Create new datafeed for this token
-                datafeedRef.current = new BirdeyeDatafeed(tokenAddress);
+                // For MCAP mode: multiply by supply, then divide by 1B to show readable values
+                // This shows MCAP in billions (e.g., 77.5 instead of 77,500,000,000)
+                let multiplier = 1;
+                let displayScale = '';
+                if (localChartMode === 'mcap' && circulatingSupply > 0) {
+                    // Calculate raw MCAP scale to determine display unit
+                    const estimatedMcap = 100 * circulatingSupply; // rough estimate
+                    if (estimatedMcap >= 1e9) {
+                        multiplier = circulatingSupply / 1e9; // Show in Billions
+                        displayScale = 'B';
+                    } else if (estimatedMcap >= 1e6) {
+                        multiplier = circulatingSupply / 1e6; // Show in Millions
+                        displayScale = 'M';
+                    } else if (estimatedMcap >= 1e3) {
+                        multiplier = circulatingSupply / 1e3; // Show in Thousands
+                        displayScale = 'K';
+                    } else {
+                        multiplier = circulatingSupply;
+                    }
+                }
+                datafeedRef.current = new BirdeyeDatafeed(tokenAddress, multiplier);
+                console.log(`📊 [KLineChart] Mode: ${localChartMode}, Multiplier: ${multiplier}, Scale: ${displayScale}`);
+
+                // Symbol name with scale indicator for MCAP mode
+                const displayName = localChartMode === 'mcap' && displayScale
+                    ? `${symbol} MCAP ($${displayScale})`
+                    : symbol;
 
                 // Create chart instance
                 chartRef.current = new KLineChartPro({
@@ -507,13 +585,14 @@ export default function KLineChart({
                     // Symbol info
                     symbol: {
                         ticker: tokenAddress,
-                        name: symbol,
-                        shortName: symbol,
+                        name: displayName,
+                        shortName: displayName,
                         exchange: 'Birdeye',
                         market: 'crypto',
                         priceCurrency: 'USD',
                         type: 'crypto',
-                        pricePrecision,
+                        // For MCAP mode, values are scaled to B/M/K so use 2 decimals
+                        pricePrecision: localChartMode === 'mcap' ? 2 : pricePrecision,
                         volumePrecision,
                     },
                     // Default period
@@ -565,6 +644,10 @@ export default function KLineChart({
                             },
                         },
                     },
+                    // Price formatter for MCAP mode (K/M/B notation)
+                    ...(localChartMode === 'mcap' ? {
+                        priceFormatter: (value: number) => formatMcapValue(value),
+                    } : {}),
                 });
 
                 console.log('📊 [KLineChart] Chart initialized successfully');
@@ -588,7 +671,7 @@ export default function KLineChart({
             isActive = false;
             disposeChart();
         };
-    }, [tokenAddress, symbol]); // Only re-init when token or symbol changes
+    }, [tokenAddress, symbol, localChartMode, circulatingSupply]); // Re-init when mode or supply changes
 
     // ============================================
     // Handle timeframe changes from parent
@@ -627,6 +710,34 @@ export default function KLineChart({
 
     return (
         <div className="w-full h-full min-h-[400px] bg-zinc-950 rounded-lg overflow-hidden relative">
+            {/* MCAP/Price Toggle - Positioned to align with KLineChart Pro header toolbar */}
+            <div className="absolute top-[6px] right-[140px] z-[100] flex gap-0.5 bg-zinc-900/95 p-0.5 rounded border border-zinc-700/50">
+                <button
+                    onClick={() => {
+                        setLocalChartMode('price');
+                        onChartModeChange?.('price');
+                    }}
+                    className={`px-2 py-0.5 text-[10px] font-medium rounded transition-all ${localChartMode === 'price'
+                        ? 'bg-purple-500 text-white shadow-sm'
+                        : 'text-zinc-400 hover:text-white hover:bg-zinc-700'
+                        }`}
+                >
+                    PRICE
+                </button>
+                <button
+                    onClick={() => {
+                        setLocalChartMode('mcap');
+                        onChartModeChange?.('mcap');
+                    }}
+                    className={`px-2 py-0.5 text-[10px] font-medium rounded transition-all ${localChartMode === 'mcap'
+                        ? 'bg-purple-500 text-white shadow-sm'
+                        : 'text-zinc-400 hover:text-white hover:bg-zinc-700'
+                        }`}
+                >
+                    MCAP
+                </button>
+            </div>
+
             {/* Loading overlay - always on top when loading */}
             {isLoading && (
                 <div className="absolute inset-0 flex items-center justify-center bg-zinc-950 z-20">

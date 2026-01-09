@@ -1,11 +1,14 @@
 "use client";
 
-import React, { useMemo, useRef, useState, useEffect } from "react";
+import React, { useMemo, useRef, useState, useEffect, useCallback } from "react";
 import { createChart, IChartApi, ISeriesApi, LineSeries, CrosshairMode, UTCTimestamp } from "lightweight-charts";
 import { motion } from "framer-motion";
 import { useTheme } from "next-themes";
 import { useChartData } from "@/hooks/useChartData";
 import { ChartTimeframe } from "@/types/api";
+import { api } from "@/lib/api";
+
+type ChartMode = 'price' | 'mcap';
 
 const WSP_TOKEN = {
   address: "3LkGja4ptKgVH3FoP3xye3HYGLPbX2iAbvGYj5ePpump",
@@ -33,6 +36,14 @@ function formatPrice(price: number): string {
   if (price < 1) return `$${price.toFixed(4)}`;
   if (price < 1000) return `$${price.toFixed(2)}`;
   return `$${price.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+}
+
+function formatMcap(value: number): string {
+  if (value === 0) return "$0";
+  if (value >= 1e9) return `$${(value / 1e9).toFixed(2)}B`;
+  if (value >= 1e6) return `$${(value / 1e6).toFixed(2)}M`;
+  if (value >= 1e3) return `$${(value / 1e3).toFixed(2)}K`;
+  return `$${value.toFixed(2)}`;
 }
 
 function ChartSkeleton() {
@@ -67,6 +78,9 @@ function ChartSkeleton() {
 
 export function PriceChart() {
   const [activeFilter, setActiveFilter] = useState(ChartTimeframe.ONE_HOUR);
+  const [chartMode, setChartMode] = useState<ChartMode>('price');
+  const [circulatingSupply, setCirculatingSupply] = useState<number>(0);
+  const [currentMcap, setCurrentMcap] = useState<number>(0);
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const containerRef = useRef<HTMLDivElement>(null);
@@ -80,14 +94,45 @@ export function PriceChart() {
     enabled: true,
   });
 
+  // Fetch token overview for MCAP display
+  useEffect(() => {
+    const fetchOverview = async () => {
+      try {
+        const overview = await api.getTokenOverview(WSP_TOKEN.address);
+        if (overview) {
+          setCirculatingSupply(overview.circulatingSupply || 0);
+          setCurrentMcap(overview.marketCap || 0);
+        }
+      } catch (error) {
+        console.error('Failed to fetch token overview:', error);
+      }
+    };
+    fetchOverview();
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchOverview, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Calculate chart data based on mode
   const chartData = useMemo(() => {
     if (!candles || candles.length === 0) return [];
 
-    return candles.map((candle) => ({
-      time: (candle.timestamp || 0) as UTCTimestamp,
-      value: candle.close,
-    })).sort((a, b) => a.time - b.time);
-  }, [candles]);
+    return candles.map((candle) => {
+      let value = candle.close;
+      // For MCAP mode, multiply price by circulating supply
+      if (chartMode === 'mcap' && circulatingSupply > 0) {
+        value = candle.close * circulatingSupply;
+      }
+      return {
+        time: (candle.timestamp || 0) as UTCTimestamp,
+        value,
+      };
+    }).sort((a, b) => a.time - b.time);
+  }, [candles, chartMode, circulatingSupply]);
+
+  // Display value based on mode
+  const displayValue = chartMode === 'mcap' ? currentMcap : (currentPrice || 0);
+  const formatValue = chartMode === 'mcap' ? formatMcap : formatPrice;
 
   const priceChangePercent = priceChange24hPercent ?? 0;
   const isPositive = priceChangePercent >= 0;
@@ -244,10 +289,12 @@ export function PriceChart() {
                   alt={WSP_TOKEN.symbol}
                   className="w-6 h-6 rounded-full"
                 />
-                <span className="text-sm text-gray-500 dark:text-zinc-400">{WSP_TOKEN.symbol}</span>
+                <span className="text-sm text-gray-500 dark:text-zinc-400">
+                  {WSP_TOKEN.symbol} {chartMode === 'mcap' ? 'MCAP' : ''}
+                </span>
               </div>
               <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white leading-tight">
-                {formatPrice(currentPrice || 0)}
+                {formatValue(displayValue)}
               </h2>
               <div className="flex items-center gap-1.5 mt-1">
                 {priceChange24h !== null && (
@@ -276,19 +323,44 @@ export function PriceChart() {
           )}
         </div>
 
-        <div className="flex bg-gray-100 dark:bg-[#18181B] p-1 rounded-lg gap-1">
-          {filters.map((filter) => (
+        <div className="flex items-center gap-2">
+          {/* MCAP/Price Toggle */}
+          <div className="flex bg-gray-100 dark:bg-[#18181B] p-1 rounded-lg gap-1">
             <button
-              key={filter.value}
-              onClick={() => handleFilterChange(filter.value)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${activeFilter === filter.value
+              onClick={() => setChartMode('price')}
+              className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${chartMode === 'price'
                 ? "bg-white dark:bg-[#27272A] text-gray-900 dark:text-white shadow-sm"
                 : "text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white"
                 }`}
             >
-              {filter.label}
+              PRICE
             </button>
-          ))}
+            <button
+              onClick={() => setChartMode('mcap')}
+              className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${chartMode === 'mcap'
+                ? "bg-white dark:bg-[#27272A] text-gray-900 dark:text-white shadow-sm"
+                : "text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white"
+                }`}
+            >
+              MCAP
+            </button>
+          </div>
+
+          {/* Timeframe Filter */}
+          <div className="flex bg-gray-100 dark:bg-[#18181B] p-1 rounded-lg gap-1">
+            {filters.map((filter) => (
+              <button
+                key={filter.value}
+                onClick={() => handleFilterChange(filter.value)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${activeFilter === filter.value
+                  ? "bg-white dark:bg-[#27272A] text-gray-900 dark:text-white shadow-sm"
+                  : "text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white"
+                  }`}
+              >
+                {filter.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
