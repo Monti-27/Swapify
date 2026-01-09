@@ -26,7 +26,7 @@ import {
     Loader2,
     Info
 } from 'lucide-react';
-import { LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import { parseHumanNumber, isValidHumanNumber } from '@/lib/parseHumanNumber';
 
 interface CompactBuilderFormProps {
@@ -92,7 +92,7 @@ export function CompactBuilderForm({
         }
     }, [triggerValue, stopLoss, takeProfit, stopLossEnabled, takeProfitEnabled, onStrategyDataChange]);
 
-    // Fetch token balance
+    // Fetch token balance (SOL or any SPL token)
     useEffect(() => {
         const fetchBalance = async () => {
             if (!publicKey || !fromToken) {
@@ -103,11 +103,38 @@ export function CompactBuilderForm({
             setIsLoadingBalance(true);
             try {
                 if (fromToken.symbol === 'SOL') {
+                    // Native SOL balance
                     const balance = await connection.getBalance(publicKey);
                     setTokenBalance(balance / LAMPORTS_PER_SOL);
                 } else {
-                    // For SPL tokens, would need token account lookup
-                    setTokenBalance(null);
+                    // SPL Token balance - look up token account
+                    try {
+                        const mintAddress = new PublicKey(fromToken.address);
+                        const tokenAccounts = await connection.getTokenAccountsByOwner(
+                            publicKey,
+                            { mint: mintAddress }
+                        );
+
+                        if (tokenAccounts.value.length > 0) {
+                            // Parse the token account data to get balance
+                            const accountInfo = tokenAccounts.value[0].account;
+                            const data = accountInfo.data;
+                            // Token account data layout: first 64 bytes header, then 8 bytes for amount (u64 little endian)
+                            // Actually SPL Token uses a specific layout - amount is at offset 64
+                            const amountBuffer = data.slice(64, 72);
+                            const amount = Number(amountBuffer.readBigUInt64LE(0));
+                            // Decimals from token (default to 9 if not available)
+                            const decimals = fromToken.decimals || 9;
+                            const balance = amount / Math.pow(10, decimals);
+                            setTokenBalance(balance);
+                        } else {
+                            // No token account = 0 balance
+                            setTokenBalance(0);
+                        }
+                    } catch (tokenError) {
+                        console.error('Failed to fetch SPL token balance:', tokenError);
+                        setTokenBalance(0);
+                    }
                 }
             } catch (error) {
                 console.error('Failed to fetch balance:', error);
