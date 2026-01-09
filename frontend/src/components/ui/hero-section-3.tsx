@@ -49,7 +49,7 @@ export function HeroSection() {
                             }}
                         >
                             <div className="mx-auto mb-6 w-fit rounded-full border border-border bg-muted/50 px-4 py-1.5 text-sm font-medium text-muted-foreground shadow-inner">
-                                CA : 3LkGja4ptKgVH3FoP3xye3HYGLPbX2iAbvGYj5ePpump
+                                WeSwap V2
                             </div>
                             <h1
                                 className="text-balance text-5xl font-medium md:text-7xl text-foreground tracking-tight">
@@ -93,10 +93,10 @@ export function HeroSection() {
 const StrategyCard = () => {
     return (
         <div className="relative space-y-3 rounded-[1rem] bg-card/50 border border-border/50 p-4 backdrop-blur-md">
-            <div className="flex items-center gap-2 text-emerald-500 dark:text-emerald-400">
+            <div className="flex items-center gap-2 text-primary">
                 <div className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/70 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
                 </div>
                 <div className="text-sm font-medium">Strategy Active</div>
             </div>
@@ -111,10 +111,10 @@ const StrategyCard = () => {
                     </div>
                     <div className="flex justify-between items-center text-xs">
                         <span className="text-muted-foreground">P&L (24h)</span>
-                        <span className="text-emerald-500 dark:text-emerald-400 font-mono">+8.4%</span>
+                        <span className="text-primary font-mono">+8.4%</span>
                     </div>
                     <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden mt-2">
-                        <div className="h-full bg-emerald-500 w-[65%] rounded-full"></div>
+                        <div className="h-full bg-primary w-[65%] rounded-full"></div>
                     </div>
                 </div>
             </div>

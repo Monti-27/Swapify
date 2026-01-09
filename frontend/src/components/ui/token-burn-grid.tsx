@@ -67,7 +67,7 @@ export function TokenBurnGrid() {
                     <Card className="col-span-1 md:col-span-2 border-border bg-muted/40 backdrop-blur-sm">
                         <CardContent className="h-full flex flex-col justify-between p-6 min-h-[200px]">
                             <div className="w-10 h-10 rounded-lg bg-background flex items-center justify-center mb-4 ring-1 ring-border">
-                                <TrendingUp className="text-muted-foreground w-5 h-5 group-hover:text-emerald-500 transition-colors" />
+                                <TrendingUp className="text-muted-foreground w-5 h-5 group-hover:text-primary transition-colors" />
                             </div>
                             <div>
                                 <h4 className="text-lg font-semibold text-foreground mb-1">Value Alignment</h4>

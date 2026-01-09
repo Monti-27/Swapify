@@ -33,7 +33,7 @@ export function useStrategyExecutor() {
       // Deserialize the transaction
       console.log('🔧 Deserializing transaction...');
       const transaction = jupiterService.deserializeTransaction(data.transaction);
-      
+
       console.log('✅ Transaction deserialized');
       console.log('📝 Transaction type:', transaction.constructor.name);
 
@@ -63,37 +63,37 @@ export function useStrategyExecutor() {
 
       // Wait for confirmation
       console.log('⏳ Waiting for confirmation...');
-      
+
       let confirmed = false;
       let attempts = 0;
       const maxAttempts = 15; // Reduced attempts but with longer delays
 
       while (!confirmed && attempts < maxAttempts) {
         attempts++;
-        
+
         try {
           // Progressive delay to avoid rate limits (2s, 3s, 4s, etc.)
           const delay = 2000 + (attempts * 500);
           await new Promise(resolve => setTimeout(resolve, delay));
-          
+
           console.log(`🔍 Confirmation attempt ${attempts}/${maxAttempts}`);
-          
+
           const statusRes = await connection.getSignatureStatuses([signature], {
             searchTransactionHistory: true
           });
-          
+
           const status = statusRes?.value?.[0];
-          
+
           if (status === null) {
             console.log('  ⚠️  Status is null (not found yet)');
             continue;
           }
-          
+
           if (status) {
             console.log('  ✓ Status:', status.confirmationStatus || 'processed');
             console.log('  ✓ Confirmations:', status.confirmations || 0);
             console.log('  ✓ Error:', status.err || 'none');
-            
+
             if (status.err) {
               console.log('  ❌ Transaction FAILED:', status.err);
               updateTransaction(txId, { status: 'failed' });
@@ -102,26 +102,26 @@ export function useStrategyExecutor() {
               });
               throw new Error('Transaction failed on-chain');
             }
-            
-            const isConfirmed = status.confirmationStatus === 'confirmed' || 
-                               status.confirmationStatus === 'finalized' ||
-                               (status.confirmations !== null && status.confirmations > 0);
-            
+
+            const isConfirmed = status.confirmationStatus === 'confirmed' ||
+              status.confirmationStatus === 'finalized' ||
+              (status.confirmations !== null && status.confirmations > 0);
+
             if (isConfirmed) {
               confirmed = true;
               console.log('✅ Transaction CONFIRMED!');
               updateTransaction(txId, { status: 'success' });
-              
+
               console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
               console.log('🎉 STRATEGY SWAP COMPLETED SUCCESSFULLY!');
               console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-              
+
               // Notify backend that trade is complete
               try {
                 console.log('📡 Notifying backend of successful execution...');
                 const token = localStorage.getItem('auth_token');
                 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-                
+
                 await fetch(`${apiUrl}/trades/${data.tradeId}/confirm`, {
                   method: 'POST',
                   headers: {
@@ -133,9 +133,9 @@ export function useStrategyExecutor() {
                     status: 'success',
                   }),
                 });
-                
+
                 console.log('✅ Backend notified - strategy will update to completed');
-                
+
                 // Trigger a page reload after a short delay to show updated status
                 setTimeout(() => {
                   console.log('🔄 Refreshing page to show completed status...');
@@ -145,7 +145,7 @@ export function useStrategyExecutor() {
                 console.warn('⚠️  Failed to notify backend:', apiError.message);
                 // Non-critical, the swap still worked
               }
-              
+
               // Show success notification
               if (typeof window !== 'undefined' && 'Notification' in window) {
                 if (Notification.permission === 'granted') {
@@ -155,13 +155,13 @@ export function useStrategyExecutor() {
                   });
                 }
               }
-              
+
               break;
             }
           }
         } catch (pollError: any) {
           console.warn('  ⚠️  Polling error (will retry):', pollError.message);
-          
+
           // If it's a 403 (rate limit), wait longer before next attempt
           if (pollError.message?.includes('403')) {
             console.warn('  ⚠️  RPC rate limit - waiting extra time...');
@@ -175,13 +175,13 @@ export function useStrategyExecutor() {
         console.warn('⚠️  Could not confirm automatically (RPC timeout)');
         console.warn('🔗  Verify on Solscan:', `https://solscan.io/tx/${signature}`);
         updateTransaction(txId, { status: 'success' });
-        
+
         // IMPORTANT: Still notify backend that trade is complete
         try {
           console.log('📡 Notifying backend of execution (fallback)...');
           const token = localStorage.getItem('auth_token');
           const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-          
+
           await fetch(`${apiUrl}/trades/${data.tradeId}/confirm`, {
             method: 'POST',
             headers: {
@@ -193,9 +193,9 @@ export function useStrategyExecutor() {
               status: 'success',
             }),
           });
-          
+
           console.log('✅ Backend notified - strategy will update to completed');
-          
+
           // Trigger page reload to show completed status
           setTimeout(() => {
             console.log('🔄 Refreshing page to show completed status...');
@@ -210,13 +210,13 @@ export function useStrategyExecutor() {
 
     } catch (error: any) {
       console.log('Strategy execution error:', error.message);
-      
+
       // Check if user rejected the transaction
-      const isUserRejection = error.message?.toLowerCase().includes('user rejected') || 
-                              error.message?.toLowerCase().includes('user denied') ||
-                              error.message?.toLowerCase().includes('user cancelled') ||
-                              error.code === 4001;
-      
+      const isUserRejection = error.message?.toLowerCase().includes('user rejected') ||
+        error.message?.toLowerCase().includes('user denied') ||
+        error.message?.toLowerCase().includes('user cancelled') ||
+        error.code === 4001;
+
       if (isUserRejection) {
         // User intentionally cancelled - show info toast instead of error
         toast.info('Transaction Cancelled', {
@@ -233,13 +233,13 @@ export function useStrategyExecutor() {
 
   useEffect(() => {
     if (!publicKey) {
-      console.log('⚠️  Strategy executor: Wallet not connected');
+      // console.log('⚠️  Strategy executor: Wallet not connected');
       return;
     }
 
-    console.log('✅ Strategy executor initialized');
-    console.log('👛 Wallet:', publicKey.toBase58().slice(0, 8) + '...');
-    console.log('📡 Listening for strategy triggers...');
+    // console.log('✅ Strategy executor initialized');
+    // console.log('👛 Wallet:', publicKey.toBase58().slice(0, 8) + '...');
+    // console.log('📡 Listening for strategy triggers...');
 
     // Request notification permission
     if (typeof window !== 'undefined' && 'Notification' in window) {

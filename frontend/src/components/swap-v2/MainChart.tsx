@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useRef, useState, useEffect } from "react";
-import { createChart, IChartApi, ISeriesApi, LineSeries, CrosshairMode } from "lightweight-charts";
+import { createChart, IChartApi, ISeriesApi, LineSeries, CrosshairMode, UTCTimestamp } from "lightweight-charts";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import { useSwap } from "./SwapContext";
@@ -77,9 +77,9 @@ export default function MainChart() {
 
   const chartData = useMemo(() => {
     if (!candles || candles.length === 0) return [];
-    
+
     return candles.map((candle) => ({
-      time: (candle.timestamp || candle.time || 0) as number,
+      time: (candle.timestamp || 0) as UTCTimestamp,
       value: candle.close,
     })).sort((a, b) => a.time - b.time);
   }, [candles]);
@@ -88,103 +88,103 @@ export default function MainChart() {
   const isPositive = priceChangePercent >= 0;
   const lineColor = isPositive ? '#22C55E' : '#EF4444';
 
-    useEffect(() => {
-      if (!containerRef.current) return;
+  useEffect(() => {
+    if (!containerRef.current) return;
 
-      const chart = createChart(containerRef.current, {
-        width: containerRef.current.clientWidth,
-        height: containerRef.current.clientHeight,
-        layout: {
-          background: { color: "transparent" },
-          textColor: isDark ? "#A1A1AA" : "#71717A",
-          fontFamily: "'SF Pro Rounded', system-ui, -apple-system, sans-serif",
+    const chart = createChart(containerRef.current, {
+      width: containerRef.current.clientWidth,
+      height: containerRef.current.clientHeight,
+      layout: {
+        background: { color: "transparent" },
+        textColor: isDark ? "#A1A1AA" : "#71717A",
+        fontFamily: "'SF Pro Rounded', system-ui, -apple-system, sans-serif",
+      },
+      grid: {
+        vertLines: { visible: false },
+        horzLines: { color: isDark ? "#27272A" : "#E4E4E7", style: 1 },
+      },
+      crosshair: {
+        mode: CrosshairMode.Normal,
+        vertLine: {
+          color: lineColor,
+          width: 1,
+          style: 2,
+          labelVisible: false,
         },
-        grid: {
-          vertLines: { visible: false },
-          horzLines: { color: isDark ? "#27272A" : "#E4E4E7", style: 1 },
+        horzLine: {
+          color: lineColor,
+          width: 1,
+          style: 2,
+          labelVisible: true,
         },
-        crosshair: {
-          mode: CrosshairMode.Normal,
-          vertLine: {
-            color: lineColor,
-            width: 1,
-            style: 2,
-            labelVisible: false,
-          },
-          horzLine: {
-            color: lineColor,
-            width: 1,
-            style: 2,
-            labelVisible: true,
-          },
-        },
-        rightPriceScale: {
-          borderVisible: false,
-          scaleMargins: { top: 0.1, bottom: 0.1 },
-        },
-        timeScale: {
-          borderVisible: false,
-          timeVisible: true,
-          secondsVisible: false,
-        },
-        handleScale: false,
-        handleScroll: false,
-      });
+      },
+      rightPriceScale: {
+        borderVisible: false,
+        scaleMargins: { top: 0.1, bottom: 0.1 },
+      },
+      timeScale: {
+        borderVisible: false,
+        timeVisible: true,
+        secondsVisible: false,
+      },
+      handleScale: false,
+      handleScroll: false,
+    });
 
-      const lineSeries = chart.addSeries(LineSeries, {
-        color: lineColor,
-        lineWidth: 2,
-        crosshairMarkerVisible: true,
-        crosshairMarkerRadius: 5,
-        crosshairMarkerBackgroundColor: lineColor,
-        crosshairMarkerBorderColor: isDark ? "#0D0D12" : "#FFFFFF",
-        crosshairMarkerBorderWidth: 2,
-        priceFormat: {
-          type: "custom",
-          formatter: (price: number) => formatPrice(price).replace("$", ""),
-        },
-      });
+    const lineSeries = chart.addSeries(LineSeries, {
+      color: lineColor,
+      lineWidth: 2,
+      crosshairMarkerVisible: true,
+      crosshairMarkerRadius: 5,
+      crosshairMarkerBackgroundColor: lineColor,
+      crosshairMarkerBorderColor: isDark ? "#0D0D12" : "#FFFFFF",
+      crosshairMarkerBorderWidth: 2,
+      priceFormat: {
+        type: "custom",
+        formatter: (price: number) => formatPrice(price).replace("$", ""),
+      },
+    });
 
-      chartRef.current = chart;
-      seriesRef.current = lineSeries;
-      setIsChartReady(true);
+    chartRef.current = chart;
+    seriesRef.current = lineSeries;
+    setIsChartReady(true);
 
-      const handleResize = () => {
-        if (containerRef.current && chartRef.current) {
-          chartRef.current.applyOptions({
-            width: containerRef.current.clientWidth,
-            height: containerRef.current.clientHeight,
-          });
-        }
-      };
-
-      const resizeObserver = new ResizeObserver(handleResize);
-      resizeObserver.observe(containerRef.current);
-
-      return () => {
-        resizeObserver.disconnect();
-        chart.remove();
-        chartRef.current = null;
-        seriesRef.current = null;
-        setIsChartReady(false);
-      };
-    }, []); // Only initialize once
-
-    useEffect(() => {
-      if (chartRef.current && seriesRef.current) {
+    const handleResize = () => {
+      if (containerRef.current && chartRef.current) {
         chartRef.current.applyOptions({
-          layout: {
-            textColor: isDark ? "#A1A1AA" : "#71717A",
-          },
-          grid: {
-            horzLines: { color: isDark ? "#27272A" : "#E4E4E7" },
-          },
-        });
-        seriesRef.current.applyOptions({
-          crosshairMarkerBorderColor: isDark ? "#0D0D12" : "#FFFFFF",
+          width: containerRef.current.clientWidth,
+          height: containerRef.current.clientHeight,
         });
       }
-    }, [isDark]);
+    };
+
+    const resizeObserver = new ResizeObserver(handleResize);
+    resizeObserver.observe(containerRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+      chart.remove();
+      chartRef.current = null;
+      seriesRef.current = null;
+      setIsChartReady(false);
+    };
+  }, []); // Only initialize once
+
+  useEffect(() => {
+    if (chartRef.current && seriesRef.current) {
+      chartRef.current.applyOptions({
+        layout: {
+          textColor: isDark ? "#A1A1AA" : "#71717A",
+        },
+        grid: {
+          horzLines: { color: isDark ? "#27272A" : "#E4E4E7" },
+        },
+      });
+      seriesRef.current.applyOptions({
+        crosshairMarkerBorderColor: isDark ? "#0D0D12" : "#FFFFFF",
+      });
+    }
+  }, [isDark]);
 
   useEffect(() => {
     if (seriesRef.current && chartRef.current) {
@@ -230,8 +230,8 @@ export default function MainChart() {
             <>
               <div className="flex items-center gap-2 mb-1">
                 {outputToken.logoURI && (
-                  <img 
-                    src={outputToken.logoURI} 
+                  <img
+                    src={outputToken.logoURI}
                     alt={outputToken.symbol}
                     className="w-6 h-6 rounded-full"
                   />

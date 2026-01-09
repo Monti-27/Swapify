@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(cat:*)",
+      "Bash(test:*)",
+      "Read(//run/media/montisaini/**)",
+      "Bash(cd /run/media/montisaini/New\\ Volume/COHORT/COHORT/Projects/OrderSwap/frontend && find src -type f \\( -name \"*.tsx\" -o -name \"*.ts\" \\) -exec sed -i \"s/from 'sonner'/from '@\\/components\\/ui\\/toast'/g\" {} \\;:*)",
+      "Bash(cd /run/media/montisaini/New\\ Volume/COHORT/COHORT/Projects/OrderSwap/frontend && npm install:*)",
+      "Bash(cd:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run build:dev:*)",
+      "Bash(find src -type f ( -name \"*.tsx\" -o -name \"*.ts\" ) -exec sed -i \"s/from ''@\\/components\\/ui\\/toast''/from ''sonner''/g\" {} ;)",
+      "WebFetch(domain:sonner.emilkowal.ski)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -73,7 +73,7 @@ export default function StrategiesPage() {
     // Connect to WebSocket with authentication token
     const token = localStorage.getItem('auth_token');
     if (token) {
-      console.log('🔌 Connecting to WebSocket with auth token...');
+      // console.log('🔌 Connecting to WebSocket with auth token...');
       wsClient.connect(token);
     } else {
       console.warn('⚠️ No auth token found for WebSocket connection');
@@ -225,6 +225,7 @@ export default function StrategiesPage() {
       completed: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
       cancelled: 'bg-gray-500/10 text-gray-500 border-gray-500/20',
       failed: 'bg-red-500/10 text-red-500 border-red-500/20',
+      filled: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
     };
 
     return (

@@ -213,6 +213,27 @@ class ApiClient {
     return this.request(`/prices/market-cap?token=${tokenAddress}`);
   }
 
+  async getTokenOverview(tokenAddress: string): Promise<{
+    address: string;
+    symbol: string;
+    name: string;
+    price: number;
+    priceChange24h: number;
+    marketCap: number;
+    fdv: number;
+    circulatingSupply: number;
+    totalSupply: number;
+    liquidity: number;
+    volume24h: number;
+  } | null> {
+    try {
+      return this.request(`/prices/overview?token=${tokenAddress}`);
+    } catch (error) {
+      console.error('Failed to fetch token overview:', error);
+      return null;
+    }
+  }
+
   async getPriceHistory(
     tokenAddress: string,
     timeframe: ChartTimeframe = ChartTimeframe.ONE_HOUR,
@@ -247,6 +268,25 @@ class ApiClient {
 
   async getTokenByMint(mint: string): Promise<any> {
     return this.request(`/tokens/${mint}`);
+  }
+
+  // Transparency API
+  async getWalletRisk(address: string): Promise<import('@/types/api').WalletRiskReport> {
+    return this.request(`/transparency/${address}`);
+  }
+
+  async scanWalletRisk(address: string): Promise<import('@/types/api').WalletRiskReport> {
+    return this.request(`/transparency/scan/${address}`, { method: 'POST' });
+  }
+
+  async analyzeCluster(
+    mints: string[],
+    mode: import('@/types/api').ClusterMode,
+  ): Promise<import('@/types/api').ClusterResult> {
+    return this.request('/transparency/cluster', {
+      method: 'POST',
+      body: JSON.stringify({ mints, mode }),
+    });
   }
 }
 

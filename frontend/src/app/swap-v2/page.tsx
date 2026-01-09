@@ -13,9 +13,9 @@ import {
 export default function SwapV2Page() {
   return (
     <SwapProvider>
-      <div className="min-h-screen relative bg-background">
-        <div className="absolute inset-0 gradient-purple-radial pointer-events-none" style={{ willChange: 'auto' }} />
-        <div className="relative z-10" style={{ willChange: 'auto' }}>
+        <div className="min-h-screen relative bg-background">
+          <div className="absolute inset-0 gradient-purple-radial pointer-events-none" style={{ willChange: 'auto' }} />
+          <div className="relative z-10" style={{ willChange: 'auto' }}>
           <Navbar />
           
           <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-32" style={{ willChange: 'auto' }}>

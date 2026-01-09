@@ -54,5 +54,7 @@ pub enum WeswapError {
     StrategyNotFilled,
     #[msg("Neither Take Profit nor Stop Loss condition is met")]
     ExitConditionNotMet,
+    #[msg("Token mint must be either sell_token_mint or buy_token_mint from strategy")]
+    InvalidTokenMint,
 }
 

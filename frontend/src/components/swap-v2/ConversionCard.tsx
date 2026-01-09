@@ -8,6 +8,7 @@ import { SlippageSettingsModal } from './SlippageSettings';
 import { useJupiterQuote } from '@/hooks/useJupiterQuote';
 import { useJupiterSwap } from '@/hooks/useJupiterSwap';
 import { JupiterToken } from '@/hooks/useJupiterTokens';
+import { useTokenBalance } from '@/hooks/useTokenBalance';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { useBalance } from '@/contexts/BalanceContext';
 
@@ -20,11 +21,11 @@ function Skeleton({ className }: { className?: string }) {
 function TokenIcon({ logoURI, symbol, size = 24 }: { logoURI?: string; symbol: string; size?: number }) {
   if (logoURI) {
     return (
-      <img 
-        src={logoURI} 
-        alt={symbol} 
-        width={size} 
-        height={size} 
+      <img
+        src={logoURI}
+        alt={symbol}
+        width={size}
+        height={size}
         className="rounded-full"
         onError={(e) => {
           (e.target as HTMLImageElement).style.display = 'none';
@@ -33,7 +34,7 @@ function TokenIcon({ logoURI, symbol, size = 24 }: { logoURI?: string; symbol: s
     );
   }
   return (
-    <span 
+    <span
       className="rounded-full bg-[#3F3F46] flex items-center justify-center text-white font-bold"
       style={{ width: size, height: size, fontSize: size * 0.4 }}
     >
@@ -57,13 +58,47 @@ function formatAmount(amount: string, decimals: number): string {
   return num.toLocaleString(undefined, { maximumFractionDigits: 2 });
 }
 
-function RefreshIndicator({ countdown, isRefreshing, onRefresh }: { 
-  countdown: number; 
+/**
+ * Format balance with K, M, B suffixes for compact display
+ * Examples: 1234 → 1.23K, 1234567 → 1.23M, 1234567890 → 1.23B
+ */
+function formatBalanceCompact(balance: string): string {
+  const num = parseFloat(balance);
+
+  if (isNaN(num) || num === 0) return '0';
+
+  // Very small numbers
+  if (num < 0.0001) return '<0.0001';
+  if (num < 0.01) return num.toFixed(4);
+  if (num < 1) return num.toFixed(3);
+
+  // Normal range (1 - 999)
+  if (num < 1000) return num.toFixed(2);
+
+  // Thousands (1K - 999.99K)
+  if (num < 1_000_000) {
+    const k = num / 1000;
+    return k >= 100 ? `${k.toFixed(0)}K` : `${k.toFixed(2)}K`;
+  }
+
+  // Millions (1M - 999.99M)
+  if (num < 1_000_000_000) {
+    const m = num / 1_000_000;
+    return m >= 100 ? `${m.toFixed(0)}M` : `${m.toFixed(2)}M`;
+  }
+
+  // Billions (1B+)
+  const b = num / 1_000_000_000;
+  return b >= 100 ? `${b.toFixed(0)}B` : `${b.toFixed(2)}B`;
+}
+
+function RefreshIndicator({ countdown, isRefreshing, onRefresh }: {
+  countdown: number;
   isRefreshing: boolean;
   onRefresh: () => void;
 }) {
   return (
-    <button 
+    <button
       onClick={onRefresh}
       disabled={isRefreshing}
       className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors disabled:opacity-50"
@@ -75,30 +110,40 @@ function RefreshIndicator({ countdown, isRefreshing, onRefresh }: {
 }
 
 export default function ConversionCard() {
-  const { 
-    inputToken, 
-    outputToken, 
-    inputAmount, 
+  const {
+    inputToken,
+    outputToken,
+    inputAmount,
     slippageBps,
-    setInputToken, 
-    setOutputToken, 
+    setInputToken,
+    setOutputToken,
     setInputAmount,
     switchTokens,
     inputAmountLamports,
     addTransaction
   } = useSwap();
-  
+
   const { connected } = useWallet();
-  const { balance } = useBalance();
-  
+  const { balance: legacyBalance } = useBalance();
+
+  // Multi-token balance tracking - supports BOTH SOL and SPL tokens
+  const { balance: inputBalance, loading: inputBalanceLoading, refetch: refetchInputBalance } = useTokenBalance(
+    inputToken.address,
+    inputToken.decimals
+  );
+  const { balance: outputBalance, loading: outputBalanceLoading, refetch: refetchOutputBalance } = useTokenBalance(
+    outputToken.address,
+    outputToken.decimals
+  );
+
   const [isFromModalOpen, setIsFromModalOpen] = useState(false);
   const [isToModalOpen, setIsToModalOpen] = useState(false);
   const [isSlippageModalOpen, setIsSlippageModalOpen] = useState(false);
   const [displayAmount, setDisplayAmount] = useState('');
 
-  const { 
-    quote, 
-    isLoading: isQuoteLoading, 
+  const {
+    quote,
+    isLoading: isQuoteLoading,
     isFetching,
     isRefreshing,
     priceImpact,
@@ -135,21 +180,13 @@ export default function ConversionCard() {
     return `1 ${inputToken.symbol} = ${rateValue.toFixed(6)} ${outputToken.symbol}`;
   }, [quote, inputToken, outputToken]);
 
-  const inputBalance = useMemo(() => {
-    if (inputToken.symbol === 'SOL') {
-      return balance || '0.00';
-    }
-    return '—';
-  }, [inputToken.symbol, balance]);
-
+  // Insufficient balance check - now works for ALL tokens (SOL, USDC, WSP, etc.)
   const hasInsufficientBalance = useMemo(() => {
-    if (inputToken.symbol === 'SOL' && balance) {
-      const inputNum = parseFloat(inputAmount.replace(/,/g, '') || '0');
-      const balanceNum = parseFloat(balance);
-      return inputNum > balanceNum;
-    }
-    return false;
-  }, [inputToken.symbol, inputAmount, balance]);
+    if (!inputAmount || inputAmount === '') return false;
+    const inputNum = parseFloat(inputAmount.replace(/,/g, '') || '0');
+    const balanceNum = parseFloat(inputBalance || '0');
+    return inputNum > balanceNum;
+  }, [inputAmount, inputBalance]);
 
   const handleSwap = useCallback(async () => {
     if (!quote) return;
@@ -173,8 +210,14 @@ export default function ConversionCard() {
         txHash: result.signature,
       });
       setInputAmount('');
+
+      // Refresh balances immediately after successful swap
+      setTimeout(() => {
+        refetchInputBalance();
+        refetchOutputBalance();
+      }, 1000); // Small delay to allow blockchain state to update
     }
-  }, [quote, executeSwap, addTransaction, inputToken, outputToken, setInputAmount]);
+  }, [quote, executeSwap, addTransaction, inputToken, outputToken, setInputAmount, refetchInputBalance, refetchOutputBalance]);
 
   const handleFromTokenSelect = useCallback((token: JupiterToken) => {
     if (token.address === outputToken.address) {
@@ -221,33 +264,33 @@ export default function ConversionCard() {
   return (
     <div className="lg:w-[360px] shrink-0 flex flex-col gap-5">
       <div className="flex items-center gap-2">
-        <div 
-          role="tablist" 
+        <div
+          role="tablist"
           className="flex w-full bg-white dark:bg-[#27272A]/64 p-0 shadow-md rounded-md overflow-hidden dark:inset-shadow-[0_1px_rgb(255_255_255/0.15)]"
         >
-          <button 
-            role="tab" 
+          <button
+            role="tab"
             aria-selected="true"
             className="flex-1 py-1.5 text-sm font-medium text-foreground transition-all outline-none relative hover:text-foreground/80"
           >
             Convert
           </button>
-          <button 
-            role="tab" 
+          <button
+            role="tab"
             aria-selected="false"
             className="flex-1 py-1.5 text-sm font-medium text-muted-foreground transition-all outline-none relative hover:text-foreground before:absolute before:inset-y-2 before:-left-px before:w-px before:bg-border first:before:hidden"
           >
             Buy
           </button>
-          <button 
-            role="tab" 
+          <button
+            role="tab"
             aria-selected="false"
             className="flex-1 py-1.5 text-sm font-medium text-muted-foreground transition-all outline-none relative hover:text-foreground before:absolute before:inset-y-2 before:-left-px before:w-px before:bg-border first:before:hidden"
           >
             Send
           </button>
         </div>
-        <button 
+        <button
           onClick={() => setIsSlippageModalOpen(true)}
           className="inline-flex items-center justify-center rounded-md transition-colors hover:bg-accent size-8 shrink-0 text-muted-foreground hover:text-foreground/80 outline-none"
         >
@@ -256,50 +299,50 @@ export default function ConversionCard() {
         </button>
       </div>
 
-        <div className="bg-[#18181B] rounded-2xl p-2.5 shadow-xl relative">
-          <div className="relative flex flex-col items-center gap-1 mb-5">
-            <div 
-              className="bg-[#27272A] text-white rounded-xl shadow-lg relative w-full flex flex-row items-center justify-between gap-2 p-5 [mask-image:radial-gradient(ellipse_32px_30px_at_50%_100%,transparent_0,transparent_28px,black_29px)]"
-            >
-              <div className="grow">
-                <input 
-                  type="text" 
-                  inputMode="decimal"
-                  placeholder="0.00"
-                  value={inputAmount}
-                  onChange={handleInputChange}
-                  className="w-full max-w-40 text-2xl font-bold bg-transparent border-none outline-none p-0 mb-1 focus:ring-0 text-white placeholder:text-zinc-600"
-                />
-                <div className="text-[12px] text-zinc-500 font-medium">
-                  Balance: {inputBalance}
-                </div>
-              </div>
-              <div>
-                <button 
-                  onClick={() => setIsFromModalOpen(true)}
-                  className="flex items-center gap-2 bg-[#3F3F46] hover:bg-[#52525B] transition-colors rounded-full pl-1 pr-2.5 py-1 text-white shadow-lg border-0 outline-none"
-                >
-                  <TokenIcon logoURI={inputToken.logoURI} symbol={inputToken.symbol} />
-                  <span className="uppercase text-[12px] font-bold tracking-tight">{inputToken.symbol}</span>
-                  <ChevronDown className="size-4 text-zinc-400" />
-                </button>
+      <div className="bg-[#18181B] rounded-2xl p-2.5 shadow-xl relative">
+        <div className="relative flex flex-col items-center gap-1 mb-5">
+          <div
+            className="bg-[#27272A] text-white rounded-xl shadow-lg relative w-full flex flex-row items-center justify-between gap-2 p-5 [mask-image:radial-gradient(ellipse_32px_30px_at_50%_100%,transparent_0,transparent_28px,black_29px)]"
+          >
+            <div className="grow">
+              <input
+                type="text"
+                inputMode="decimal"
+                placeholder="0.00"
+                value={inputAmount}
+                onChange={handleInputChange}
+                className="w-full max-w-40 text-2xl font-bold bg-transparent border-none outline-none p-0 mb-1 focus:ring-0 text-white placeholder:text-zinc-600"
+              />
+              <div className="text-[12px] text-zinc-500 font-medium">
+                Balance: {inputBalanceLoading ? '...' : formatBalanceCompact(inputBalance)}
               </div>
             </div>
-
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-              <button 
-                onClick={switchTokens}
-                className="size-10 flex items-center justify-center rounded-full bg-[#5850EC] hover:bg-[#4338CA] transition-colors shadow-lg border border-black/10"
+            <div>
+              <button
+                onClick={() => setIsFromModalOpen(true)}
+                className="flex items-center gap-2 bg-[#3F3F46] hover:bg-[#52525B] transition-colors rounded-full pl-1 pr-2.5 py-1 text-white shadow-lg border-0 outline-none"
               >
-                <ArrowDown className="size-5 text-white" />
+                <TokenIcon logoURI={inputToken.logoURI} symbol={inputToken.symbol} />
+                <span className="uppercase text-[12px] font-bold tracking-tight">{inputToken.symbol}</span>
+                <ChevronDown className="size-4 text-zinc-400" />
               </button>
             </div>
+          </div>
 
-            <div 
-              className="bg-[#27272A] text-white rounded-xl shadow-lg relative w-full flex flex-row items-center justify-between gap-2 p-5 [mask-image:radial-gradient(ellipse_32px_30px_at_50%_0%,transparent_0,transparent_28px,black_29px)]"
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+            <button
+              onClick={switchTokens}
+              className="size-10 flex items-center justify-center rounded-full bg-[#5850EC] hover:bg-[#4338CA] transition-colors shadow-lg border border-black/10"
             >
+              <ArrowDown className="size-5 text-white" />
+            </button>
+          </div>
+
+          <div
+            className="bg-[#27272A] text-white rounded-xl shadow-lg relative w-full flex flex-row items-center justify-between gap-2 p-5 [mask-image:radial-gradient(ellipse_32px_30px_at_50%_0%,transparent_0,transparent_28px,black_29px)]"
+          >
             <div className="absolute -top-px left-1/2 -translate-x-1/2 w-[58px] h-[29px] rounded-b-full border-b border-x border-white/5"></div>
-            
+
             <div className="grow">
               {isQuoteLoading && inputAmountLamports !== '0' ? (
                 <div className="flex flex-col gap-2">
@@ -313,11 +356,11 @@ export default function ConversionCard() {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-[12px] text-zinc-500 font-medium">
-                      Balance: —
+                      Balance: {outputBalanceLoading ? '...' : formatBalanceCompact(outputBalance)}
                     </span>
                     {showRefreshIndicator && (
-                      <RefreshIndicator 
-                        countdown={refreshCountdown} 
+                      <RefreshIndicator
+                        countdown={refreshCountdown}
                         isRefreshing={isRefreshing}
                         onRefresh={refetch}
                       />
@@ -327,7 +370,7 @@ export default function ConversionCard() {
               )}
             </div>
             <div>
-              <button 
+              <button
                 onClick={() => setIsToModalOpen(true)}
                 className="flex items-center gap-2 bg-[#3F3F46] hover:bg-[#52525B] transition-colors rounded-full pl-1 pr-2.5 py-1 text-white shadow-lg border-0 outline-none"
               >
@@ -403,19 +446,18 @@ export default function ConversionCard() {
         </div>
 
         <div className="mt-5 px-1.5 pb-2">
-          <button 
+          <button
             onClick={handleSwap}
             disabled={!canSwap}
-            className={`w-full py-3.5 rounded-xl font-bold text-sm shadow-lg mb-4 transition-colors flex items-center justify-center gap-2 ${
-              canSwap 
-                ? 'bg-[#5850EC] hover:bg-[#4338CA] text-white' 
-                : 'bg-zinc-700 text-zinc-400 cursor-not-allowed'
-            }`}
+            className={`w-full py-3.5 rounded-xl font-bold text-sm shadow-lg mb-4 transition-colors flex items-center justify-center gap-2 ${canSwap
+              ? 'bg-[#5850EC] hover:bg-[#4338CA] text-white'
+              : 'bg-zinc-700 text-zinc-400 cursor-not-allowed'
+              }`}
           >
             {isSwapping && <Loader2 className="w-4 h-4 animate-spin" />}
             {getButtonText()}
           </button>
-          
+
           {rate && (
             <div className="text-center text-[10px] text-zinc-500 font-bold uppercase tracking-wider">
               {rate}

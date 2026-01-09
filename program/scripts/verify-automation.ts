@@ -28,8 +28,12 @@ import * as fs from "fs";
 
 // Configuration
 const CONFIG = {
-    // Use devnet for testing
-    rpcUrl: process.env.SOLANA_RPC_URL || clusterApiUrl("devnet"),
+    // MAINNET: Requires explicit RPC URL
+    rpcUrl: (() => {
+        const url = process.env.SOLANA_RPC_URL;
+        if (!url) throw new Error("SOLANA_RPC_URL environment variable is required");
+        return url;
+    })(),
     programId: process.env.PROGRAM_ID || "AFhpyoVmDCEVofP3sqj8wCPSFYYGpL83sbXKuwMZtcoQ",
     keeperKeyPath: process.env.KEEPER_KEY_PATH || "./keeper-wallet.json",
 };

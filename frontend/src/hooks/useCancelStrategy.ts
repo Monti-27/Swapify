@@ -145,40 +145,86 @@ export function useCancelStrategy(): UseCancelStrategyResult {
             console.log('   Strategy PDA:', strategyPda.toBase58());
             console.log('   Escrow PDA:', escrowPda.toBase58());
 
-            // 5. Get token accounts
-            const ownerTokenAccount = getAssociatedTokenAddressSync(
-                sellTokenMint,
-                publicKey,
-                false,
-                sellTokenProgram
-            );
+            // ============================================================
+            // SMART CANCEL: Detect which token is currently in escrow
+            // This handles the "Boomerang Trap" where entry has executed
+            // and escrow now holds buy_token instead of sell_token
+            // ============================================================
 
-            const escrowTokenAccount = getAssociatedTokenAddressSync(
+            // Get escrow ATAs for BOTH tokens
+            const escrowSellTokenAccount = getAssociatedTokenAddressSync(
                 sellTokenMint,
                 escrowPda,
-                true, // allowOwnerOffCurve = true (escrow is a PDA)
+                true,
                 sellTokenProgram
             );
 
-            console.log('   Owner Token Account:', ownerTokenAccount.toBase58());
-            console.log('   Escrow Token Account:', escrowTokenAccount.toBase58());
+            const escrowBuyTokenAccount = getAssociatedTokenAddressSync(
+                buyTokenMint,
+                escrowPda,
+                true,
+                buyTokenProgram
+            );
 
-            // 6. Get escrow balance to withdraw everything
-            let withdrawAmount: BN;
+            // Check balances of BOTH escrow accounts
+            let sellBalance = BigInt(0);
+            let buyBalance = BigInt(0);
+
             try {
-                const escrowAccountInfo = await getAccount(
-                    connection,
-                    escrowTokenAccount,
-                    'confirmed',
+                const sellAccountInfo = await getAccount(connection, escrowSellTokenAccount, 'confirmed', sellTokenProgram);
+                sellBalance = sellAccountInfo.amount;
+                console.log('   Sell Token Escrow Balance:', sellBalance.toString());
+            } catch {
+                console.log('   Sell Token Escrow: Not found or empty');
+            }
+
+            try {
+                const buyAccountInfo = await getAccount(connection, escrowBuyTokenAccount, 'confirmed', buyTokenProgram);
+                buyBalance = buyAccountInfo.amount;
+                console.log('   Buy Token Escrow Balance:', buyBalance.toString());
+            } catch {
+                console.log('   Buy Token Escrow: Not found or empty');
+            }
+
+            // SMART DECISION: Use whichever token has funds
+            let withdrawTokenMint: PublicKey;
+            let withdrawTokenProgram: PublicKey;
+            let escrowTokenAccount: PublicKey;
+            let ownerTokenAccount: PublicKey;
+            let withdrawAmount: BN;
+
+            if (buyBalance > sellBalance) {
+                // Entry has executed - escrow holds buy_token (e.g., WSP)
+                console.log('   🔄 SMART CANCEL: Entry has executed, withdrawing BUY token');
+                withdrawTokenMint = buyTokenMint;
+                withdrawTokenProgram = buyTokenProgram;
+                escrowTokenAccount = escrowBuyTokenAccount;
+                ownerTokenAccount = getAssociatedTokenAddressSync(
+                    buyTokenMint,
+                    publicKey,
+                    false,
+                    buyTokenProgram
+                );
+                withdrawAmount = new BN(buyBalance.toString());
+            } else {
+                // Entry not executed - escrow still holds sell_token (e.g., SOL)
+                console.log('   ✅ NORMAL CANCEL: Entry not executed, withdrawing SELL token');
+                withdrawTokenMint = sellTokenMint;
+                withdrawTokenProgram = sellTokenProgram;
+                escrowTokenAccount = escrowSellTokenAccount;
+                ownerTokenAccount = getAssociatedTokenAddressSync(
+                    sellTokenMint,
+                    publicKey,
+                    false,
                     sellTokenProgram
                 );
-                withdrawAmount = new BN(escrowAccountInfo.amount.toString());
-                console.log('   Escrow Balance:', withdrawAmount.toString());
-            } catch {
-                // Escrow might already be empty or closed
-                console.log('   Escrow account not found or empty, using 0');
-                withdrawAmount = new BN(0);
+                withdrawAmount = new BN(sellBalance.toString());
             }
+
+            console.log('   Withdraw Token Mint:', withdrawTokenMint.toBase58());
+            console.log('   Owner Token Account:', ownerTokenAccount.toBase58());
+            console.log('   Escrow Token Account:', escrowTokenAccount.toBase58());
+            console.log('   Withdraw Amount:', withdrawAmount.toString());
 
             // 7. Initialize program
             const program = getProgram(connection, {
@@ -209,10 +255,8 @@ export function useCancelStrategy(): UseCancelStrategyResult {
                     global: globalPda,
                     strategy: strategyPda,
                     escrow: escrowPda,
-                    sellTokenMint: sellTokenMint,
-                    sellTokenProgram: sellTokenProgram,
-                    buyTokenMint: buyTokenMint,
-                    buyTokenProgram: buyTokenProgram,
+                    withdrawTokenMint: withdrawTokenMint,
+                    withdrawTokenProgram: withdrawTokenProgram,
                     ownerTokenAccount: ownerTokenAccount,
                     escrowTokenAccount: escrowTokenAccount,
                     systemProgram: SystemProgram.programId,

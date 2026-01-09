@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npm run dev)",
+      "Bash(npx tsc:*)",
+      "Bash(cat:*)",
+      "Bash(pgrep:*)",
+      "Read(//tmp/**)",
+      "Bash(curl:*)",
+      "Bash(lsof:*)",
+      "Bash(npm run start:dev:*)",
+      "Read(//home/montisaini/Pictures/Screenshots/**)",
+      "Read(//run/media/montisaini/**)",
+      "WebFetch(domain:tradingview.github.io)",
+      "Bash(pkill:*)",
+      "Read(//home/montisaini/Downloads/**)",
+      "WebSearch",
+      "mcp__ide__getDiagnostics"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -9,7 +9,7 @@ import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Job } from 'bullmq';
-import { Connection, PublicKey, Keypair, VersionedTransaction } from '@solana/web3.js';
+import { Connection, PublicKey, Keypair } from '@solana/web3.js';
 import { createRpc, Rpc, LightSystemProgram, bn, selectMinCompressedSolAccountsForTransfer, buildAndSignTx } from '@lightprotocol/stateless.js';
 import bs58 from 'bs58';
 import { PrismaService } from '../prisma/prisma.service';
@@ -24,14 +24,6 @@ export interface PrivacyJobData {
     chunkIndex: number;
     totalChunks: number;
     userPublicKey: string; // CRITICAL: User's wallet for account lookup
-    dbJobId?: string;      // Database job ID for status updates
-}
-
-// Job data for pre-signed transaction relay (Frontend-driven chunking)
-export interface RelayJobData {
-    type: 'relay';
-    signedTx: string;      // Base64 encoded signed transaction
-    amount?: number;       // Optional: for logging
     dbJobId?: string;      // Database job ID for status updates
 }
 
@@ -74,91 +66,40 @@ export class PrivacyProcessor extends WorkerHost {
     }
 
     /**
-     * Main job processor - handles unshield and relay operations.
+     * Main job processor - handles unshield operations.
      */
-    async process(job: Job<PrivacyJobData | RelayJobData>): Promise<{ signature: string }> {
-        const jobData = job.data;
+    async process(job: Job<PrivacyJobData>): Promise<{ signature: string }> {
+        const { type, chunkAmount, destinationAddress, chunkIndex, totalChunks, userPublicKey, dbJobId } = job.data;
 
-        this.logger.log(`Processing job ${job.id}: type=${jobData.type}`);
+        this.logger.log(
+            `Processing job ${job.id}: ${type} - ` +
+            `Chunk ${chunkIndex + 1}/${totalChunks}: ${chunkAmount} SOL ` +
+            `from ${userPublicKey} to ${destinationAddress}`
+        );
 
         // Update database status to processing
-        if (jobData.dbJobId) {
-            await this.updateJobStatus(jobData.dbJobId, 'processing');
+        if (dbJobId) {
+            await this.updateJobStatus(dbJobId, 'processing');
+        }
+
+        if (type !== 'unshield') {
+            throw new Error(`Unknown job type: ${type}`);
         }
 
         try {
-            let result: { signature: string };
-
-            if (jobData.type === 'relay') {
-                // New: Handle pre-signed transaction relay
-                result = await this.processRelay(jobData as RelayJobData);
-            } else if (jobData.type === 'unshield') {
-                // Legacy: Handle unshield (creates tx on backend - has signer issues)
-                result = await this.processUnshield(jobData as PrivacyJobData);
-            } else {
-                throw new Error(`Unknown job type: ${(jobData as any).type}`);
-            }
+            const result = await this.processUnshield(job.data);
 
             // Update database status to completed
-            if (jobData.dbJobId) {
-                await this.updateJobStatus(jobData.dbJobId, 'completed', result.signature);
+            if (dbJobId) {
+                await this.updateJobStatus(dbJobId, 'completed', result.signature);
             }
 
             return result;
         } catch (error: any) {
             // Update database status to failed
-            if (jobData.dbJobId) {
-                await this.updateJobStatus(jobData.dbJobId, 'failed', undefined, error.message);
+            if (dbJobId) {
+                await this.updateJobStatus(dbJobId, 'failed', undefined, error.message);
             }
-            throw error;
-        }
-    }
-
-    /**
-     * NEW: Processes a pre-signed transaction relay.
-     * 🛡️ CRITICAL: Relayer signs as Fee Payer for privacy (gasless for user).
-     */
-    private async processRelay(data: RelayJobData): Promise<{ signature: string }> {
-        const { signedTx, amount } = data;
-
-        this.logger.log(`Relaying pre-signed transaction (amount: ${amount} SOL)`);
-
-        if (!this.relayerKeypair) {
-            throw new Error('Relayer keypair not configured - cannot pay gas fees');
-        }
-
-        try {
-            // 1. Deserialize the User's Partially-Signed Transaction
-            const txBuffer = Buffer.from(signedTx, 'base64');
-            const transaction = VersionedTransaction.deserialize(txBuffer);
-
-            // 🛡️ CRITICAL PRIVACY STEP 🛡️
-            // The Relayer MUST sign this transaction.
-            // This makes the Relayer the 'Fee Payer', hiding the User's wallet from gas tracking.
-            // IF THIS LINE IS MISSING, THE USER PAYS GAS (Privacy Leak).
-            transaction.sign([this.relayerKeypair]);
-
-            this.logger.log(`✅ Relayer signed as fee payer: ${this.relayerKeypair.publicKey.toBase58()}`);
-
-            // 2. Submit to Blockchain
-            const signature = await this.connection.sendRawTransaction(transaction.serialize(), {
-                maxRetries: 5,
-                preflightCommitment: 'confirmed',
-                skipPreflight: false,
-            });
-
-            // 3. Confirm the transaction
-            const confirmation = await this.connection.confirmTransaction(signature, 'confirmed');
-
-            if (confirmation.value.err) {
-                throw new Error(`Transaction failed: ${JSON.stringify(confirmation.value.err)}`);
-            }
-
-            this.logger.log(`⚡ Relay successful (Gasless for User): ${signature}`);
-            return { signature };
-
-        } catch (error: any) {
-            this.logger.error(`Relay failed: ${error.message}`, error.stack);
             throw error;
         }
     }
@@ -223,7 +164,7 @@ export class PrivacyProcessor extends WorkerHost {
                 [decompressInstruction],
                 this.relayerKeypair,
                 blockhash,
-                []  // Empty: payer already signs, don't add as additionalSigner
+                [this.relayerKeypair]
             );
 
             // Send transaction

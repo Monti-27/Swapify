@@ -99,8 +99,8 @@ export function useJupiterQuote({
     return () => clearTimeout(timer);
   }, [amount]);
 
-  const isValidQuery = useMemo(() => {
-    return (
+  const isValidQuery = useMemo((): boolean => {
+    return !!(
       enabled &&
       inputMint &&
       outputMint &&
@@ -110,12 +110,12 @@ export function useJupiterQuote({
     );
   }, [enabled, inputMint, outputMint, debouncedAmount]);
 
-  const queryKey = useMemo(() => 
+  const queryKey = useMemo(() =>
     ['jupiter-quote', inputMint, outputMint, debouncedAmount, slippageBps],
     [inputMint, outputMint, debouncedAmount, slippageBps]
   );
 
-  const query = useQuery({
+  const query = useQuery<JupiterQuoteResponse | null>({
     queryKey,
     queryFn: async () => {
       lastFetchTime.current = Date.now();

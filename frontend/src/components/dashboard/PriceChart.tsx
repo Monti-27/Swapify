@@ -1,11 +1,14 @@
 "use client";
 
-import React, { useMemo, useRef, useState, useEffect } from "react";
-import { createChart, IChartApi, ISeriesApi, LineSeries, CrosshairMode } from "lightweight-charts";
+import React, { useMemo, useRef, useState, useEffect, useCallback } from "react";
+import { createChart, IChartApi, ISeriesApi, LineSeries, CrosshairMode, UTCTimestamp } from "lightweight-charts";
 import { motion } from "framer-motion";
 import { useTheme } from "next-themes";
 import { useChartData } from "@/hooks/useChartData";
 import { ChartTimeframe } from "@/types/api";
+import { api } from "@/lib/api";
+
+type ChartMode = 'price' | 'mcap';
 
 const WSP_TOKEN = {
   address: "3LkGja4ptKgVH3FoP3xye3HYGLPbX2iAbvGYj5ePpump",
@@ -33,6 +36,14 @@ function formatPrice(price: number): string {
   if (price < 1) return `$${price.toFixed(4)}`;
   if (price < 1000) return `$${price.toFixed(2)}`;
   return `$${price.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+}
+
+function formatMcap(value: number): string {
+  if (value === 0) return "$0";
+  if (value >= 1e9) return `$${(value / 1e9).toFixed(2)}B`;
+  if (value >= 1e6) return `$${(value / 1e6).toFixed(2)}M`;
+  if (value >= 1e3) return `$${(value / 1e3).toFixed(2)}K`;
+  return `$${value.toFixed(2)}`;
 }
 
 function ChartSkeleton() {
@@ -67,6 +78,9 @@ function ChartSkeleton() {
 
 export function PriceChart() {
   const [activeFilter, setActiveFilter] = useState(ChartTimeframe.ONE_HOUR);
+  const [chartMode, setChartMode] = useState<ChartMode>('price');
+  const [circulatingSupply, setCirculatingSupply] = useState<number>(0);
+  const [currentMcap, setCurrentMcap] = useState<number>(0);
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const containerRef = useRef<HTMLDivElement>(null);
@@ -80,116 +94,147 @@ export function PriceChart() {
     enabled: true,
   });
 
+  // Fetch token overview for MCAP display
+  useEffect(() => {
+    const fetchOverview = async () => {
+      try {
+        const overview = await api.getTokenOverview(WSP_TOKEN.address);
+        if (overview) {
+          setCirculatingSupply(overview.circulatingSupply || 0);
+          setCurrentMcap(overview.marketCap || 0);
+        }
+      } catch (error) {
+        console.error('Failed to fetch token overview:', error);
+      }
+    };
+    fetchOverview();
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchOverview, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Calculate chart data based on mode
   const chartData = useMemo(() => {
     if (!candles || candles.length === 0) return [];
 
-    return candles.map((candle) => ({
-      time: (candle.timestamp || candle.time || 0) as number,
-      value: candle.close,
-    })).sort((a, b) => a.time - b.time);
-  }, [candles]);
+    return candles.map((candle) => {
+      let value = candle.close;
+      // For MCAP mode, multiply price by circulating supply
+      if (chartMode === 'mcap' && circulatingSupply > 0) {
+        value = candle.close * circulatingSupply;
+      }
+      return {
+        time: (candle.timestamp || 0) as UTCTimestamp,
+        value,
+      };
+    }).sort((a, b) => a.time - b.time);
+  }, [candles, chartMode, circulatingSupply]);
+
+  // Display value based on mode
+  const displayValue = chartMode === 'mcap' ? currentMcap : (currentPrice || 0);
+  const formatValue = chartMode === 'mcap' ? formatMcap : formatPrice;
 
   const priceChangePercent = priceChange24hPercent ?? 0;
   const isPositive = priceChangePercent >= 0;
   const lineColor = isPositive ? "#22C55E" : "#EF4444";
 
-    useEffect(() => {
-      if (!containerRef.current) return;
+  useEffect(() => {
+    if (!containerRef.current) return;
 
-      const chart = createChart(containerRef.current, {
-        width: containerRef.current.clientWidth,
-        height: containerRef.current.clientHeight,
-        layout: {
-          background: { color: "transparent" },
-          textColor: isDark ? "#A1A1AA" : "#71717A",
-          fontFamily: "'SF Pro Rounded', system-ui, -apple-system, sans-serif",
+    const chart = createChart(containerRef.current, {
+      width: containerRef.current.clientWidth,
+      height: containerRef.current.clientHeight,
+      layout: {
+        background: { color: "transparent" },
+        textColor: isDark ? "#A1A1AA" : "#71717A",
+        fontFamily: "'SF Pro Rounded', system-ui, -apple-system, sans-serif",
+      },
+      grid: {
+        vertLines: { visible: false },
+        horzLines: { color: isDark ? "#27272A" : "#E4E4E7", style: 1 },
+      },
+      crosshair: {
+        mode: CrosshairMode.Normal,
+        vertLine: {
+          color: lineColor,
+          width: 1,
+          style: 2,
+          labelVisible: false,
         },
-        grid: {
-          vertLines: { visible: false },
-          horzLines: { color: isDark ? "#27272A" : "#E4E4E7", style: 1 },
+        horzLine: {
+          color: lineColor,
+          width: 1,
+          style: 2,
+          labelVisible: true,
         },
-        crosshair: {
-          mode: CrosshairMode.Normal,
-          vertLine: {
-            color: lineColor,
-            width: 1,
-            style: 2,
-            labelVisible: false,
-          },
-          horzLine: {
-            color: lineColor,
-            width: 1,
-            style: 2,
-            labelVisible: true,
-          },
-        },
-        rightPriceScale: {
-          borderVisible: false,
-          scaleMargins: { top: 0.1, bottom: 0.1 },
-        },
-        timeScale: {
-          borderVisible: false,
-          timeVisible: true,
-          secondsVisible: false,
-        },
-        handleScale: false,
-        handleScroll: false,
-      });
+      },
+      rightPriceScale: {
+        borderVisible: false,
+        scaleMargins: { top: 0.1, bottom: 0.1 },
+      },
+      timeScale: {
+        borderVisible: false,
+        timeVisible: true,
+        secondsVisible: false,
+      },
+      handleScale: false,
+      handleScroll: false,
+    });
 
-      const lineSeries = chart.addSeries(LineSeries, {
-        color: lineColor,
-        lineWidth: 2,
-        crosshairMarkerVisible: true,
-        crosshairMarkerRadius: 5,
-        crosshairMarkerBackgroundColor: lineColor,
-        crosshairMarkerBorderColor: isDark ? "#1a1a1a" : "#FFFFFF",
-        crosshairMarkerBorderWidth: 2,
-        priceFormat: {
-          type: "custom",
-          formatter: (price: number) => formatPrice(price).replace("$", ""),
-        },
-      });
+    const lineSeries = chart.addSeries(LineSeries, {
+      color: lineColor,
+      lineWidth: 2,
+      crosshairMarkerVisible: true,
+      crosshairMarkerRadius: 5,
+      crosshairMarkerBackgroundColor: lineColor,
+      crosshairMarkerBorderColor: isDark ? "#1a1a1a" : "#FFFFFF",
+      crosshairMarkerBorderWidth: 2,
+      priceFormat: {
+        type: "custom",
+        formatter: (price: number) => formatPrice(price).replace("$", ""),
+      },
+    });
 
-      chartRef.current = chart;
-      seriesRef.current = lineSeries;
-      setIsChartReady(true);
+    chartRef.current = chart;
+    seriesRef.current = lineSeries;
+    setIsChartReady(true);
 
-      const handleResize = () => {
-        if (containerRef.current && chartRef.current) {
-          chartRef.current.applyOptions({
-            width: containerRef.current.clientWidth,
-            height: containerRef.current.clientHeight,
-          });
-        }
-      };
-
-      const resizeObserver = new ResizeObserver(handleResize);
-      resizeObserver.observe(containerRef.current);
-
-      return () => {
-        resizeObserver.disconnect();
-        chart.remove();
-        chartRef.current = null;
-        seriesRef.current = null;
-        setIsChartReady(false);
-      };
-    }, []); // Only initialize once
-
-    useEffect(() => {
-      if (chartRef.current && seriesRef.current) {
+    const handleResize = () => {
+      if (containerRef.current && chartRef.current) {
         chartRef.current.applyOptions({
-          layout: {
-            textColor: isDark ? "#A1A1AA" : "#71717A",
-          },
-          grid: {
-            horzLines: { color: isDark ? "#27272A" : "#E4E4E7" },
-          },
-        });
-        seriesRef.current.applyOptions({
-          crosshairMarkerBorderColor: isDark ? "#1a1a1a" : "#FFFFFF",
+          width: containerRef.current.clientWidth,
+          height: containerRef.current.clientHeight,
         });
       }
-    }, [isDark]);
+    };
+
+    const resizeObserver = new ResizeObserver(handleResize);
+    resizeObserver.observe(containerRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+      chart.remove();
+      chartRef.current = null;
+      seriesRef.current = null;
+      setIsChartReady(false);
+    };
+  }, []); // Only initialize once
+
+  useEffect(() => {
+    if (chartRef.current && seriesRef.current) {
+      chartRef.current.applyOptions({
+        layout: {
+          textColor: isDark ? "#A1A1AA" : "#71717A",
+        },
+        grid: {
+          horzLines: { color: isDark ? "#27272A" : "#E4E4E7" },
+        },
+      });
+      seriesRef.current.applyOptions({
+        crosshairMarkerBorderColor: isDark ? "#1a1a1a" : "#FFFFFF",
+      });
+    }
+  }, [isDark]);
 
   useEffect(() => {
     if (seriesRef.current && chartRef.current) {
@@ -244,10 +289,12 @@ export function PriceChart() {
                   alt={WSP_TOKEN.symbol}
                   className="w-6 h-6 rounded-full"
                 />
-                <span className="text-sm text-gray-500 dark:text-zinc-400">{WSP_TOKEN.symbol}</span>
+                <span className="text-sm text-gray-500 dark:text-zinc-400">
+                  {WSP_TOKEN.symbol} {chartMode === 'mcap' ? 'MCAP' : ''}
+                </span>
               </div>
               <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white leading-tight">
-                {formatPrice(currentPrice || 0)}
+                {formatValue(displayValue)}
               </h2>
               <div className="flex items-center gap-1.5 mt-1">
                 {priceChange24h !== null && (
@@ -276,20 +323,44 @@ export function PriceChart() {
           )}
         </div>
 
-        <div className="flex bg-gray-100 dark:bg-[#18181B] p-1 rounded-lg gap-1">
-          {filters.map((filter) => (
+        <div className="flex items-center gap-2">
+          {/* MCAP/Price Toggle */}
+          <div className="flex bg-gray-100 dark:bg-[#18181B] p-1 rounded-lg gap-1">
             <button
-              key={filter.value}
-              onClick={() => handleFilterChange(filter.value)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                activeFilter === filter.value
+              onClick={() => setChartMode('price')}
+              className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${chartMode === 'price'
+                ? "bg-white dark:bg-[#27272A] text-gray-900 dark:text-white shadow-sm"
+                : "text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white"
+                }`}
+            >
+              PRICE
+            </button>
+            <button
+              onClick={() => setChartMode('mcap')}
+              className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${chartMode === 'mcap'
+                ? "bg-white dark:bg-[#27272A] text-gray-900 dark:text-white shadow-sm"
+                : "text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white"
+                }`}
+            >
+              MCAP
+            </button>
+          </div>
+
+          {/* Timeframe Filter */}
+          <div className="flex bg-gray-100 dark:bg-[#18181B] p-1 rounded-lg gap-1">
+            {filters.map((filter) => (
+              <button
+                key={filter.value}
+                onClick={() => handleFilterChange(filter.value)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${activeFilter === filter.value
                   ? "bg-white dark:bg-[#27272A] text-gray-900 dark:text-white shadow-sm"
                   : "text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white"
-              }`}
-            >
-              {filter.label}
-            </button>
-          ))}
+                  }`}
+              >
+                {filter.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

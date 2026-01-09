@@ -10,12 +10,12 @@ async function bootstrap() {
   console.log('🚀 Starting OrderSwap Backend...');
   console.log('📍 Node Environment:', process.env.NODE_ENV || 'development');
   console.log('📍 Port:', process.env.PORT || 3000);
-  
+
   const app = await NestFactory.create(AppModule, {
-    logger: ['error', 'warn', 'log', 'debug', 'verbose'],
+    logger: ['error', 'warn'],
   });
   const configService = app.get(ConfigService);
-  
+
   // Log important config (without sensitive data)
   console.log('🔧 Configuration loaded:');
   console.log('   - CORS Origins:', configService.get('CORS_ORIGINS') || 'Not set');
@@ -25,7 +25,7 @@ async function bootstrap() {
 
   // Security
   app.use(helmet());
-  
+
   // CORS
   app.enableCors({
     origin: configService.get('CORS_ORIGINS')?.split(',') || ['http://localhost:5173'],
@@ -58,12 +58,12 @@ async function bootstrap() {
     .addTag('wallets', 'Wallet management')
     .addTag('prices', 'Price and market data')
     .build();
-  
+
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
   const port = configService.get('PORT') || 3000;
-  
+
   try {
     await app.listen(port, '0.0.0.0');
     console.log('✅ Server started successfully!');

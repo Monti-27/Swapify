@@ -24,64 +24,65 @@
   --swap-card-foreground: #09090B;
   --swap-popover: #FFFFFF;
   --swap-popover-foreground: #09090B;
-  --swap-primary: #5850EC;
-  --swap-primary-foreground: #FFFFFF;
-  --swap-secondary: #F4F4F5;
-  --swap-secondary-foreground: #18181B;
-  --swap-muted: #F4F4F5;
-  --swap-muted-foreground: #71717A;
-  --swap-accent: #F4F4F5;
-  --swap-accent-foreground: #18181B;
-  --swap-destructive: #EF4444;
-  --swap-destructive-foreground: #FFFFFF;
-  --swap-success: #10B981;
-  --swap-success-foreground: #FFFFFF;
-  --swap-border: #E4E4E7;
-  --swap-input: #E4E4E7;
-  --swap-ring: #5850EC;
+    --swap-primary: #10B981;
+    --swap-primary-foreground: #FFFFFF;
+    --swap-secondary: #F4F4F5;
+    --swap-secondary-foreground: #18181B;
+    --swap-muted: #F4F4F5;
+    --swap-muted-foreground: #71717A;
+    --swap-accent: #F4F4F5;
+    --swap-accent-foreground: #18181B;
+    --swap-destructive: #EF4444;
+    --swap-destructive-foreground: #FFFFFF;
+    --swap-success: #10B981;
+    --swap-success-foreground: #FFFFFF;
+    --swap-border: #E4E4E7;
+    --swap-input: #E4E4E7;
+    --swap-ring: #10B981;
 
-  --gold: #d4af37;
-  --gold-dark: #b8972e;
-  --gold-light: #e6c65c;
-}
+    --gold: #d4af37;
+    --gold-dark: #b8972e;
+    --gold-light: #e6c65c;
+  }
+  
+  .dark {
+    --main: oklch(0.178 0 0);
+    --main-secondary: oklch(0.205 0 0);
+    --main-foreground: oklch(0.269 0 0);
+    --main-muted: oklch(0.168 0 0);
+    --main-background: oklch(0.145 0 0);
+    --main-invert: oklch(0.8 0 0);
+  
+    --primary: oklch(1 0 0);
+    --primary-invert: oklch(0 0 0);
+    --primary-foreground: oklch(0.97 0 0);
+    --primary-muted: oklch(0.708 0 0);
+  
+    --border: oklch(0.26 0 0);
+  
+    --swap-background: #09090B;
+    --swap-foreground: #FAFAFA;
+    --swap-card: #18181B;
+    --swap-card-foreground: #FAFAFA;
+    --swap-popover: #18181B;
+    --swap-popover-foreground: #FAFAFA;
+    --swap-primary: #10B981;
+    --swap-primary-foreground: #FFFFFF;
+    --swap-secondary: #27272A;
+    --swap-secondary-foreground: #FAFAFA;
+    --swap-muted: #27272A;
+    --swap-muted-foreground: #A1A1AA;
+    --swap-accent: #27272A;
+    --swap-accent-foreground: #FAFAFA;
+    --swap-destructive: #EF4444;
+    --swap-destructive-foreground: #FFFFFF;
+    --swap-success: #10B981;
+    --swap-success-foreground: #FFFFFF;
+    --swap-border: #3F3F46;
+    --swap-input: #3F3F46;
+    --swap-ring: #10B981;
+  }
 
-.dark {
-  --main: oklch(0.178 0 0);
-  --main-secondary: oklch(0.205 0 0);
-  --main-foreground: oklch(0.269 0 0);
-  --main-muted: oklch(0.168 0 0);
-  --main-background: oklch(0.145 0 0);
-  --main-invert: oklch(0.8 0 0);
-
-  --primary: oklch(1 0 0);
-  --primary-invert: oklch(0 0 0);
-  --primary-foreground: oklch(0.97 0 0);
-  --primary-muted: oklch(0.708 0 0);
-
-  --border: oklch(0.26 0 0);
-
-  --swap-background: #09090B;
-  --swap-foreground: #FAFAFA;
-  --swap-card: #18181B;
-  --swap-card-foreground: #FAFAFA;
-  --swap-popover: #18181B;
-  --swap-popover-foreground: #FAFAFA;
-  --swap-primary: #6366F1;
-  --swap-primary-foreground: #FFFFFF;
-  --swap-secondary: #27272A;
-  --swap-secondary-foreground: #FAFAFA;
-  --swap-muted: #27272A;
-  --swap-muted-foreground: #A1A1AA;
-  --swap-accent: #27272A;
-  --swap-accent-foreground: #FAFAFA;
-  --swap-destructive: #EF4444;
-  --swap-destructive-foreground: #FFFFFF;
-  --swap-success: #10B981;
-  --swap-success-foreground: #FFFFFF;
-  --swap-border: #3F3F46;
-  --swap-input: #3F3F46;
-  --swap-ring: #6366F1;
-}
 
 @theme inline {
   --color-main: var(--main);
@@ -208,6 +209,22 @@
   body {
     font-family: 'Space Grotesk', sans-serif;
   }
+}
+
+.gradient-primary-radial {
+  background: radial-gradient(circle at 50% 0%, rgba(139, 148, 255, 0.08) 0%, transparent 70%);
+}
+
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-morphism-dark {
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .font-display {

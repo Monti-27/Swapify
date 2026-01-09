@@ -87,24 +87,6 @@ export class RecordTransactionRequestDto {
     commitmentId?: string;
 }
 
-// DTO for pre-signed transaction relay scheduling (Frontend-driven chunking)
-export class ScheduleRelayTransactionDto {
-    @IsString()
-    signedTx: string;  // Base64 encoded signed transaction
-
-    @IsNumber()
-    @Min(0)
-    delay: number;     // Delay in milliseconds
-
-    @IsNumber()
-    @IsOptional()
-    amount?: number;   // Optional: amount in SOL for logging
-}
-
-export class ScheduleRelayDto {
-    transactions: ScheduleRelayTransactionDto[];
-}
-
 // ============================================================================
 // Controller
 // ============================================================================
@@ -130,24 +112,6 @@ export class PrivacyController {
             transaction: body.transaction,
             proof: body.proof || '{}',
         });
-    }
-
-    @Post('schedule-relay')
-    @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Schedule pre-signed transactions for delayed relay' })
-    @ApiBody({ type: ScheduleRelayDto })
-    async scheduleRelay(@Body() body: ScheduleRelayDto) {
-        if (!body.transactions || body.transactions.length === 0) {
-            throw new BadRequestException('At least one transaction is required');
-        }
-
-        const jobIds = await this.privacyService.scheduleRelayTransactions(body.transactions);
-
-        return {
-            success: true,
-            message: `Scheduled ${jobIds.length} transactions for relay`,
-            jobIds,
-        };
     }
 
     // ============================================================================

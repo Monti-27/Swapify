@@ -102,12 +102,12 @@ export function useJupiterSwap(): UseJupiterSwapReturn {
 
         const rawTransaction = signedTransaction.serialize();
         const signature = await connection.sendRawTransaction(rawTransaction, {
-          skipPreflight: true,
+          skipPreflight: false, // MAINNET: Simulate first for safety
           maxRetries: 3,
         });
 
         const latestBlockhash = await connection.getLatestBlockhash();
-        
+
         await connection.confirmTransaction(
           {
             signature,
@@ -135,31 +135,31 @@ export function useJupiterSwap(): UseJupiterSwapReturn {
           inputMint: quote.inputMint,
           outputMint: quote.outputMint,
         };
-        } catch (err: any) {
-          console.error('Swap error:', err);
-          const errorMessage = err.message || 'Swap failed';
-          setError(errorMessage);
-          setStatus('error');
+      } catch (err: any) {
+        console.error('Swap error:', err);
+        const errorMessage = err.message || 'Swap failed';
+        setError(errorMessage);
+        setStatus('error');
 
-          const isUserRejection = errorMessage.toLowerCase().includes('user rejected') ||
-            errorMessage.toLowerCase().includes('user denied') ||
-            errorMessage.toLowerCase().includes('user cancelled') ||
-            (err as any).code === 4001;
+        const isUserRejection = errorMessage.toLowerCase().includes('user rejected') ||
+          errorMessage.toLowerCase().includes('user denied') ||
+          errorMessage.toLowerCase().includes('user cancelled') ||
+          (err as any).code === 4001;
 
-          if (isUserRejection) {
-            toast.info('Transaction Cancelled', {
-              id: buildingToast,
-              description: 'You cancelled the swap',
-            });
-          } else {
-            toast.error('Swap Failed', {
-              id: buildingToast,
-              description: errorMessage,
-            });
-          }
-
-          return null;
+        if (isUserRejection) {
+          toast.info('Transaction Cancelled', {
+            id: buildingToast,
+            description: 'You cancelled the swap',
+          });
+        } else {
+          toast.error('Swap Failed', {
+            id: buildingToast,
+            description: errorMessage,
+          });
         }
+
+        return null;
+      }
     },
     [publicKey, signTransaction, connection]
   );

@@ -1,43 +1,19 @@
+"use client";
+
 import { cn } from '@/lib/utils';
 import React from 'react';
+import { LucideIcon } from 'lucide-react';
 
 type FeatureType = {
     title: string;
-    icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
     description: string;
+    icon?: LucideIcon;
 };
 
-type FeatureCardPorps = React.ComponentProps<'div'> & {
+type FeatureCardProps = React.ComponentProps<'div'> & {
     feature: FeatureType;
+    icon?: LucideIcon;
 };
-
-export function FeatureCard({ feature, className, ...props }: FeatureCardPorps) {
-    const [p, setP] = React.useState<number[][]>([]);
-
-    React.useEffect(() => {
-        setP(genRandomPattern());
-    }, []);
-
-    return (
-        <div className={cn('relative overflow-hidden p-6', className)} {...props}>
-            <div className="pointer-events-none absolute top-0 left-1/2 -mt-2 -ml-20 h-full w-full [mask-image:linear-gradient(white,transparent)]">
-                <div className="from-foreground/5 to-foreground/1 absolute inset-0 bg-gradient-to-r [mask-image:radial-gradient(farthest-side_at_top,white,transparent)] opacity-100">
-                    <GridPattern
-                        width={20}
-                        height={20}
-                        x="-12"
-                        y="4"
-                        squares={p}
-                        className="fill-foreground/5 stroke-foreground/25 absolute inset-0 h-full w-full mix-blend-overlay"
-                    />
-                </div>
-            </div>
-            <feature.icon className="text-foreground/75 size-6" strokeWidth={1} aria-hidden />
-            <h3 className="mt-10 text-sm md:text-base font-semibold">{feature.title}</h3>
-            <p className="text-muted-foreground relative z-20 mt-2 text-xs font-light leading-relaxed">{feature.description}</p>
-        </div>
-    );
-}
 
 function GridPattern({
     width,
@@ -74,4 +50,33 @@ function genRandomPattern(length?: number): number[][] {
         Math.floor(Math.random() * 4) + 7, // random x between 7 and 10
         Math.floor(Math.random() * 6) + 1, // random y between 1 and 6
     ]);
+}
+
+export function FeatureCard({ feature, icon, className, ...props }: FeatureCardProps) {
+    const Icon = icon || feature.icon;
+    const [p, setP] = React.useState<number[][]>([]);
+
+    React.useEffect(() => {
+        setP(genRandomPattern());
+    }, []);
+
+    return (
+        <div className={cn('relative overflow-hidden p-6', className)} {...props}>
+            <div className="pointer-events-none absolute top-0 left-1/2 -mt-2 -ml-20 h-full w-full [mask-image:linear-gradient(white,transparent)]">
+                <div className="from-foreground/5 to-foreground/1 absolute inset-0 bg-gradient-to-r [mask-image:radial-gradient(farthest-side_at_top,white,transparent)] opacity-100">
+                    <GridPattern
+                        width={20}
+                        height={20}
+                        x="-12"
+                        y="4"
+                        squares={p}
+                        className="fill-foreground/5 stroke-foreground/25 absolute inset-0 h-full w-full mix-blend-overlay"
+                    />
+                </div>
+            </div>
+            {Icon && <Icon className="text-foreground/75 size-6" strokeWidth={1} aria-hidden />}
+            <h3 className="mt-10 text-sm md:text-base font-semibold">{feature.title}</h3>
+            <p className="text-muted-foreground relative z-20 mt-2 text-xs font-light leading-relaxed">{feature.description}</p>
+        </div>
+    );
 }

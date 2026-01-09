@@ -9,7 +9,11 @@ async function main() {
     console.log("🚀 Starting Initialization (Manual Payload Mode)...");
 
     // 1. Setup Connection
-    const connection = new Connection("https://api.devnet.solana.com", "confirmed");
+    const rpcUrl = process.env.SOLANA_RPC_URL;
+    if (!rpcUrl) {
+        throw new Error("Missing SOLANA_RPC_URL environment variable");
+    }
+    const connection = new Connection(rpcUrl, "confirmed");
 
     // 2. Setup Wallet
     const privateKey = process.env.KEEPER_PRIVATE_KEY;

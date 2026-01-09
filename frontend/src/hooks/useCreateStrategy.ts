@@ -84,7 +84,7 @@ function resolveMint(token: Token): PublicKey {
 
 /**
  * Get the actual mint address (converts native SOL to wrapped SOL)
- * @deprecated Use resolveMintForDevnet instead
+ * @deprecated Legacy function - use resolveMint instead
  */
 function getMintAddress(token: Token): PublicKey {
     const address = token.address || token.id || '';
@@ -111,16 +111,15 @@ export function useCreateStrategy(): UseCreateStrategyResult {
         setIsLoading(true);
         setError(null);
 
-        const devnetUSDC = new PublicKey("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU");
-
         try {
             // 1. Resolve mint addresses
             console.log('📍 Resolving token addresses...');
             const sellTokenMint = resolveMint(params.sellToken);
-            const buyTokenMint = devnetUSDC;
+            const buyTokenMint = resolveMint(params.buyToken);
 
             console.log('   Sell token mint:', sellTokenMint.toBase58());
             console.log('   Buy token mint:', buyTokenMint.toBase58());
+
 
             // 2. Fetch token decimals dynamically
             console.log('🔍 Fetching mint info...');

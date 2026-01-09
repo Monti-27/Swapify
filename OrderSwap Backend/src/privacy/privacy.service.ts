@@ -37,20 +37,6 @@ export interface PrivacyJobData {
     dbJobId?: string;      // Database job ID for status updates
 }
 
-// Job data for pre-signed transaction relay (Frontend-driven chunking)
-export interface RelayJobData {
-    type: 'relay';
-    signedTx: string;      // Base64 encoded signed transaction
-    amount?: number;       // Optional: for logging
-    dbJobId?: string;      // Database job ID for status updates
-}
-
-export interface ScheduleRelayTransactionDto {
-    signedTx: string;
-    delay: number;
-    amount?: number;
-}
-
 export interface RelayerSubmission {
     transaction: string;
     proof: string;
@@ -86,7 +72,7 @@ export class PrivacyService implements OnModuleInit {
     constructor(
         private configService: ConfigService,
         private prisma: PrismaService,
-        @InjectQueue('privacy') private privacyQueue: Queue<PrivacyJobData | RelayJobData>,
+        @InjectQueue('privacy') private privacyQueue: Queue<PrivacyJobData>,
     ) {
         const rpcUrl = this.configService.get<string>('SOLANA_RPC_URL');
 
@@ -276,6 +262,13 @@ export class PrivacyService implements OnModuleInit {
                 commitment: 'confirmed',
             });
 
+            // Debug: Log full simulation result
+            this.logger.debug('Simulation result:', JSON.stringify({
+                err: simulation.value.err,
+                unitsConsumed: simulation.value.unitsConsumed,
+                logs: simulation.value.logs?.slice(-10), // Last 10 logs
+            }, null, 2));
+
             if (simulation.value.unitsConsumed && simulation.value.unitsConsumed > 400000) {
                 this.logger.warn('Transaction uses excessive compute units');
                 return false;
@@ -286,71 +279,16 @@ export class PrivacyService implements OnModuleInit {
                 return true;
             }
 
-            this.logger.error('ZK proof verification FAILED', simulation.value.err);
+            // Log detailed error
+            this.logger.error('ZK proof verification FAILED:', {
+                error: simulation.value.err,
+                logs: simulation.value.logs,
+            });
             return false;
         } catch (error) {
-            this.logger.error('Simulation exception', error);
+            this.logger.error('Simulation exception:', error);
             return false;
         }
-    }
-
-    // ============================================================================
-    // Pre-Signed Transaction Relay Scheduling (Frontend-Driven Chunking)
-    // ============================================================================
-
-    /**
-     * Schedules pre-signed transactions for delayed relay.
-     * The frontend handles chunking and signing; backend just broadcasts on schedule.
-     */
-    async scheduleRelayTransactions(
-        transactions: ScheduleRelayTransactionDto[]
-    ): Promise<string[]> {
-        const jobIds: string[] = [];
-
-        this.logger.log(`Scheduling ${transactions.length} pre-signed transactions for relay`);
-
-        for (let i = 0; i < transactions.length; i++) {
-            const tx = transactions[i];
-
-            // Create database job record (store signedTx in error field temporarily)
-            // TODO: Add a 'signedTx' field to PrivacyJob schema for proper storage
-            const dbJob = await this.prisma.privacyJob.create({
-                data: {
-                    userPublicKey: 'RELAY_JOB',  // Marker for relay jobs
-                    chunkAmount: tx.amount || 0,
-                    chunkIndex: i,
-                    totalChunks: transactions.length,
-                    destinationAddress: 'RELAY',  // Not used for relay
-                    delayMs: tx.delay,
-                    status: 'pending',
-                    scheduledAt: new Date(Date.now() + tx.delay),
-                    // Store signedTx in error field temporarily (will be cleared on success)
-                    error: tx.signedTx,
-                },
-            });
-
-            // Add to BullMQ queue with delay
-            const job = await this.privacyQueue.add(
-                'relay-transaction',
-                {
-                    type: 'relay',
-                    signedTx: tx.signedTx,
-                    amount: tx.amount,
-                    dbJobId: dbJob.id,
-                } as RelayJobData,
-                {
-                    delay: tx.delay,
-                    jobId: dbJob.id,
-                    removeOnComplete: true,
-                    removeOnFail: false,
-                }
-            );
-
-            jobIds.push(job.id || dbJob.id);
-            this.logger.log(`Scheduled relay job ${dbJob.id} with ${tx.delay}ms delay`);
-        }
-
-        return jobIds;
     }
 
     // ============================================================================

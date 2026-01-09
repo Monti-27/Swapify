@@ -364,17 +364,6 @@
   --sidebar-ring: #5850EC;
 }
 
-/* Prevent theme flash on load - Critical styles */
-html {
-  background-color: #0a0a0a !important;
-  color-scheme: dark;
-}
-
-html.light {
-  background-color: #ffffff !important;
-  color-scheme: light;
-}
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -603,6 +592,26 @@ html.light {
   to {
     opacity: 1;
   }
+}
+
+/* Emerald & Arctic Silver Gradient Utilities */
+.gradient-emerald-radial {
+  background: radial-gradient(circle at top center, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+}
+
+.light .gradient-emerald-radial {
+  background: radial-gradient(circle at top center, rgba(16, 185, 129, 0.08) 0%, transparent 70%);
+}
+
+.gradient-emerald-subtle {
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.02) 100%);
+}
+
+.text-gradient-emerald {
+  background: linear-gradient(135deg, #10B981 0%, #059669 50%, #34D399 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 /* Purple Gradient Utilities */
@@ -1265,11 +1274,11 @@ svg {
   .gradient-button-variant {
     --color-1: #000022;
     --color-2: #1f3f6d;
-    --color-3: #469396;
-    --color-4: #f1ffa5;
+    --color-3: #6366F1;
+    --color-4: #8B5CF6;
     --border-angle: 200deg;
-    --border-color-1: hsla(320, 75%, 90%, 0.6);
-    --border-color-2: hsla(320, 50%, 90%, 0.15);
+    --border-color-1: hsla(260, 75%, 90%, 0.6);
+    --border-color-2: hsla(260, 50%, 90%, 0.15);
   }
 
   .gradient-button-variant:hover {
@@ -1278,8 +1287,8 @@ svg {
     --spread-x: 110.24%;
     --spread-y: 110.2%;
     --color-1: #000020;
-    --color-2: #f1ffa5;
-    --color-3: #469396;
+    --color-2: #8B5CF6;
+    --color-3: #6366F1;
     --color-4: #1f3f6d;
     --color-5: #000;
     --stop-1: 0%;
@@ -1288,8 +1297,8 @@ svg {
     --stop-4: 71.34%;
     --stop-5: 90.76%;
     --border-angle: 210deg;
-    --border-color-1: hsla(320, 75%, 90%, 0.2);
-    --border-color-2: hsla(320, 50%, 90%, 0.75);
+    --border-color-1: hsla(260, 75%, 90%, 0.2);
+    --border-color-2: hsla(260, 50%, 90%, 0.75);
   }
 }
 

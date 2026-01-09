@@ -355,3 +355,56 @@ model PrivacyTransaction {
   @@index([createdAt])
   @@map("privacy_transactions")
 }
+
+// ============================================================================
+// Transparency Engine Tables (Risk Scoring System)
+// ============================================================================
+
+// Stores analyzed wallet risk data with incremental scanning checkpoint
+model MonitoredWallet {
+  address         String    @id                    // Solana public key (PK)
+  riskScore       Float     @default(0)            // 0-100 risk score
+  labels          String[]  @default([])           // ["SNIPER", "BOT", "SYBIL", "HIGH_TPS"]
+  lastSignature   String?                          // Checkpoint for incremental scan
+  txCount         Int       @default(0)            // Total transactions analyzed
+  failedTxCount   Int       @default(0)            // Failed transaction count
+  burstCount      Int       @default(0)            // Sub-second burst count
+  avgTps          Float     @default(0)            // Average TPS
+  circularCount   Int       @default(0)            // Circular transfer count
+  
+  lastScannedAt   DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  graphEdges      TransactionGraph[] @relation("WalletGraphEdges")
+
+  @@index([riskScore])
+  @@index([lastScannedAt])
+  @@map("monitored_wallets")
+}
+
+// Stores transaction edges for circular transfer (Sybil) detection
+// Enables graph queries like: A -> B -> A patterns
+model TransactionGraph {
+  id              String    @id @default(uuid())
+  
+  // Edge details
+  fromAddress     String                           // Source wallet
+  toAddress       String                           // Destination wallet
+  signature       String    @unique                // Transaction signature
+  amount          Float?                           // Transfer amount (if applicable)
+  timestamp       DateTime                         // Transaction timestamp
+  
+  // Link to monitored wallet
+  walletAddress   String?                          // Parent wallet being analyzed
+  wallet          MonitoredWallet? @relation("WalletGraphEdges", fields: [walletAddress], references: [address], onDelete: Cascade)
+  
+  createdAt       DateTime  @default(now())
+
+  @@index([fromAddress])
+  @@index([toAddress])
+  @@index([walletAddress])
+  @@index([timestamp])
+  @@map("transaction_graph")
+}

@@ -1,20 +1,21 @@
 /**
- * Privacy Dashboard - Production UI with Cloud Backup
- */
+* Privacy Dashboard - Production UI with Cloud Backup
+*/
 
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { VaultTimeline } from './vault-timeline';
-import { Skeleton } from '@/components/ui/skeleton';
 import { ShieldCheck, Copy, Eye, EyeOff, Shield, Terminal, Download, Upload, Loader2, Cloud, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { PublicKey } from '@solana/web3.js';
 import {
+    createLightRpc,
     createShieldTransaction,
     generateUnshieldProof,
     submitToRelayer,
@@ -27,11 +28,12 @@ import {
     backupNoteToCloud,
     recoverNotesFromCloud,
     recordTransaction,
-    createChunkedUnshieldTransactions,
-    submitChunkedTransactions,
+    scheduleChunkedTransfer,
     getPendingJobs,
     CommitmentNote,
 } from '@/lib/light-protocol';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 type StepStatus = 'completed' | 'processing' | 'pending' | 'error';
 
@@ -57,7 +59,10 @@ export function PrivacyDashboard() {
     const [shieldAmount, setShieldAmount] = useState<string>('');
     const [unshieldAmount, setUnshieldAmount] = useState<string>('');
     const [destinationAddress, setDestinationAddress] = useState<string>('');
-    const [useChunkedTransfer, setUseChunkedTransfer] = useState(true);
+    const [useChunkedTransfer, setUseChunkedTransfer] = useState(false);
+
+    // 🔑 Encryption key cache (prevents double signMessage popup)
+    const [cachedEncryptionKey, setCachedEncryptionKey] = useState<CryptoKey | null>(null);
 
     const [steps, setSteps] = useState<TimelineStep[]>([
         { id: '1', label: 'Deposit', status: 'pending', description: 'Connect wallet & deposit SOL' },
@@ -105,11 +110,17 @@ export function PrivacyDashboard() {
     };
 
     // ============================================================================
-    // Shield Handler (FIXED: Atomic Persistence)
+    // Shield Handler (FIXED: No Double Popups)
     // ============================================================================
 
     const handleShield = async () => {
-        if (!wallet.connected || !wallet.publicKey || !wallet.signTransaction) {
+        // 🛑 Re-entrancy Protection
+        if (isShielding) {
+            console.warn('Shield already in progress, ignoring duplicate call');
+            return;
+        }
+
+        if (!wallet.connected || !wallet.publicKey || !wallet.signTransaction || !wallet.signMessage) {
             toast.error('Please connect your wallet');
             return;
         }
@@ -124,7 +135,53 @@ export function PrivacyDashboard() {
         updateStepStatus(0, 'processing');
 
         try {
-            // Step 1: Create transaction
+            // 🔑 Step 1: Derive encryption key FIRST (triggers wallet.signMessage ONCE)
+            console.log('Step 1: Deriving encryption key...');
+
+            let cryptoKey = cachedEncryptionKey;
+            if (!cryptoKey) {
+                const message = new TextEncoder().encode('WeSwap Privacy Key Derivation v1');
+                const signature = await wallet.signMessage(message);
+
+                // Convert Uint8Array to ArrayBuffer for crypto.subtle.importKey
+                // Create a new Uint8Array copy to get a clean ArrayBuffer (not SharedArrayBuffer)
+                const signatureBuffer = new Uint8Array(signature).buffer as ArrayBuffer;
+
+                const keyMaterial = await crypto.subtle.importKey(
+                    'raw',
+                    signatureBuffer,
+                    { name: 'PBKDF2' },
+                    false,
+                    ['deriveBits', 'deriveKey']
+                );
+
+                const saltArray = new TextEncoder().encode('weswap-privacy-salt');
+                const saltBuffer = saltArray.buffer.slice(
+                    saltArray.byteOffset,
+                    saltArray.byteOffset + saltArray.byteLength
+                ) as ArrayBuffer;
+
+                cryptoKey = await crypto.subtle.deriveKey(
+                    {
+                        name: 'PBKDF2',
+                        salt: saltBuffer,
+                        iterations: 100000,
+                        hash: 'SHA-256',
+                    },
+                    keyMaterial,
+                    { name: 'AES-GCM', length: 256 },
+                    false,
+                    ['encrypt']
+                );
+
+                setCachedEncryptionKey(cryptoKey);
+                console.log('✅ Encryption key derived and cached');
+            } else {
+                console.log('✅ Using cached encryption key');
+            }
+
+            // Step 2: Create transaction (after key is derived)
+            console.log('Step 2: Creating transaction...');
             const { transaction, commitment, amount: shieldedAmt } = await createShieldTransaction(
                 wallet,
                 amount
@@ -133,37 +190,91 @@ export function PrivacyDashboard() {
             updateStepStatus(0, 'completed');
             updateStepStatus(1, 'processing');
 
-            // Step 2: Create note with PENDING status BEFORE any blockchain action
+            // Step 3: Create note with PENDING status
             const note: CommitmentNote = {
                 commitment,
                 amount: shieldedAmt,
                 timestamp: Date.now(),
-                status: 'pending',  // CRITICAL: Start as pending
+                status: 'pending',
             };
 
-            // Step 3: PERSIST LOCALLY FIRST (Boomerang Safety)
+            // Step 4: PERSIST LOCALLY FIRST (Boomerang Safety)
             saveCommitmentNote(note);
+            console.log('✅ Note saved to localStorage');
 
-            // Step 4: Backup to cloud BEFORE signing (extra safety layer)
+            // Step 5: Backup to cloud (reuse cached key - NO signMessage)
             try {
-                const backupId = await backupNoteToCloud(note, wallet);
-                note.backupId = backupId;
+                // Encrypt note using cached key
+                const iv = crypto.getRandomValues(new Uint8Array(12));
+                const ivBuffer = iv.buffer.slice(iv.byteOffset, iv.byteOffset + iv.byteLength) as ArrayBuffer;
+
+                const noteDataArray = new TextEncoder().encode(JSON.stringify(note));
+                const noteDataBuffer = noteDataArray.buffer.slice(
+                    noteDataArray.byteOffset,
+                    noteDataArray.byteOffset + noteDataArray.byteLength
+                ) as ArrayBuffer;
+
+                const encrypted = await crypto.subtle.encrypt(
+                    { name: 'AES-GCM', iv: ivBuffer },
+                    cryptoKey,
+                    noteDataBuffer
+                );
+
+                const combined = new Uint8Array(iv.length + encrypted.byteLength);
+                combined.set(iv);
+                combined.set(new Uint8Array(encrypted), iv.length);
+                const encryptedB64 = btoa(String.fromCharCode(...combined));
+
+                // Hash for deduplication
+                const commitmentArray = new TextEncoder().encode(commitment);
+                const commitmentBuffer = commitmentArray.buffer.slice(
+                    commitmentArray.byteOffset,
+                    commitmentArray.byteOffset + commitmentArray.byteLength
+                ) as ArrayBuffer;
+
+                const hashBuffer = await crypto.subtle.digest(
+                    'SHA-256',
+                    commitmentBuffer
+                );
+                const hash = Array.from(new Uint8Array(hashBuffer))
+                    .map(b => b.toString(16).padStart(2, '0'))
+                    .join('');
+
+                const response = await fetch(`${API_URL}/privacy/backup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        walletAddress: wallet.publicKey.toBase58(),
+                        encryptedNote: encryptedB64,
+                        noteHash: hash,
+                        amount: note.amount,
+                    }),
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    note.backupId = result.id;
+                    console.log('✅ Note backed up to cloud');
+                }
             } catch (backupError) {
                 console.warn('Cloud backup failed, continuing with local only:', backupError);
-                // Continue - local storage is the fallback
             }
 
-            // Step 5: NOW safe to sign (note is persisted)
+            // Step 6: Sign transaction (triggers "Sign Transaction" popup - the ONLY transaction popup)
+            console.log('Step 6: Signing transaction...');
             const signedTx = await wallet.signTransaction(transaction);
+            console.log('✅ Transaction signed');
 
-            // Step 6: Submit to relayer
+            // Step 7: Submit to relayer
+            console.log('Step 7: Submitting to relayer...');
             const signature = await submitToRelayer(signedTx, '{}');
+            console.log('✅ Transaction submitted:', signature);
 
-            // Step 7: Update status to 'shielded' ONLY after confirmation
+            // Step 8: Update status to 'shielded'
             updateCommitmentStatus(commitment, 'shielded');
             note.status = 'shielded';
 
-            // Step 8: Record transaction in database
+            // Step 9: Record transaction
             await recordTransaction(
                 wallet.publicKey.toBase58(),
                 'shield',
@@ -188,7 +299,6 @@ export function PrivacyDashboard() {
             toast.error('Shielding failed', { description: error.message });
             updateStepStatus(0, 'error');
             updateStepStatus(1, 'pending');
-            // Note remains in 'pending' status - user can retry or recover
         } finally {
             setIsShielding(false);
         }
@@ -238,27 +348,27 @@ export function PrivacyDashboard() {
             }
 
             if (useChunkedTransfer) {
-                // 🛡️ NEW: Frontend-driven chunking + relay (fixes 0x1771 signer error)
-                // 1. Create all unsigned transactions and sign in ONE popup
-                const chunkedResult = await createChunkedUnshieldTransactions(
-                    wallet,
+                // Use chunked transfer with random delays (privacy mode)
+                const result = await scheduleChunkedTransfer(
                     amount,
-                    destination
+                    destination.toBase58(),
+                    activeNote.commitment,
+                    wallet.publicKey.toBase58(),
+                    activeNote.backupId
                 );
-
-                // 2. Submit pre-signed transactions to backend for delayed relay
-                const result = await submitChunkedTransactions(chunkedResult);
 
                 updateStepStatus(2, 'completed');
 
                 toast.success('Transfer scheduled!', {
-                    description: `${chunkedResult.chunks.length} chunks scheduled with random delays`,
+                    description: `${result.chunks.length} chunks scheduled with random delays`,
                 });
 
                 await loadData();
 
             } else {
                 // Direct unshield (less private but faster)
+                // NOTE: Light Protocol uses ZK proof for authorization, not user signature
+                // The relayer is the only required signer (fee payer)
                 const { transaction, proof } = await generateUnshieldProof(
                     wallet,
                     activeNote.commitment,
@@ -266,8 +376,8 @@ export function PrivacyDashboard() {
                     destination
                 );
 
-                const signedTx = await wallet.signTransaction(transaction);
-                const signature = await submitToRelayer(signedTx, proof);
+                // Submit to relayer - relayer adds its signature
+                const signature = await submitToRelayer(transaction, proof);
 
                 await recordTransaction(
                     wallet.publicKey.toBase58(),
@@ -390,7 +500,10 @@ export function PrivacyDashboard() {
                             </CardTitle>
                             <div className="flex items-baseline gap-2 mt-2">
                                 {isLoading ? (
-                                    <Skeleton className="h-10 w-48 bg-zinc-800" />
+                                    <div className="space-y-2">
+                                        <Skeleton className="h-10 w-32 bg-muted" />
+                                        <Skeleton className="h-4 w-16 bg-muted" />
+                                    </div>
                                 ) : (
                                     <>
                                         <span className="text-4xl font-bold">{shieldedBalance.toFixed(4)}</span>
@@ -490,7 +603,13 @@ export function PrivacyDashboard() {
                                 />
                                 <Button onClick={handleShield} disabled={isShielding || !shieldAmount} className="min-w-[140px]">
                                     {isShielding ? (
-                                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Shielding...</>
+                                        <span className="flex items-center gap-2">
+                                            <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            Shielding...
+                                        </span>
                                     ) : (
                                         'Shield SOL'
                                     )}
@@ -500,18 +619,7 @@ export function PrivacyDashboard() {
 
                         {/* Unshield Form */}
                         <div className="space-y-3 pt-4 border-t">
-                            <div className="flex justify-between items-center">
-                                <label className="text-sm font-medium">Unshield to Address</label>
-                                <label className="flex items-center gap-2 text-xs">
-                                    <input
-                                        type="checkbox"
-                                        checked={useChunkedTransfer}
-                                        onChange={(e) => setUseChunkedTransfer(e.target.checked)}
-                                        className="rounded"
-                                    />
-                                    <span className="text-muted-foreground">Chunked (more private)</span>
-                                </label>
-                            </div>
+                            <label className="text-sm font-medium">Unshield to Address</label>
                             <div className="space-y-2">
                                 <Input
                                     type="text"
@@ -537,7 +645,13 @@ export function PrivacyDashboard() {
                                         className="min-w-[140px]"
                                     >
                                         {isUnshielding ? (
-                                            <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processing...</>
+                                            <span className="flex items-center gap-2">
+                                                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                Processing...
+                                            </span>
                                         ) : (
                                             'Unshield'
                                         )}

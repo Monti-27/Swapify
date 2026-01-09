@@ -27,9 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <meta name="color-scheme" content="dark light" />
-      </head>
+      <head />
       <body className={`${kanit.variable} font-sans antialiased overflow-x-hidden`}>
         <Providers>
           <SmoothScroll>
@@ -37,7 +35,7 @@ export default function RootLayout({
           </SmoothScroll>
         </Providers>
         <Analytics />
-        <SpeedInsights />
+        <SpeedInsights debug={false} />
       </body>
     </html>
   );

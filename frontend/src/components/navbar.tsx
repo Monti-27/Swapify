@@ -3,7 +3,9 @@
 import React, { useCallback, useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Moon, Sun, Wallet, Home, LayoutDashboard, ArrowRightLeft, Layers, Menu, X, Book, Shield } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
+import { Moon, Sun, Wallet, Home, LayoutDashboard, ArrowRightLeft, Layers, Menu, X, Book, Shield, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
@@ -135,6 +137,7 @@ export const Navbar = React.memo(function Navbar() {
     { name: "Swap", url: "/swap", icon: ArrowRightLeft },
     { name: "Strategies", url: "/strategies", icon: Layers },
     { name: "Privacy", url: "/privacy", icon: Shield },
+    { name: "Anti-Privacy", url: "/transparency", icon: Eye },
     { name: "Docs", url: "https://docs.weswap.fun/", icon: Book },
   ];
 

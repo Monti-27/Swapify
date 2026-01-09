@@ -20,18 +20,6 @@ export class PriceService {
   private chartCacheTimeout = 300000; // 5 minutes cache for chart data
   private chartDataCache = new Map<string, { data: OHLCVCandle[]; timestamp: number }>();
 
-  // ============================================================
-  // 🕵️ MOCK PRICES FOR DEVNET TESTING
-  // These tokens will NEVER hit external APIs - total isolation
-  // ============================================================
-  private readonly MOCK_PRICES: Record<string, { price: number; symbol: string }> = {
-    // Wrapped SOL (Mainnet & Devnet)
-    'So11111111111111111111111111111111111111112': { price: 570.00, symbol: 'SOL' },
-    // Devnet USDC
-    '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU': { price: 1.00, symbol: 'USDC' },
-    // Mainnet USDC (in case of testing)
-    'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v': { price: 1.00, symbol: 'USDC' },
-  };
 
   constructor(
     private prisma: PrismaService,
@@ -43,10 +31,8 @@ export class PriceService {
     this.jupiterPriceUrl = 'https://api.jup.ag/price/v2';
 
     // Log mock prices on startup
-    this.logger.log('🕵️ [TEST MODE] Mock prices active for Devnet tokens:');
-    for (const [address, data] of Object.entries(this.MOCK_PRICES)) {
-      this.logger.log(`   ${data.symbol} (${address.slice(0, 8)}...): $${data.price}`);
-    }
+    // Log startup
+    this.logger.log('✅ Price Service initialized');
   }
 
   /**
@@ -55,15 +41,6 @@ export class PriceService {
   async getTokenPrice(tokenAddress: string): Promise<number> {
     const shortAddress = `${tokenAddress.slice(0, 8)}...${tokenAddress.slice(-8)}`;
 
-    // ============================================================
-    // 🕵️ MOCK-FIRST GUARD: If token is mocked, return immediately
-    // This ensures ZERO external API calls for test tokens
-    // ============================================================
-    const mockData = this.MOCK_PRICES[tokenAddress];
-    if (mockData) {
-      this.logger.debug(`🕵️ [TEST MODE] Forcing Mock Price for ${mockData.symbol}: $${mockData.price}`);
-      return mockData.price;
-    }
 
     // Check cache first
     const cached = await this.getCachedPrice(tokenAddress);
@@ -142,6 +119,51 @@ export class PriceService {
     } catch (error) {
       console.error('Error fetching market cap:', error);
       return 0;
+    }
+  }
+
+  /**
+   * Get token overview with market cap data from Birdeye
+   * Used for MCAP chart display
+   */
+  async getTokenOverview(tokenAddress: string) {
+    // Try Birdeye first (most accurate for MCAP)
+    const birdeyeData = await this.birdeyeService.getTokenOverview(tokenAddress);
+    if (birdeyeData) {
+      return {
+        address: birdeyeData.address,
+        symbol: birdeyeData.symbol,
+        name: birdeyeData.name,
+        price: birdeyeData.price,
+        priceChange24h: birdeyeData.priceChange24h,
+        marketCap: birdeyeData.mc,
+        fdv: birdeyeData.fdv,
+        circulatingSupply: birdeyeData.circulatingSupply,
+        totalSupply: birdeyeData.totalSupply,
+        liquidity: birdeyeData.liquidity,
+        volume24h: birdeyeData.volume24h,
+      };
+    }
+
+    // Fallback to DexScreener
+    try {
+      const data = await this.fetchTokenDataFromDexScreener(tokenAddress);
+      return {
+        address: tokenAddress,
+        symbol: 'UNKNOWN',
+        name: 'Unknown Token',
+        price: data.priceUsd,
+        priceChange24h: (data as any).priceChange24h || 0,
+        marketCap: data.marketCap || 0,
+        fdv: data.marketCap || 0, // Use marketCap as FDV fallback
+        circulatingSupply: 0,
+        totalSupply: 0,
+        liquidity: (data as any).liquidity || 0,
+        volume24h: data.volume24h || 0,
+      };
+    } catch (error) {
+      this.logger.error(`Failed to get token overview: ${error.message}`);
+      return null;
     }
   }
 
@@ -310,8 +332,7 @@ export class PriceService {
   }
 
   /**
-   * Get multiple token prices with MOCK DATA support for Devnet
-   * Uses centralized MOCK_PRICES for consistency
+   * Get multiple token prices with batch processing
    */
   async getMultipleTokenPrices(tokenAddresses: string[]): Promise<Map<string, number>> {
     const priceMap = new Map<string, number>();
@@ -320,27 +341,7 @@ export class PriceService {
       return priceMap;
     }
 
-    // ============================================================
-    // 🕵️ MOCK-FIRST GUARD: Filter out mocked tokens first
-    // These tokens will NEVER hit external APIs
-    // ============================================================
-    const realTokensToFetch: string[] = [];
-
-    for (const address of tokenAddresses) {
-      const mockData = this.MOCK_PRICES[address];
-      if (mockData) {
-        priceMap.set(address, mockData.price);
-        this.logger.debug(`🕵️ [TEST MODE] Mock Price for ${mockData.symbol}: $${mockData.price}`);
-      } else {
-        realTokensToFetch.push(address);
-      }
-    }
-
-    // If we only have mock tokens, we are done!
-    if (realTokensToFetch.length === 0) {
-      return priceMap;
-    }
-    // ============================================================
+    const realTokensToFetch = [...tokenAddresses];
 
     // Check cache for the REAL tokens
     const uncachedTokens: string[] = [];
@@ -404,20 +405,6 @@ export class PriceService {
    * Get token info
    */
   async getTokenInfo(tokenAddress: string) {
-    // ============================================================
-    // 🕵️ MOCK-FIRST GUARD: Return synthetic data for mocked tokens
-    // ============================================================
-    const mockData = this.MOCK_PRICES[tokenAddress];
-    if (mockData) {
-      this.logger.debug(`🕵️ [TEST MODE] Returning mock TokenInfo for ${mockData.symbol}`);
-      return {
-        priceUsd: mockData.price,
-        marketCap: 0,  // Synthetic value
-        volume24h: 0,  // Synthetic value
-        priceChange24h: 0,
-        liquidity: 0,
-      };
-    }
 
     const data = await this.fetchTokenDataFromDexScreener(tokenAddress);
 

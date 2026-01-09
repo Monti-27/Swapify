@@ -40,6 +40,14 @@ export class PriceController {
     return { token: dto.token, marketCap };
   }
 
+  @Get('overview')
+  @ApiOperation({ summary: 'Get token overview with market cap, supply, and FDV' })
+  @ApiQuery({ name: 'token', description: 'Token address' })
+  async getTokenOverview(@Query() dto: GetPriceDto) {
+    const overview = await this.priceService.getTokenOverview(dto.token);
+    return overview || { error: 'Token overview not available' };
+  }
+
   @Get('history')
   @ApiOperation({ summary: 'Get historical price data for charts' })
   @ApiQuery({ name: 'token', description: 'Token address', required: true })
