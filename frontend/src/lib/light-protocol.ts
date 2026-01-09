@@ -23,8 +23,7 @@ import {
     Rpc,
     LightSystemProgram,
     bn,
-    selectMinCompressedSolAccountsForTransfer,
-    BN
+    selectMinCompressedSolAccountsForTransfer
 } from '@lightprotocol/stateless.js';
 import { WalletContextState } from '@solana/wallet-adapter-react';
 
@@ -95,6 +94,18 @@ function getRelayerPublicKey(): PublicKey {
             `Error: ${error instanceof Error ? error.message : 'Unknown error'}`
         );
     }
+}
+
+// ============================================================================
+// TypeScript Strict Mode Helper
+// ============================================================================
+
+/**
+ * Converts Uint8Array to ArrayBuffer for TypeScript strict mode compatibility
+ * with crypto.subtle APIs that require BufferSource
+ */
+function toArrayBuffer(arr: Uint8Array): ArrayBuffer {
+    return arr.buffer.slice(arr.byteOffset, arr.byteOffset + arr.byteLength) as ArrayBuffer;
 }
 
 // ============================================================================
@@ -180,7 +191,7 @@ async function deriveEncryptionKey(
     // 2. Import signature as key material
     const ikm = await crypto.subtle.importKey(
         'raw',
-        signature,
+        toArrayBuffer(signature),
         { name: 'HKDF' },
         false,
         ['deriveBits', 'deriveKey']
@@ -192,15 +203,15 @@ async function deriveEncryptionKey(
         ...new TextEncoder().encode('weswap-salt-'),
         ...publicKeyBytes
     ]);
-    const saltHash = await crypto.subtle.digest('SHA-256', saltInput);
+    const saltHash = await crypto.subtle.digest('SHA-256', toArrayBuffer(saltInput));
 
     // 4. Derive AES-GCM key using HKDF
     const key = await crypto.subtle.deriveKey(
         {
             name: 'HKDF',
             hash: 'SHA-256',
-            salt: new Uint8Array(saltHash),
-            info: new TextEncoder().encode(`weswap-${purpose}-key`)
+            salt: saltHash,
+            info: toArrayBuffer(new TextEncoder().encode(`weswap-${purpose}-key`))
         },
         ikm,
         { name: 'AES-GCM', length: 256 },
@@ -225,9 +236,9 @@ export async function encryptNote(
     const noteData = new TextEncoder().encode(JSON.stringify(note));
 
     const encrypted = await crypto.subtle.encrypt(
-        { name: 'AES-GCM', iv },
+        { name: 'AES-GCM', iv: toArrayBuffer(iv) },
         key,
-        noteData
+        toArrayBuffer(noteData)
     );
 
     // Combine version + IV + ciphertext
@@ -239,7 +250,7 @@ export async function encryptNote(
     combined.set(new Uint8Array(encrypted), version.length + 1 + iv.length);
 
     // 🔒 Generate proper hash for deduplication
-    const hashBuffer = await crypto.subtle.digest('SHA-256', noteData);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', toArrayBuffer(noteData));
     const hash = Array.from(new Uint8Array(hashBuffer))
         .map(b => b.toString(16).padStart(2, '0'))
         .join('');
@@ -942,7 +953,7 @@ async function generateSecureCommitment(
     const dataBytes = new TextEncoder().encode(data);
 
     // Use SHA-256 for proper cryptographic hash
-    const hashBuffer = await crypto.subtle.digest('SHA-256', dataBytes);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', toArrayBuffer(dataBytes));
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
@@ -964,7 +975,7 @@ async function generateSecureNullifier(
     const data = `${commitment}:${pubkey}:${Date.now()}:${randomHex}`;
     const dataBytes = new TextEncoder().encode(data);
 
-    const hashBuffer = await crypto.subtle.digest('SHA-256', dataBytes);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', toArrayBuffer(dataBytes));
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
@@ -1001,7 +1012,7 @@ function safeGetPublicKey(
 /**
  * Safely converts various types to BN (BigNumber) with validation
  */
-function safeToBN(val: any, fieldName: string): BN {
+function safeToBN(val: any, fieldName: string): ReturnType<typeof bn> {
     try {
         // Already a BN
         if (val && typeof val.toNumber === 'function') {
