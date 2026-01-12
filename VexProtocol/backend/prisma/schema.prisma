@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// ZK-Privacy Tables (Non-Custodial Cloud Backup)
+// ============================================================================
+
+// Stores encrypted commitment notes for user recovery
+model PrivacyCommitment {
+  id              String   @id @default(uuid())
+  walletAddress   String   // User's public key
+  encryptedNote   String   // Base64 blob encrypted with user's key
+  noteHash        String   @unique // Hash of the note for deduplication
+  amount          Float    // Amount in SOL (for display only)
+  isRedeemed      Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  jobs            PrivacyJob[]
+  transactions    PrivacyTransaction[]
+
+  @@index([walletAddress])
+  @@index([isRedeemed])
+  @@map("privacy_commitments")
+}
+
+// Tracks BullMQ jobs for audit and recovery
+model PrivacyJob {
+  id              String   @id @default(uuid())
+  commitmentId    String?
+  commitment      PrivacyCommitment? @relation(fields: [commitmentId], references: [id], onDelete: SetNull)
+  userPublicKey   String   // User's wallet for processor lookup
+  bullmqJobId     String?  // BullMQ internal ID
+  chunkAmount     Float
+  chunkIndex      Int
+  totalChunks     Int
+  destinationAddress String
+  delayMs         Int      // Scheduled delay in milliseconds
+  scheduledAt     DateTime @default(now())
+  processedAt     DateTime?
+  status          String   @default("pending") // 'pending' | 'processing' | 'completed' | 'failed'
+  txSignature     String?  // Transaction signature if completed
+  error           String?  // Error message if failed
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userPublicKey])
+  @@index([commitmentId])
+  @@index([status])
+  @@index([scheduledAt])
+  @@map("privacy_jobs")
+}
+
+// Audit trail for all privacy transactions
+model PrivacyTransaction {
+  id              String   @id @default(uuid())
+  commitmentId    String?
+  commitment      PrivacyCommitment? @relation(fields: [commitmentId], references: [id], onDelete: SetNull)
+  walletAddress   String
+  type            String   // 'shield' | 'unshield'
+  amount          Float
+  destinationAddress String?
+  txSignature     String?  @unique
+  status          String   @default("pending") // 'pending' | 'confirmed' | 'failed'
+  createdAt       DateTime @default(now())
+  confirmedAt     DateTime?
+
+  @@index([walletAddress])
+  @@index([type])
+  @@index([createdAt])
+  @@map("privacy_transactions")
+}
