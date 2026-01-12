@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "sonner/dist/styles.css";
 
 @theme inline {
   --color-background: var(--background);
