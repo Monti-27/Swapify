@@ -3,32 +3,27 @@
 import React from 'react';
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
+import { AlertTriangle, FileWarning, Scale } from 'lucide-react';
 
 export default function TermsOfServicePage() {
     const sections = [
         {
-            title: "Acceptance of Terms",
-            content: "By accessing or using the WeSwap Protocol, you agree to be bound by these Terms of Service. If you do not agree to these terms, you must not use our platform. This agreement is between you and the decentralized code of the protocol."
+            icon: AlertTriangle,
+            number: "01",
+            title: "Experimental Technology",
+            content: "VexProtocol uses experimental cryptographic technology (Zero-Knowledge Proofs). You acknowledge that using this software involves significant risk, including potential bugs in the smart contract code that could result in total loss of funds."
         },
         {
-            title: "Description of Service",
-            content: "WeSwap is a decentralized, non-custodial trading platform on the Solana blockchain. We provide tools for swapping tokens, managing liquidity, and enhancing transaction privacy. We do not have control over your funds or the Solana network."
+            icon: FileWarning,
+            number: "02",
+            title: '"As Is" Warranty',
+            content: 'The software is provided "AS IS", without warranty of any kind, express or implied. The developers of VexProtocol are not responsible for any damages, losses, or exploits that occur during use.'
         },
         {
-            title: "Risk Acknowledgment",
-            content: "Trading cryptocurrencies involves significant risk. You acknowledge that DeFi protocols are experimental, and you may lose some or all of your funds due to smart contract bugs, market volatility, or network failures. Use WeSwap at your own risk."
-        },
-        {
-            title: "Prohibited Activities",
-            content: "You agree not to use WeSwap for any illegal purposes, including money laundering, terrorist financing, or violating sanctions. We reserve the right to restrict access to our frontend interface for users in prohibited jurisdictions."
-        },
-        {
-            title: "Intellectual Property",
-            content: "The WeSwap interface, logos, and brand elements are protected by intellectual property laws. However, our smart contracts may be open-source under specific licenses as indicated in our documentation."
-        },
-        {
-            title: "Limitation of Liability",
-            content: "To the maximum extent permitted by law, WeSwap Protocol and its contributors shall not be liable for any indirect, incidental, or consequential damages arising out of your use of the platform."
+            icon: Scale,
+            number: "03",
+            title: "Compliance & Responsible Use",
+            content: "VexProtocol is a privacy tool designed for legitimate personal security. You agree not to use this protocol for money laundering, illicit financing, or any activity proscribed by OFAC sanctions or local laws. You are solely responsible for compliance with the laws of your jurisdiction."
         }
     ];
 
@@ -38,42 +33,58 @@ export default function TermsOfServicePage() {
             <div className="relative z-10 flex-1 flex flex-col">
                 <Navbar />
                 <main className="flex-1 pt-40 pb-32 px-6">
-                    <div className="max-w-6xl mx-auto">
-                        <header className="mb-40 flex flex-col md:flex-row md:items-end justify-between gap-12">
-                            <div className="max-w-2xl">
-                                <span className="text-xs font-mono text-primary uppercase tracking-[0.3em] mb-6 block">Legal Documentation</span>
-                                <h1 className="text-8xl md:text-[10rem] font-display font-bold tracking-[ -0.05em] leading-[1.0] text-foreground">
-                                    Terms<br />
-                                    <span className="text-muted-foreground/20">Of Service</span>
-                                </h1>
+                    <div className="max-w-4xl mx-auto">
+                        {/* Hero Section */}
+                        <header className="mb-24">
+                            <span className="text-xs font-mono text-primary uppercase tracking-[0.3em] mb-6 block">Legal</span>
+                            <h1 className="text-6xl md:text-8xl font-display font-bold tracking-tighter mb-8 bg-gradient-to-b from-foreground to-foreground/40 bg-clip-text text-transparent leading-[1.1]">
+                                Terms of<br />Service
+                            </h1>
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                <span>Effective Date</span>
+                                <div className="h-[1px] w-8 bg-border" />
+                                <span className="font-mono text-primary">January 2026</span>
                             </div>
                         </header>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-20 gap-y-32">
+                        {/* Agreement Statement */}
+                        <section className="mb-16 p-8 rounded-2xl bg-muted/20 border border-border/50">
+                            <p className="text-xl text-muted-foreground leading-relaxed">
+                                By accessing VexProtocol, you agree to the following terms:
+                            </p>
+                        </section>
+
+                        {/* Terms Sections */}
+                        <div className="space-y-12">
                             {sections.map((section, index) => (
-                                <section key={index} className="flex flex-col">
-                                    <div className="flex items-center gap-4 mb-8">
-                                        <div className="w-8 h-[1px] bg-primary/40" />
-                                        <span className="text-[10px] font-mono text-primary uppercase tracking-[0.4em]">0{index + 1}</span>
+                                <section key={index} className="group">
+                                    <div className="flex items-start gap-6">
+                                        <div className="flex-shrink-0 w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                                            <section.icon className="h-7 w-7 text-primary" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-4 mb-3">
+                                                <span className="text-xs font-mono text-primary/60 tracking-widest">{section.number}</span>
+                                                <div className="h-[1px] flex-1 bg-border/50" />
+                                            </div>
+                                            <h2 className="text-2xl font-display font-semibold mb-4 text-foreground group-hover:text-primary transition-colors">
+                                                {section.title}
+                                            </h2>
+                                            <p className="text-lg text-muted-foreground leading-relaxed">
+                                                {section.content}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <h2 className="text-3xl font-display font-semibold mb-6 text-foreground tracking-tight max-w-[15ch]">
-                                        {section.title}
-                                    </h2>
-                                    <p className="text-lg text-muted-foreground leading-relaxed font-light">
-                                        {section.content}
-                                    </p>
                                 </section>
                             ))}
                         </div>
 
-                        <div className="mt-60 border-t border-border/40 pt-20">
-                            <div className="max-w-3xl">
-                                <h3 className="text-xl font-display font-medium mb-6 text-foreground uppercase tracking-widest">Final Disclaimer</h3>
-                                <p className="text-muted-foreground font-light leading-loose text-sm uppercase tracking-wider">
-                                    WeSwap is a decentralized protocol. The interface provided is just one way to interact with the protocol. The protocol itself is immutable and exists on the Solana blockchain. By using this interface, you confirm you are not a citizen or resident of any restricted jurisdictions.
-                                </p>
-                            </div>
-                        </div>
+                        {/* Final Disclaimer */}
+                        <section className="mt-24 pt-12 border-t border-dashed border-border/50">
+                            <p className="text-sm text-muted-foreground/60 uppercase tracking-wider leading-loose text-center max-w-2xl mx-auto">
+                                VexProtocol is a decentralized privacy protocol. By using this interface, you confirm you understand the risks of experimental cryptographic software.
+                            </p>
+                        </section>
                     </div>
                 </main>
                 <Footer />
