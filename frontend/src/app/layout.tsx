@@ -12,6 +12,16 @@ const kanit = Kanit({
   variable: "--font-kanit",
 });
 
+// VEXPROTOCOL BRANDING (original WeSwap metadata commented below)
+export const metadata: Metadata = {
+  title: "VexProtocol | Zero-Knowledge Privacy Shield",
+  description: "Advanced ZK-powered privacy shielding for Solana. Secure, non-custodial asset protection.",
+  icons: {
+    icon: "/vexprotocol/vexprotocol.png",
+  },
+};
+
+/* ORIGINAL WESWAP METADATA
 export const metadata: Metadata = {
   title: "WeSwap - Crypto Trading Platform",
   description: "Modern crypto swap and trading platform powered by Solana",
@@ -19,6 +29,7 @@ export const metadata: Metadata = {
     icon: "/favicon/new-favicon.ico",
   },
 };
+*/
 
 export default function RootLayout({
   children,
@@ -28,7 +39,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
-      <body className={`${kanit.variable} font-sans antialiased overflow-x-hidden`}>
+      <body className={`${kanit.variable} font-sans antialiased overflow-x-hidden bg-gradient-to-br from-[#050E09] via-[#022c1b] to-[#000000] min-h-screen`}>
         <Providers>
           <SmoothScroll>
             {children}
