@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
-import { Moon, Sun, Wallet, Home, LayoutDashboard, ArrowRightLeft, Layers, Menu, X, Book, Shield, Eye } from "lucide-react";
+import { Moon, Sun, Wallet, Home, LayoutDashboard, ArrowRightLeft, Layers, Menu, X, Book, Shield, Eye, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
@@ -131,14 +131,20 @@ export const Navbar = React.memo(function Navbar() {
     [balance, connected, formattedAddress, handleDisconnect, handleWalletClick, isInitializing, publicKey]
   );
 
+  // VEXPROTOCOL PRIVACY-ONLY MODE
+  // Navigation: Privacy (Home), About Us, Privacy Policy, Terms
   const tubelightItems = [
-    { name: "Home", url: "/", icon: Home },
-    { name: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-    { name: "Swap", url: "/swap", icon: ArrowRightLeft },
-    { name: "Strategies", url: "/strategies", icon: Layers },
-    { name: "Privacy", url: "/privacy", icon: Shield },
-    { name: "Anti-Privacy", url: "/transparency", icon: Eye },
-    { name: "Docs", url: "https://docs.weswap.fun/", icon: Book },
+    { name: "Privacy", url: "/", icon: Shield },
+    { name: "About Us", url: "/about-us", icon: FileText },
+    { name: "Privacy Policy", url: "/privacy-policy", icon: FileText },
+    { name: "Terms", url: "/terms", icon: FileText },
+    // ORIGINAL WESWAP LINKS (commented out)
+    // { name: "Home", url: "/", icon: Home },
+    // { name: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+    // { name: "Swap", url: "/swap", icon: ArrowRightLeft },
+    // { name: "Strategies", url: "/strategies", icon: Layers },
+    // { name: "Anti-Privacy", url: "/transparency", icon: Eye },
+    // { name: "Docs", url: "https://docs.weswap.fun/", icon: Book },
   ];
 
   return (
@@ -146,8 +152,8 @@ export const Navbar = React.memo(function Navbar() {
       {/* Mobile Header */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-4 bg-background/80 backdrop-blur-md border-b border-border/50">
         <div className="flex items-center gap-2">
-          {/* <Image src="/logo.png" alt="WeSwap" width={32} height={32} className="w-8 h-8" /> */}
-          <span className="font-display font-bold text-xl tracking-tight pl-2">Weswap</span>
+          {/* <Image src="/logo.png" alt="VexProtocol" width={32} height={32} className="w-8 h-8" /> */}
+          <span className="font-display font-bold text-xl tracking-tight pl-2">VexProtocol</span>
         </div>
         <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
           {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}

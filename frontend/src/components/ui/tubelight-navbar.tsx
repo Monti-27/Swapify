@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import Link from "next/link"
+import Image from "next/image"
 import { LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { usePathname } from "next/navigation"
@@ -49,6 +50,17 @@ export function TubelightNavbar({ items, className, children }: NavBarProps) {
             )}
         >
             <div className="flex items-center justify-between gap-3 bg-white/10 dark:bg-black/10 backdrop-blur-[50px] backdrop-saturate-150 p-2 rounded-2xl shadow-2xl">
+                {/* VexProtocol Brand - Left Side */}
+                <Link href="/" className="flex items-center gap-2 px-4">
+                    <Image
+                        src="/vexprotocol/vexprotocol.png"
+                        alt="VexProtocol"
+                        width={32}
+                        height={32}
+                        className="object-contain"
+                    />
+                    <span className="font-display font-bold text-lg tracking-tight text-foreground hidden sm:inline">VexProtocol</span>
+                </Link>
                 <div className="flex items-center gap-3">
                     {items.map((item) => {
                         const Icon = item.icon
