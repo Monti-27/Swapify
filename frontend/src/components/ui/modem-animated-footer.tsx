@@ -38,8 +38,8 @@ interface FooterProps {
 }
 
 export const ModemAnimatedFooter = ({
-    brandName = "WeSwap",
-    brandDescription = "The future of decentralized trading on Solana. Fast, non-custodial, and fully automated.",
+    brandName = "VexProtocol",
+    brandDescription = "Advanced ZK-powered privacy shielding for Solana. Secure, non-custodial asset protection.",
     socialLinks = [],
     creatorName,
     creatorUrl,
@@ -47,19 +47,22 @@ export const ModemAnimatedFooter = ({
     className,
 }: FooterProps) => {
 
+    // VEXPROTOCOL PRIVACY-ONLY MODE
     const productLinks = [
-        { title: 'Swap', href: '/swap' },
-        { title: 'Strategies', href: '/strategies' },
-        { title: 'Dashboard', href: '/dashboard' },
-        { title: 'Privacy', href: '/privacy' },
-        { title: 'Anti-Privacy', href: '/transparency' },
+        { title: 'Privacy', href: '/' },
+        // ORIGINAL WESWAP LINKS (commented out)
+        // { title: 'Swap', href: '/swap' },
+        // { title: 'Strategies', href: '/strategies' },
+        // { title: 'Dashboard', href: '/dashboard' },
+        // { title: 'Anti-Privacy', href: '/transparency' },
     ];
 
     const companyLinks = [
-        { title: 'About Us', href: '/about' },
-        { title: 'Docs', href: 'https://docs.weswap.fun/' },
+        { title: 'About Us', href: '/about-us' },
         { title: 'Privacy Policy', href: '/privacy-policy' },
         { title: 'Terms of Service', href: '/terms' },
+        // ORIGINAL WESWAP LINKS (commented out)
+        // { title: 'Docs', href: 'https://docs.weswap.fun/' },
     ];
 
     return (
@@ -79,7 +82,7 @@ export const ModemAnimatedFooter = ({
                                     <div className="relative w-8 h-8">
                                         <Image
                                             src="/WeSwap-logo.png"
-                                            alt="WeSwap"
+                                            alt="VexProtocol"
                                             fill
                                             className="object-contain"
                                         />
