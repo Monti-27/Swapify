@@ -17,7 +17,11 @@ export const metadata: Metadata = {
   title: "VexProtocol | Zero-Knowledge Privacy Shield",
   description: "Advanced ZK-powered privacy shielding for Solana. Secure, non-custodial asset protection.",
   icons: {
-    icon: "/vexprotocol/vexprotocol.png",
+    icon: [
+      { url: "/vexprotocol/vexprotocol.png", type: "image/png" },
+    ],
+    apple: "/vexprotocol/vexprotocol.png",
+    shortcut: "/vexprotocol/vexprotocol.png",
   },
 };
 
