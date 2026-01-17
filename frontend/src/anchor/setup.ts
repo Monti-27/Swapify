@@ -4,7 +4,7 @@ import type { Weswap } from './weswap';
 import idl from './weswap.json';
 
 /**
- * WeSwap Program ID on Mainnet
+ * Swapify Program ID on Mainnet
  * NOTE: This must match the 'address' field in weswap.json IDL
  */
 export const PROGRAM_ID = new PublicKey('7UiSkmJek7KrNyUFLBi4vphdimZuYh2iGRNpAfzwKR8r');
@@ -24,7 +24,7 @@ interface AnchorWallet {
 }
 
 /**
- * Initialize the WeSwap Anchor Program
+ * Initialize the Swapify Anchor Program
  * @param connection - Solana RPC connection
  * @param wallet - Wallet adapter with signing capabilities
  * @returns Initialized Anchor Program instance
