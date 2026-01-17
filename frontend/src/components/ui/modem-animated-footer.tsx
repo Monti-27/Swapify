@@ -57,7 +57,7 @@ export const ModemAnimatedFooter = ({
 
     const companyLinks = [
         { title: 'About Us', href: '/about' },
-        { title: 'Docs', href: 'https://docs.swapify.fun/' },
+        // { title: 'Docs', href: 'https://docs.swapify.fun/' }, // Coming soon
         { title: 'Privacy Policy', href: '/privacy-policy' },
         { title: 'Terms of Service', href: '/terms' },
     ];
@@ -75,16 +75,7 @@ export const ModemAnimatedFooter = ({
                             {/* Brand Column */}
                             <div className="col-span-2 md:col-span-3 flex flex-col gap-6">
                                 <div className="flex items-center gap-2 opacity-90">
-                                    {/* Small Brand Icon if needed, or just text */}
-                                    <div className="relative w-8 h-8">
-                                        <Image
-                                            src="/swap-logo.svg"
-                                            alt="Swapify"
-                                            fill
-                                            className="object-contain"
-                                        />
-                                    </div>
-                                    <span className="text-xl font-bold font-sans tracking-tight">{brandName}</span>
+                                    <span className="text-xl font-bold font-sans tracking-tight text-primary">SWAPIFY</span>
                                 </div>
                                 <p className="text-muted-foreground max-w-md font-sans text-sm leading-relaxed text-balance">
                                     {brandDescription}
@@ -167,7 +158,8 @@ export const ModemAnimatedFooter = ({
                         {brandName.toUpperCase()}
                     </div>
 
-                    {/* Bottom logo */}
+                    {/* Bottom logo - Removed for cleaner view */}
+                    {/* 
                     <div className="absolute top-24 sm:top-40 md:top-48 left-1/2 -translate-x-1/2 z-20">
                         <div className="hover:border-primary/50 duration-500 drop-shadow-[0_0px_30px_rgba(0,0,0,0.2)] dark:drop-shadow-[0_0px_30px_rgba(255,255,255,0.1)] backdrop-blur-md rounded-3xl bg-background/30 border border-border/50 p-4">
                             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-zinc-800 to-black dark:from-zinc-100 dark:to-zinc-300 rounded-2xl flex items-center justify-center shadow-xl">
@@ -177,6 +169,7 @@ export const ModemAnimatedFooter = ({
                             </div>
                         </div>
                     </div>
+                    */}
 
                     {/* Bottom Copyright */}
                     <div className="absolute bottom-8 left-0 right-0 text-center">
