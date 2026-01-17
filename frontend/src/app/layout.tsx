@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Kanit } from "next/font/google";
+import { Kanit, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { SmoothScroll } from "@/components/smooth-scroll";
@@ -12,8 +12,15 @@ const kanit = Kanit({
   variable: "--font-kanit",
 });
 
+const instrumentSerif = Instrument_Serif({
+  weight: ["400"],
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  variable: "--font-instrument-serif",
+});
+
 export const metadata: Metadata = {
-  title: "WeSwap - Crypto Trading Platform",
+  title: "Swapify - Crypto Trading Platform",
   description: "Modern crypto swap and trading platform powered by Solana",
   icons: {
     icon: "/favicon/new-favicon.ico",
@@ -28,7 +35,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
-      <body className={`${kanit.variable} font-sans antialiased overflow-x-hidden`}>
+      <body className={`${kanit.variable} ${instrumentSerif.variable} font-sans antialiased overflow-x-hidden`}>
         <Providers>
           <SmoothScroll>
             {children}
