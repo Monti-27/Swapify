@@ -184,7 +184,7 @@ async function deriveEncryptionKey(
 
     // 1. Get deterministic signature for key derivation
     const message = new TextEncoder().encode(
-        `WeSwap Privacy Key Derivation ${ENCRYPTION_VERSION}`
+        `Swapify Privacy Key Derivation ${ENCRYPTION_VERSION}`
     );
     const signature = await wallet.signMessage!(message);
 

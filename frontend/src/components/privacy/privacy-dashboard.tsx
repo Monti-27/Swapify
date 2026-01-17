@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { VaultTimeline } from './vault-timeline';
-import { ShieldCheck, Copy, Eye, EyeOff, Shield, Terminal, Download, Upload, Loader2, Cloud, RefreshCw } from 'lucide-react';
+import { ShieldCheck, Copy, Eye, EyeOff, Shield, Terminal, Download, Upload, Loader2, Cloud, RefreshCw, LoaderCircle, CheckCircle2, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -63,6 +63,9 @@ export function PrivacyDashboard() {
 
     // 🔑 Encryption key cache (prevents double signMessage popup)
     const [cachedEncryptionKey, setCachedEncryptionKey] = useState<CryptoKey | null>(null);
+
+    // 🎯 Shield button status for promise button pattern
+    const [shieldStatus, setShieldStatus] = useState<'idle' | 'signing' | 'shielding' | 'success' | 'error'>('idle');
 
     const [steps, setSteps] = useState<TimelineStep[]>([
         { id: '1', label: 'Deposit', status: 'pending', description: 'Connect wallet & deposit SOL' },
@@ -132,6 +135,7 @@ export function PrivacyDashboard() {
         }
 
         setIsShielding(true);
+        setShieldStatus('signing');
         updateStepStatus(0, 'processing');
 
         try {
@@ -140,7 +144,7 @@ export function PrivacyDashboard() {
 
             let cryptoKey = cachedEncryptionKey;
             if (!cryptoKey) {
-                const message = new TextEncoder().encode('WeSwap Privacy Key Derivation v1');
+                const message = new TextEncoder().encode('Swapify Privacy Key Derivation v1');
                 const signature = await wallet.signMessage(message);
 
                 // Convert Uint8Array to ArrayBuffer for crypto.subtle.importKey
@@ -189,6 +193,7 @@ export function PrivacyDashboard() {
 
             updateStepStatus(0, 'completed');
             updateStepStatus(1, 'processing');
+            setShieldStatus('shielding');
 
             // Step 3: Create note with PENDING status
             const note: CommitmentNote = {
@@ -291,12 +296,17 @@ export function PrivacyDashboard() {
                 description: `${amount} SOL has been compressed.`,
             });
 
+            setShieldStatus('success');
+            setTimeout(() => setShieldStatus('idle'), 3000); // Reset after 3s
+
             await loadData();
             setShieldAmount('');
 
         } catch (error: any) {
             console.error('Shield failed:', error);
             toast.error('Shielding failed', { description: error.message });
+            setShieldStatus('error');
+            setTimeout(() => setShieldStatus('idle'), 3000); // Reset after 3s
             updateStepStatus(0, 'error');
             updateStepStatus(1, 'pending');
         } finally {
@@ -601,14 +611,39 @@ export function PrivacyDashboard() {
                                     step="0.01"
                                     className="flex-1"
                                 />
-                                <Button onClick={handleShield} disabled={isShielding || !shieldAmount} className="min-w-[140px]">
-                                    {isShielding ? (
+                                <Button
+                                    onClick={handleShield}
+                                    disabled={isShielding || !shieldAmount}
+                                    className={`min-w-[160px] transition-all duration-300 ${shieldStatus === 'success' ? 'bg-green-600 hover:bg-green-600 text-white' :
+                                        shieldStatus === 'error' ? 'bg-destructive hover:bg-destructive text-destructive-foreground' :
+                                            ''
+                                        }`}
+                                >
+                                    {shieldStatus === 'signing' ? (
+                                        <span className="flex items-center gap-2">
+                                            <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            Sign Transaction...
+                                        </span>
+                                    ) : shieldStatus === 'shielding' ? (
                                         <span className="flex items-center gap-2">
                                             <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                             </svg>
                                             Shielding...
+                                        </span>
+                                    ) : shieldStatus === 'success' ? (
+                                        <span className="flex items-center gap-2">
+                                            <CheckCircle2 className="h-4 w-4" />
+                                            Shielded!
+                                        </span>
+                                    ) : shieldStatus === 'error' ? (
+                                        <span className="flex items-center gap-2">
+                                            <XCircle className="h-4 w-4" />
+                                            Failed
                                         </span>
                                     ) : (
                                         'Shield SOL'
