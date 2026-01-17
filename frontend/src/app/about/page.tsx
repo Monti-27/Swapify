@@ -13,7 +13,7 @@ export default function AboutPage() {
         {
             title: "Smart Swap Engine",
             icon: Zap,
-            description: "WeSwap integrates an intelligent routing mechanism that optimizes trade execution across the Solana network to ensure minimal slippage and the best possible rates."
+            description: "Swapify integrates an intelligent routing mechanism that optimizes trade execution across the Solana network to ensure minimal slippage and the best possible rates."
         },
         {
             title: "Privacy Vault",
@@ -64,15 +64,15 @@ export default function AboutPage() {
                     {/* Hero Section */}
                     <section className="pt-40 pb-24 px-4">
                         <div className="max-w-6xl mx-auto text-center">
-                            <motion.div 
+                            <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.8 }}
                                 className="h-[10rem] md:h-[16rem] flex items-center justify-center mb-8"
                             >
-                                <TextHoverEffect text="WESWAP" />
+                                <TextHoverEffect text="SWAPIFY" />
                             </motion.div>
-                            <motion.h1 
+                            <motion.h1
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.8, delay: 0.2 }}
@@ -80,13 +80,13 @@ export default function AboutPage() {
                             >
                                 The Future of Private Trading
                             </motion.h1>
-                            <motion.p 
+                            <motion.p
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.8, delay: 0.4 }}
                                 className="text-xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed"
                             >
-                                A comprehensive DeFi ecosystem built on Solana, designed for users who value speed, 
+                                A comprehensive DeFi ecosystem built on Solana, designed for users who value speed,
                                 efficiency, and above all, their financial privacy.
                             </motion.p>
                         </div>
@@ -104,8 +104,8 @@ export default function AboutPage() {
                                     Redefining Anonymity in the <span className="text-emerald-500 dark:text-emerald-400">On-Chain</span> Era
                                 </h2>
                                 <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed transition-colors">
-                                    In an era of total transparency, your financial history is a public book. 
-                                    WeSwap was born from the belief that you should decide who gets to read it. 
+                                    In an era of total transparency, your financial history is a public book.
+                                    Swapify was born from the belief that you should decide who gets to read it.
                                     We build powerful privacy tools that make institutional-grade anonymity available to everyone.
                                 </p>
                                 <div className="flex gap-12 pt-4">
@@ -119,20 +119,20 @@ export default function AboutPage() {
                                     </div>
                                 </div>
                             </div>
-                            
+
                             {/* Refined Mission Visual */}
                             <div className="relative">
                                 <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-3xl blur opacity-20" />
                                 <div className="relative rounded-3xl overflow-hidden border border-slate-200 dark:border-white/10 bg-slate-50/40 dark:bg-background/40 backdrop-blur-2xl p-16 flex flex-col items-center justify-center shadow-2xl transition-colors">
                                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,0.05),transparent)] pointer-events-none" />
-                                    <motion.div 
-                                        animate={{ 
+                                    <motion.div
+                                        animate={{
                                             y: [0, -10, 0],
                                         }}
-                                        transition={{ 
-                                            duration: 4, 
+                                        transition={{
+                                            duration: 4,
                                             repeat: Infinity,
-                                            ease: "easeInOut" 
+                                            ease: "easeInOut"
                                         }}
                                         className="relative"
                                     >
@@ -157,8 +157,8 @@ export default function AboutPage() {
                         <div className="max-w-6xl mx-auto">
                             <div className="grid md:grid-cols-3 gap-6">
                                 {values.map((val, i) => (
-                                    <motion.div 
-                                        key={i} 
+                                    <motion.div
+                                        key={i}
                                         whileHover={{ y: -5 }}
                                         className="p-10 rounded-3xl border border-slate-200 dark:border-white/5 bg-slate-50/40 dark:bg-background/40 hover:bg-slate-100/60 dark:hover:bg-background/60 transition-all group"
                                     >
@@ -191,9 +191,9 @@ export default function AboutPage() {
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 rounded-[40px] overflow-hidden border border-slate-200 dark:border-white/10 bg-slate-50/40 dark:bg-background/40 backdrop-blur-md divide-x divide-y divide-slate-100 dark:divide-white/5 transition-colors">
                                 {features.map((feature, index) => (
-                                    <FeatureCard 
-                                        key={index} 
-                                        feature={feature} 
+                                    <FeatureCard
+                                        key={index}
+                                        feature={feature}
                                         icon={feature.icon}
                                         className="bg-transparent hover:bg-slate-900/5 dark:hover:bg-white/[0.02] transition-colors p-12"
                                     />

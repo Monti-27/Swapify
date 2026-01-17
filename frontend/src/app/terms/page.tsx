@@ -8,27 +8,27 @@ export default function TermsOfServicePage() {
     const sections = [
         {
             title: "Acceptance of Terms",
-            content: "By accessing or using the WeSwap Protocol, you agree to be bound by these Terms of Service. If you do not agree to these terms, you must not use our platform. This agreement is between you and the decentralized code of the protocol."
+            content: "By accessing or using the Swapify Protocol, you agree to be bound by these Terms of Service. If you do not agree to these terms, you must not use our platform. This agreement is between you and the decentralized code of the protocol."
         },
         {
             title: "Description of Service",
-            content: "WeSwap is a decentralized, non-custodial trading platform on the Solana blockchain. We provide tools for swapping tokens, managing liquidity, and enhancing transaction privacy. We do not have control over your funds or the Solana network."
+            content: "Swapify is a decentralized, non-custodial trading platform on the Solana blockchain. We provide tools for swapping tokens, managing liquidity, and enhancing transaction privacy. We do not have control over your funds or the Solana network."
         },
         {
             title: "Risk Acknowledgment",
-            content: "Trading cryptocurrencies involves significant risk. You acknowledge that DeFi protocols are experimental, and you may lose some or all of your funds due to smart contract bugs, market volatility, or network failures. Use WeSwap at your own risk."
+            content: "Trading cryptocurrencies involves significant risk. You acknowledge that DeFi protocols are experimental, and you may lose some or all of your funds due to smart contract bugs, market volatility, or network failures. Use Swapify at your own risk."
         },
         {
             title: "Prohibited Activities",
-            content: "You agree not to use WeSwap for any illegal purposes, including money laundering, terrorist financing, or violating sanctions. We reserve the right to restrict access to our frontend interface for users in prohibited jurisdictions."
+            content: "You agree not to use Swapify for any illegal purposes, including money laundering, terrorist financing, or violating sanctions. We reserve the right to restrict access to our frontend interface for users in prohibited jurisdictions."
         },
         {
             title: "Intellectual Property",
-            content: "The WeSwap interface, logos, and brand elements are protected by intellectual property laws. However, our smart contracts may be open-source under specific licenses as indicated in our documentation."
+            content: "The Swapify interface, logos, and brand elements are protected by intellectual property laws. However, our smart contracts may be open-source under specific licenses as indicated in our documentation."
         },
         {
             title: "Limitation of Liability",
-            content: "To the maximum extent permitted by law, WeSwap Protocol and its contributors shall not be liable for any indirect, incidental, or consequential damages arising out of your use of the platform."
+            content: "To the maximum extent permitted by law, Swapify Protocol and its contributors shall not be liable for any indirect, incidental, or consequential damages arising out of your use of the platform."
         }
     ];
 
@@ -70,7 +70,7 @@ export default function TermsOfServicePage() {
                             <div className="max-w-3xl">
                                 <h3 className="text-xl font-display font-medium mb-6 text-foreground uppercase tracking-widest">Final Disclaimer</h3>
                                 <p className="text-muted-foreground font-light leading-loose text-sm uppercase tracking-wider">
-                                    WeSwap is a decentralized protocol. The interface provided is just one way to interact with the protocol. The protocol itself is immutable and exists on the Solana blockchain. By using this interface, you confirm you are not a citizen or resident of any restricted jurisdictions.
+                                    Swapify is a decentralized protocol. The interface provided is just one way to interact with the protocol. The protocol itself is immutable and exists on the Solana blockchain. By using this interface, you confirm you are not a citizen or resident of any restricted jurisdictions.
                                 </p>
                             </div>
                         </div>

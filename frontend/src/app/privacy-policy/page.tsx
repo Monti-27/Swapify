@@ -8,15 +8,15 @@ export default function PrivacyPolicyPage() {
     const sections = [
         {
             title: "1. Introduction",
-            content: "WeSwap Protocol ('we', 'our', or 'us') is committed to protecting your privacy. This Privacy Policy explains how we handle information in connection with our decentralized platform on the Solana blockchain."
+            content: "Swapify Protocol ('we', 'our', or 'us') is committed to protecting your privacy. This Privacy Policy explains how we handle information in connection with our decentralized platform on the Solana blockchain."
         },
         {
             title: "2. Information Collection",
-            content: "WeSwap is a non-custodial DeFi platform. We do not collect personal information such as names, emails, or IP addresses. We only interact with public wallet addresses provided by you through your browser-based wallet extension."
+            content: "Swapify is a non-custodial DeFi platform. We do not collect personal information such as names, emails, or IP addresses. We only interact with public wallet addresses provided by you through your browser-based wallet extension."
         },
         {
             title: "3. On-Chain Data",
-            content: "Please note that all transactions on the Solana network are public. While WeSwap provides privacy features like the Privacy Vault to obfuscate links between wallets, the underlying blockchain data remains permanent and accessible to anyone via block explorers."
+            content: "Please note that all transactions on the Solana network are public. While Swapify provides privacy features like the Privacy Vault to obfuscate links between wallets, the underlying blockchain data remains permanent and accessible to anyone via block explorers."
         },
         {
             title: "4. Privacy Vault & Security",
