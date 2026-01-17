@@ -138,7 +138,7 @@ export const Navbar = React.memo(function Navbar() {
     { name: "Strategies", url: "/strategies", icon: Layers },
     { name: "Privacy", url: "/privacy", icon: Shield },
     { name: "Anti-Privacy", url: "/transparency", icon: Eye },
-    { name: "Docs", url: "https://docs.weswap.fun/", icon: Book },
+    // { name: "Docs", url: "https://docs.swapify.fun/", icon: Book },
   ];
 
   return (
@@ -146,8 +146,8 @@ export const Navbar = React.memo(function Navbar() {
       {/* Mobile Header */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-4 bg-background/80 backdrop-blur-md border-b border-border/50">
         <div className="flex items-center gap-2">
-          {/* <Image src="/logo.png" alt="WeSwap" width={32} height={32} className="w-8 h-8" /> */}
-          <span className="font-display font-bold text-xl tracking-tight pl-2">Weswap</span>
+          {/* <Image src="/logo.png" alt="Swapify" width={32} height={32} className="w-8 h-8" /> */}
+          <span className="font-display font-bold text-xl tracking-tight pl-2">Swapify</span>
         </div>
         <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
           {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
