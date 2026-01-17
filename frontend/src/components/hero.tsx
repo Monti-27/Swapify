@@ -43,15 +43,8 @@ export const Hero = React.memo(function Hero() {
               }}
               className="absolute inset-0 flex items-center justify-center pointer-events-none"
             >
-              <Image 
-                src="/WeSwap-logo.png" 
-                alt=""
-                width={400}
-                height={400}
-                className="select-none"
-                loading="lazy"
-                style={{ transform: 'translateZ(0)' }}
-              />
+              {/* Swapify logo placeholder - add logo image when ready */}
+              <span className="font-display font-bold text-8xl text-[#00FF94]/10">Swapify</span>
             </motion.div>
 
             {/* Badge */}
@@ -73,7 +66,7 @@ export const Hero = React.memo(function Hero() {
             <p className="mb-8 text-lg text-muted-foreground sm:text-xl max-w-2xl mx-auto relative z-10 font-sans font-normal">
               Experience seamless cryptocurrency trading with advanced order types,
               real-time analytics, and institutional-grade security. Join thousands
-              of traders on WeSwap.
+              of traders on Swapify.
             </p>
 
             {/* CTA Buttons */}
@@ -92,7 +85,7 @@ export const Hero = React.memo(function Hero() {
           </div>
         </div>
       </motion.div>
-    </LampContainer>
+    </LampContainer >
   );
 });
 

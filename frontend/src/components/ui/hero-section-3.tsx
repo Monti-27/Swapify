@@ -48,21 +48,24 @@ export function HeroSection() {
                                 ...transitionVariants,
                             }}
                         >
-                            <div className="mx-auto mb-6 w-fit rounded-full border border-border bg-muted/50 px-4 py-1.5 text-sm font-medium text-muted-foreground shadow-inner">
-                                WeSwap V2
+                            <div className="mx-auto mb-6 w-fit rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary shadow-inner">
+                                Swapify Protocol
                             </div>
                             <h1
-                                className="text-balance text-5xl font-medium md:text-7xl text-foreground tracking-tight">
-                                Automated Solana Trading.
+                                className="text-balance text-5xl md:text-7xl text-foreground tracking-tight italic font-normal" style={{ fontFamily: 'var(--font-instrument-serif), serif' }}>
+                                Automate Everything.<br />Trust Nothing.
                             </h1>
 
                             <p className="mx-auto mt-6 max-w-2xl text-pretty text-lg text-muted-foreground">
-                                Non-custodial, on-chain strategy builder. Deploy DCA and market-cap triggers without code.
+                                Strategies. Privacy. Transparency. One protocol.
                             </p>
 
-                            <div className="mt-12 flex justify-center">
-                                <Button asChild size="lg" className="rounded-full px-8 font-semibold bg-foreground text-background hover:bg-foreground/90 relative z-20">
-                                    <Link href="/strategies">Launch App</Link>
+                            <div className="mt-12 flex justify-center gap-4">
+                                <Button asChild size="lg" className="rounded-full px-8 font-semibold bg-primary text-primary-foreground hover:bg-primary/90 relative z-20">
+                                    <Link href="/strategies">Start Trading</Link>
+                                </Button>
+                                <Button asChild size="lg" variant="outline" className="rounded-full px-8 font-semibold relative z-20">
+                                    <Link href="/privacy">Privacy Vault</Link>
                                 </Button>
                             </div>
 

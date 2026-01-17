@@ -91,7 +91,7 @@ export const HeroPremium = React.memo(function HeroPremium() {
               className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold text-white mb-6 leading-tight"
             >
               Trade Smarter with{' '}
-              <span className="text-gradient-purple">WeSwap</span>
+              <span className="text-gradient-purple">Swapify</span>
             </motion.h1>
 
             {/* Subheadline */}
