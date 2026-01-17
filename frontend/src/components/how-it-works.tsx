@@ -40,7 +40,7 @@ export const HowItWorks = React.memo(function HowItWorks() {
       {/* Background Effects */}
       <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:50px_50px]" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
-      
+
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
         <div className="mx-auto max-w-2xl text-center mb-16">
@@ -58,7 +58,7 @@ export const HowItWorks = React.memo(function HowItWorks() {
               Start Trading in <span className="text-gradient-purple">4 Simple Steps</span>
             </h2>
             <p className="text-lg text-muted-foreground">
-              Get started with WeSwap in under a minute. No registration required.
+              Get started with Swapify in under a minute. No registration required.
             </p>
           </motion.div>
         </div>

@@ -52,7 +52,7 @@ const timelineData: TimelineItem[] = [
         id: 5,
         title: "Automated Execution",
         date: "Step 5",
-        content: "Sit back. WeSwap executes your strategy on-chain with zero latency.",
+        content: "Sit back. Swapify executes your strategy on-chain with zero latency.",
         category: "Execution",
         icon: Zap,
         relatedIds: [4],
@@ -66,7 +66,7 @@ export function HowItWorksTimeline() {
         <section className="py-24 bg-background overflow-visible">
             <div className="container mx-auto px-4 mb-16 text-center">
                 <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4 text-foreground">
-                    How <span className="text-primary">WeSwap</span> Works
+                    How <span className="text-primary">Swapify</span> Works
                 </h2>
                 <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                     From connection to execution, our non-custodial protocol handles it all securely on-chain.
