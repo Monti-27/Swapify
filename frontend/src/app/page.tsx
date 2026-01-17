@@ -3,7 +3,7 @@ import { Navbar } from '@/components/navbar';
 import { HeroSection } from '@/components/ui/hero-section-3';
 import { Hero } from '@/components/hero';
 import { HowItWorksTimeline } from '@/components/how-it-works-timeline';
-import { TokenBurnGrid } from '@/components/ui/token-burn-grid';
+// import { TokenBurnGrid } from '@/components/ui/token-burn-grid'; // Temporarily hidden - new token coming soon
 import { FeaturesGridSection } from '@/components/features-grid-section';
 import { BentoGrid } from '@/components/ui/bento-grid';
 
@@ -25,7 +25,7 @@ export default function Home() {
           {/* <Hero /> */}
           <HowItWorksTimeline />
 
-          <TokenBurnGrid />
+          {/* <TokenBurnGrid /> */} {/* Temporarily hidden - new token coming soon */}
 
           <TrustSection />
           <MarqueeCTA />
