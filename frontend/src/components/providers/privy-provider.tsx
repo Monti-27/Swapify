@@ -34,11 +34,11 @@ export function PrivyProviderWrapper({ children }: PrivyProviderWrapperProps) {
         // LOGIN METHODS - External wallets only
         loginMethods: ['wallet'],
 
-        // APPEARANCE CUSTOMIZATION for WeSwap design
+        // APPEARANCE CUSTOMIZATION for Swapify design
         appearance: {
           theme: 'dark',
-          accentColor: '#9333EA',  // WeSwap purple
-          logo: '/WeSwap-logo.png',
+          accentColor: '#00FF94',  // Swapify neon green
+          // logo: '/Swapify-logo.png', // Uncomment when logo is available
           showWalletLoginFirst: true,
           landingHeader: 'Connect Your Solana Wallet'
         },
@@ -51,8 +51,8 @@ export function PrivyProviderWrapper({ children }: PrivyProviderWrapperProps) {
 
         // Legal and privacy (optional customization)
         legal: {
-          termsAndConditionsUrl: 'https://weswap.com/terms',
-          privacyPolicyUrl: 'https://weswap.com/privacy'
+          termsAndConditionsUrl: 'https://swapify.fun/terms',
+          privacyPolicyUrl: 'https://swapify.fun/privacy'
         }
       }}
     >
