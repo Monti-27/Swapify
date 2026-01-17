@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   title: "Swapify - Crypto Trading Platform",
   description: "Modern crypto swap and trading platform powered by Solana",
   icons: {
-    icon: "/favicon/new-favicon.ico",
+    icon: "/favicon/favicon.png",
   },
 };
 

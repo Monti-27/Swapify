@@ -78,7 +78,7 @@ export const ModemAnimatedFooter = ({
                                     {/* Small Brand Icon if needed, or just text */}
                                     <div className="relative w-8 h-8">
                                         <Image
-                                            src="/WeSwap-logo.png"
+                                            src="/swap-logo.svg"
                                             alt="Swapify"
                                             fill
                                             className="object-contain"
