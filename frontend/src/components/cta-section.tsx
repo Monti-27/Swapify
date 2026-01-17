@@ -75,7 +75,7 @@ export function CTASection() {
                   viewport={{ once: true }}
                   className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto font-sans"
                 >
-                  Join thousands of traders who trust WeSwap for fast, secure,
+                  Join thousands of traders who trust Swapify for fast, secure,
                   and efficient crypto trading on Solana.
                 </motion.p>
 

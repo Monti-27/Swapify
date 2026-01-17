@@ -18,7 +18,7 @@ export function MarqueeCTA() {
                     baseVelocity={-3}
                     className="bg-foreground text-background py-3 md:py-4 text-4xl md:text-6xl lg:text-7xl font-display"
                 >
-                    AUTOMATED STRATEGIES • SOLANA POWERED • WESWAP •
+                    AUTOMATED STRATEGIES • SOLANA POWERED • SWAPIFY •
                 </MarqueeAnimation>
             </div>
         </section>
