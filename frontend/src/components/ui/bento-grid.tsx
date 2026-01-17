@@ -153,7 +153,7 @@ export function BentoGrid() {
                                     <div className="flex gap-4">
                                         <div className="flex items-center gap-2">
                                             <div className="w-3 h-0.5 bg-purple-500 rounded-full"></div>
-                                            <span className="text-xs text-muted-foreground">WeSwap</span>
+                                            <span className="text-xs text-muted-foreground">Swapify</span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <div className="w-3 h-0.5 bg-zinc-400 dark:bg-zinc-600 rounded-full"></div>

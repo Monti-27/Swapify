@@ -55,7 +55,7 @@ export function Features() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
-            Why Choose <span className="text-gradient-purple">WeSwap</span>?
+            Why Choose <span className="text-gradient-purple">Swapify</span>?
           </h2>
           <p className="text-lg text-muted-foreground">
             Built for traders who demand speed, security, and simplicity.

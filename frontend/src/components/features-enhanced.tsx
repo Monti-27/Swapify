@@ -73,7 +73,7 @@ export const FeaturesEnhanced = React.memo(function FeaturesEnhanced() {
     <section id="features" className="py-24 sm:py-32 relative bg-background">
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:50px_50px]" />
-      
+
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
         <div className="mx-auto max-w-2xl text-center mb-16">
@@ -88,7 +88,7 @@ export const FeaturesEnhanced = React.memo(function FeaturesEnhanced() {
             }}
           >
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4 font-display">
-              Why Choose <span className="text-gradient-purple">WeSwap</span>?
+              Why Choose <span className="text-gradient-purple">Swapify</span>?
             </h2>
             <p className="text-lg text-muted-foreground font-sans">
               Built for traders who demand speed, security, and simplicity.
@@ -101,7 +101,7 @@ export const FeaturesEnhanced = React.memo(function FeaturesEnhanced() {
           {features.map((feature, index) => {
             const Icon = feature.icon;
             const isLarge = feature.size === 'large';
-            
+
             return (
               <motion.div
                 key={feature.title}
@@ -122,7 +122,7 @@ export const FeaturesEnhanced = React.memo(function FeaturesEnhanced() {
               >
                 {/* Gradient Overlay on Hover */}
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                
+
                 {/* Content */}
                 <div className="relative z-10">
                   {/* Icon Container with Glow */}
