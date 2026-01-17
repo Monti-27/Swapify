@@ -38,7 +38,7 @@ interface FooterProps {
 }
 
 export const ModemAnimatedFooter = ({
-    brandName = "WeSwap",
+    brandName = "Swapify",
     brandDescription = "The future of decentralized trading on Solana. Fast, non-custodial, and fully automated.",
     socialLinks = [],
     creatorName,
@@ -57,7 +57,7 @@ export const ModemAnimatedFooter = ({
 
     const companyLinks = [
         { title: 'About Us', href: '/about' },
-        { title: 'Docs', href: 'https://docs.weswap.fun/' },
+        { title: 'Docs', href: 'https://docs.swapify.fun/' },
         { title: 'Privacy Policy', href: '/privacy-policy' },
         { title: 'Terms of Service', href: '/terms' },
     ];
@@ -79,7 +79,7 @@ export const ModemAnimatedFooter = ({
                                     <div className="relative w-8 h-8">
                                         <Image
                                             src="/WeSwap-logo.png"
-                                            alt="WeSwap"
+                                            alt="Swapify"
                                             fill
                                             className="object-contain"
                                         />
