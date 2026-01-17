@@ -14,7 +14,7 @@ export function TokenBurnGrid() {
                     {/* Badge Removed as requested */}
 
                     <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4 text-foreground">
-                        The WeSwap Burn
+                        The Swapify Burn
                     </h2>
                     <p className="text-lg text-muted-foreground">
                         A relentless mechanism designed to reduce supply and align long-term value.

@@ -229,10 +229,10 @@ export function ShaderBackground() {
     const isDark = mounted ? (theme === 'dark' || resolvedTheme === 'dark') : true;
 
     // Define colors for each mode
-    // Dark mode: Dark background with purple/blue/cyan accents
-    // Light mode: Light background with purple/blue accents but softer
+    // Dark mode: Dark background with green/emerald accents
+    // Light mode: Light background with softer green accents
     const color1 = isDark ? '#000000' : '#ffffff';
-    const color2 = isDark ? '#4f46e5' : '#818cf8'; // Indigo-600 vs Indigo-400
+    const color2 = isDark ? '#00FF94' : '#10B981'; // Neon Green vs Emerald-500
 
     // Create camera with stable reference
     const camera = useMemo(() => ({ position: [0, 0, 1] as [number, number, number], fov: 75, near: 0.1, far: 1000 }), []);
