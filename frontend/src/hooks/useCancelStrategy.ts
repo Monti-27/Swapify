@@ -64,7 +64,7 @@ interface UseCancelStrategyResult {
 }
 
 /**
- * Hook for cancelling strategies on-chain via the WeSwap smart contract
+ * Hook for cancelling strategies on-chain via the Swapify smart contract
  * 
  * CRITICAL: This hook enforces "Blockchain First, Database Second" pattern
  * to prevent Ghost Strategies. The flow is:

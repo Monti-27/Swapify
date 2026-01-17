@@ -95,7 +95,7 @@ function getMintAddress(token: Token): PublicKey {
 }
 
 /**
- * Hook for creating strategies on-chain via the WeSwap smart contract
+ * Hook for creating strategies on-chain via the Swapify smart contract
  */
 export function useCreateStrategy(): UseCreateStrategyResult {
     const { publicKey, signTransaction, signAllTransactions } = useWallet();
