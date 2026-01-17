@@ -13,7 +13,7 @@ type ChartMode = 'price' | 'mcap';
 const WSP_TOKEN = {
   address: "3LkGja4ptKgVH3FoP3xye3HYGLPbX2iAbvGYj5ePpump",
   symbol: "WSP",
-  name: "WeSwap Protocol",
+  name: "Swapify Protocol",
   logoURI: "https://ipfs.io/ipfs/bafybeibbkjey27dbkuuuh33woflc6qr4qxdxqh6w5ztznpljprurgtbvxa",
 };
 
