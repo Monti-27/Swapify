@@ -408,3 +408,25 @@ model TransactionGraph {
   @@index([timestamp])
   @@map("transaction_graph")
 }
+
+// ============================================================================
+// Waitlist Tables (Viral Referral System)
+// ============================================================================
+
+model WaitlistUser {
+  id              String   @id @default(uuid())
+  email           String   @unique
+  walletAddress   String   @unique
+  referralCode    String   @unique // Generated unique 6-char code
+  referredByCode  String?  // The code of the person who referred this user
+  points          Int      @default(0)
+  
+  // Track Socials
+  joinedTelegram  Boolean  @default(false)
+  followedTwitter Boolean  @default(false)
+  
+  createdAt       DateTime @default(now())
+  
+  @@index([email, walletAddress]) // For fast login/recovery
+  @@map("waitlist_users")
+}

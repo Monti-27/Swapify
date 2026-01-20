@@ -17,6 +17,7 @@ import { BirdeyeModule } from './birdeye/birdeye.module';
 import { BlockchainModule } from './blockchain/blockchain.module';
 import { PrivacyModule } from './privacy/privacy.module';
 import { TransparencyModule } from './transparency/transparency.module';
+import { WaitlistModule } from './waitlist/waitlist.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { TransparencyModule } from './transparency/transparency.module';
     BlockchainModule,
     PrivacyModule,
     TransparencyModule,
+    WaitlistModule,
   ],
 })
 export class AppModule { }
