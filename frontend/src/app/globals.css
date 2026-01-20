@@ -1205,25 +1205,25 @@ svg {
 
   @property --color-2 {
     syntax: '<color>';
-    initial-value: #08012c;
+    initial-value: #021a0e;
     inherits: false;
   }
 
   @property --color-3 {
     syntax: '<color>';
-    initial-value: #4e1e40;
+    initial-value: #053d23;
     inherits: false;
   }
 
   @property --color-4 {
     syntax: '<color>';
-    initial-value: #70464e;
+    initial-value: #0a5c35;
     inherits: false;
   }
 
   @property --color-5 {
     syntax: '<color>';
-    initial-value: #88394c;
+    initial-value: #10B981;
     inherits: false;
   }
 
@@ -1235,13 +1235,13 @@ svg {
 
   @property --border-color-1 {
     syntax: '<color>';
-    initial-value: hsla(340, 75%, 60%, 0.2);
+    initial-value: hsla(160, 75%, 50%, 0.2);
     inherits: true;
   }
 
   @property --border-color-2 {
     syntax: '<color>';
-    initial-value: hsla(340, 75%, 40%, 0.75);
+    initial-value: hsla(160, 75%, 40%, 0.75);
     inherits: true;
   }
 
