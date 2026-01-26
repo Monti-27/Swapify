@@ -295,7 +295,7 @@ export function TradingChart({
           )}
         </AnimatePresence>
 
-        {/* Error Overlay */}
+        {/* Error Overlay - Clean UI for unavailable chart data */}
         <AnimatePresence>
           {error && (
             <motion.div
@@ -303,28 +303,38 @@ export function TradingChart({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-gray-900/95 to-gray-950/95 backdrop-blur-xl rounded-2xl border border-red-500/20 p-8"
+              className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-zinc-900/98 to-zinc-950/98 backdrop-blur-xl rounded-2xl border border-white/5 p-8"
             >
-              <AlertCircle className="w-12 h-12 text-red-400 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-200 mb-2">
-                Chart Data Unavailable
+              <div className="relative mb-6">
+                <div className="absolute inset-0 bg-orange-500/20 rounded-full blur-xl" />
+                <div className="relative p-4 bg-zinc-800/50 rounded-2xl border border-orange-500/20">
+                  <CandlestickChart className="w-10 h-10 text-orange-400" />
+                </div>
+              </div>
+
+              <h3 className="text-lg font-semibold text-white mb-2">
+                Chart Unavailable
               </h3>
-              <p className="text-gray-400 text-sm text-center mb-2">
-                {error.message || 'Unable to load chart data for this token'}
+              <p className="text-zinc-400 text-sm text-center mb-4 max-w-xs">
+                Unable to load chart data for this token. This may be due to limited trading history or a temporary API issue.
               </p>
-              <p className="text-gray-500 text-xs text-center mb-6 font-mono max-w-md">
-                Token: {tokenAddress.slice(0, 8)}...{tokenAddress.slice(-8)}
-              </p>
+
+              <div className="px-3 py-1.5 bg-zinc-800/50 rounded-lg border border-white/5 mb-6">
+                <p className="text-zinc-500 text-xs font-mono">
+                  {tokenAddress.slice(0, 6)}...{tokenAddress.slice(-6)}
+                </p>
+              </div>
+
               {currentPrice && (
-                <div className="mb-6">
-                  <p className="text-gray-500 text-xs mb-1">Current Price</p>
-                  <p className="text-2xl font-bold text-gray-200">
+                <div className="text-center mb-6 p-4 bg-zinc-800/30 rounded-xl border border-white/5">
+                  <p className="text-zinc-500 text-xs uppercase tracking-wider mb-1">Current Price</p>
+                  <p className="text-2xl font-bold text-white">
                     {formatPrice(currentPrice)}
                   </p>
                   {priceChange24hPercent !== null && (
                     <p
                       className={cn(
-                        'text-sm font-medium',
+                        'text-sm font-medium mt-1',
                         getPriceChangeColor(priceChange24hPercent)
                       )}
                     >
@@ -333,12 +343,13 @@ export function TradingChart({
                   )}
                 </div>
               )}
+
               <button
                 onClick={handleRefresh}
-                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors flex items-center gap-2"
+                className="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 text-white rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-purple-500/20"
               >
                 <RefreshCw className="w-4 h-4" />
-                Retry
+                Try Again
               </button>
             </motion.div>
           )}

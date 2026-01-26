@@ -147,7 +147,13 @@ export function useChartData({
           // Reset retry count on success
           retryCountRef.current = 0;
         } else {
-          console.error('📊 [useChartData] API Error:', response.error, response.message);
+          // Check if this is a "no data" error (expected for some tokens)
+          const isNoDataError = response.error === 'NO_DATA';
+          if (isNoDataError) {
+            console.warn('📊 [useChartData] No chart data available:', response.message);
+          } else {
+            console.error('📊 [useChartData] API Error:', response.error, response.message);
+          }
           throw new Error(response.message || 'Failed to fetch chart data');
         }
       } catch (err: any) {
@@ -157,31 +163,42 @@ export function useChartData({
         }
 
         const error = err instanceof Error ? err : new Error('Unknown error');
-        console.error('📊 [useChartData] Error:', error);
 
-        // Retry logic with exponential backoff
-        if (retryCountRef.current < retryAttempts) {
-          const delay = calculateRetryDelay(retryCountRef.current);
-          console.log(
-            `📊 [useChartData] Retrying in ${delay}ms (attempt ${retryCountRef.current + 1}/${retryAttempts})`
-          );
+        // Check if this is a NO_DATA error - no point retrying, data won't appear
+        const isNoDataError = error.message?.includes('chart data') || error.message?.includes('trading history');
 
-          retryCountRef.current++;
-
-          // Clear existing timeout
-          if (retryTimeoutRef.current) {
-            clearTimeout(retryTimeoutRef.current);
-          }
-
-          retryTimeoutRef.current = setTimeout(() => {
-            fetchChartData(true);
-          }, delay);
-        } else {
-          // Max retries exceeded
-          console.error('📊 [useChartData] Max retry attempts exceeded');
+        if (isNoDataError) {
+          // Don't retry for NO_DATA - just show the error immediately
+          console.warn('📊 [useChartData] Chart data unavailable (no retry needed)');
           setError(error);
           onError?.(error);
-          retryCountRef.current = 0; // Reset for next manual retry
+          retryCountRef.current = 0;
+        } else {
+          // Retry logic with exponential backoff for actual errors
+          console.error('📊 [useChartData] Error:', error);
+          if (retryCountRef.current < retryAttempts) {
+            const delay = calculateRetryDelay(retryCountRef.current);
+            console.log(
+              `📊 [useChartData] Retrying in ${delay}ms (attempt ${retryCountRef.current + 1}/${retryAttempts})`
+            );
+
+            retryCountRef.current++;
+
+            // Clear existing timeout
+            if (retryTimeoutRef.current) {
+              clearTimeout(retryTimeoutRef.current);
+            }
+
+            retryTimeoutRef.current = setTimeout(() => {
+              fetchChartData(true);
+            }, delay);
+          } else {
+            // Max retries exceeded
+            console.error('📊 [useChartData] Max retry attempts exceeded');
+            setError(error);
+            onError?.(error);
+            retryCountRef.current = 0; // Reset for next manual retry
+          }
         }
       } finally {
         if (isMountedRef.current && !isRetry) {

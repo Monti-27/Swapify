@@ -542,6 +542,17 @@ export default function KLineChart({
                     // Fetch just 1 candle to check the price magnitude
                     // We use the current timeframe to be consistent
                     const history = await api.getPriceHistory(tokenAddress, timeframe, 1);
+
+                    // Check if API returned an error (no data available)
+                    if (!history.success || history.error === 'NO_DATA') {
+                        console.warn('📊 [KLineChart] No chart data available from API');
+                        if (isActive) {
+                            setError('Chart data unavailable');
+                            setIsLoading(false);
+                        }
+                        return; // Don't initialize an empty chart
+                    }
+
                     // Check last candle or first candle
                     sampleCandle = history?.data?.candles?.[history.data.candles.length - 1];
 
@@ -550,9 +561,22 @@ export default function KLineChart({
                         pricePrecision = p.pricePrecision;
                         volumePrecision = p.volumePrecision;
                         console.log(`📊 [KLineChart] Dynamic precision for $${sampleCandle.close}: ${pricePrecision}`);
+                    } else {
+                        // No candles returned - show error state
+                        console.warn('📊 [KLineChart] API returned empty candles');
+                        if (isActive) {
+                            setError('Chart data unavailable');
+                            setIsLoading(false);
+                        }
+                        return;
                     }
                 } catch (e) {
-                    console.warn('📊 [KLineChart] Failed to determine dynamic precision, defaulting to 2');
+                    console.warn('📊 [KLineChart] Failed to fetch chart data:', e);
+                    if (isActive) {
+                        setError('Chart data unavailable');
+                        setIsLoading(false);
+                    }
+                    return;
                 }
 
                 // Create new datafeed for this token
@@ -709,8 +733,25 @@ export default function KLineChart({
 
     if (error) {
         return (
-            <div className="w-full h-full min-h-[400px] bg-zinc-950 rounded-lg overflow-hidden flex items-center justify-center">
-                <p className="text-zinc-500">{error}</p>
+            <div className="w-full h-full min-h-[400px] bg-zinc-950 rounded-lg overflow-hidden flex flex-col items-center justify-center p-8">
+                <div className="relative mb-6">
+                    <div className="absolute inset-0 bg-orange-500/20 rounded-full blur-xl" />
+                    <div className="relative p-4 bg-zinc-800/50 rounded-2xl border border-orange-500/20">
+                        <svg className="w-10 h-10 text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M3 3v18h18" strokeLinecap="round" strokeLinejoin="round" />
+                            <path d="M18 17l-5-5-2 2-5-5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                    </div>
+                </div>
+                <h3 className="text-lg font-semibold text-white mb-2">Chart Unavailable</h3>
+                <p className="text-zinc-400 text-sm text-center max-w-xs mb-4">
+                    Unable to load chart data. This may be due to limited trading history or a temporary API issue.
+                </p>
+                <div className="px-3 py-1.5 bg-zinc-800/50 rounded-lg border border-white/5">
+                    <p className="text-zinc-500 text-xs font-mono">
+                        {tokenAddress.slice(0, 6)}...{tokenAddress.slice(-6)}
+                    </p>
+                </div>
             </div>
         );
     }
