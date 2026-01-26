@@ -425,6 +425,10 @@ model WaitlistUser {
   joinedTelegram  Boolean  @default(false)
   followedTwitter Boolean  @default(false)
   
+  // Social usernames for airdrop verification
+  twitterUsername  String?  // User's X (Twitter) handle
+  telegramUsername String?  // User's Telegram handle
+  
   createdAt       DateTime @default(now())
   
   @@index([email, walletAddress]) // For fast login/recovery
