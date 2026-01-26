@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import { motion } from "framer-motion"
+import { motion } from "motion/react"
 import Link from "next/link"
 import { LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -22,6 +22,7 @@ interface NavBarProps {
 export function TubelightNavbar({ items, className, children }: NavBarProps) {
     const pathname = usePathname()
     const [activeTab, setActiveTab] = useState(items[0].name)
+    const [hoverTab, setHoverTab] = useState<string | null>(null)
     const [isMobile, setIsMobile] = useState(false)
 
     useEffect(() => {
@@ -49,50 +50,57 @@ export function TubelightNavbar({ items, className, children }: NavBarProps) {
             )}
         >
             <div className="flex items-center justify-between gap-3 bg-white/10 dark:bg-black/10 backdrop-blur-[50px] backdrop-saturate-150 p-2 rounded-2xl shadow-2xl">
-                <div className="flex items-center gap-3">
+                <nav className="flex items-center justify-center">
                     {items.map((item) => {
                         const Icon = item.icon
                         const isActive = activeTab === item.name
+                        const isHover = hoverTab === item.name
 
                         return (
                             <Link
                                 key={item.name}
                                 href={item.url}
                                 onClick={() => setActiveTab(item.name)}
+                                onMouseEnter={() => setHoverTab(item.name)}
+                                onMouseLeave={() => setHoverTab(null)}
                                 target={item.url.startsWith('http') ? '_blank' : undefined}
                                 rel={item.url.startsWith('http') ? 'noopener noreferrer' : undefined}
                                 className={cn(
-                                    "relative cursor-pointer text-sm font-semibold px-6 py-2 rounded-full transition-colors",
-                                    "text-foreground/80 hover:text-primary",
-                                    isActive && "bg-muted text-primary",
+                                    "py-2 relative duration-300 transition-colors hover:!text-primary",
+                                    isActive ? "text-primary" : "text-muted-foreground",
                                 )}
                             >
-                                <span className="hidden md:inline">{item.name}</span>
-                                <span className="md:hidden">
-                                    <Icon size={18} strokeWidth={2.5} />
-                                </span>
+                                <div className="px-5 py-2 relative">
+                                    <span className="hidden md:inline text-sm font-semibold">{item.name}</span>
+                                    <span className="md:hidden">
+                                        <Icon size={18} strokeWidth={2.5} />
+                                    </span>
+                                    {isHover && (
+                                        <motion.div
+                                            layoutId="hover-bg"
+                                            className="absolute bottom-0 left-0 right-0 w-full h-full bg-primary/10"
+                                            style={{
+                                                borderRadius: 6,
+                                            }}
+                                        />
+                                    )}
+                                </div>
                                 {isActive && (
                                     <motion.div
-                                        layoutId="lamp"
-                                        className="absolute inset-0 w-full bg-primary/5 rounded-full -z-10"
-                                        initial={false}
-                                        transition={{
-                                            type: "spring",
-                                            stiffness: 300,
-                                            damping: 30,
-                                        }}
-                                    >
-                                        <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-8 h-1 bg-primary rounded-t-full">
-                                            <div className="absolute w-12 h-6 bg-primary/20 rounded-full blur-md -top-2 -left-2" />
-                                            <div className="absolute w-8 h-6 bg-primary/20 rounded-full blur-md -top-1" />
-                                            <div className="absolute w-4 h-4 bg-primary/20 rounded-full blur-sm top-0 left-2" />
-                                        </div>
-                                    </motion.div>
+                                        layoutId="active"
+                                        className="absolute bottom-0 left-0 right-0 w-full h-0.5 bg-primary"
+                                    />
+                                )}
+                                {isHover && (
+                                    <motion.div
+                                        layoutId="hover"
+                                        className="absolute bottom-0 left-0 right-0 w-full h-0.5 bg-primary"
+                                    />
                                 )}
                             </Link>
                         )
                     })}
-                </div>
+                </nav>
                 {children && <div className="pl-4 pr-1">{children}</div>}
             </div>
         </div>

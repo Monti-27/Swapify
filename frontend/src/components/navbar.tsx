@@ -30,22 +30,62 @@ const AnimatedThemeToggle = ({ className }: { className?: string }) => {
   });
 
   return (
-    <button
-      type="button"
-      aria-label="Toggle theme"
-      onClick={toggleTheme}
+    <div
       className={cn(
-        "p-0 text-muted-foreground bg-transparent border-0 shadow-none transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60",
-        "flex items-center justify-center",
-        className,
+        "flex min-w-[4rem] w-16 h-8 p-1 rounded-full cursor-pointer transition-all duration-300 shrink-0",
+        "bg-black/30 dark:bg-white/10 border border-white/10",
+        className
       )}
+      onClick={toggleTheme}
+      role="button"
+      tabIndex={0}
+      aria-label="Toggle theme"
     >
-      {isDark ? (
-        <Sun className="h-5 w-5 text-neutral-600 dark:text-neutral-200" />
-      ) : (
-        <Moon className="h-5 w-5 text-neutral-600 dark:text-neutral-200" />
-      )}
-    </button>
+      <div className="flex justify-between items-center w-full">
+        {/* First icon - slides right when light mode */}
+        <div
+          className={cn(
+            "flex justify-center items-center w-6 h-6 rounded-full transition-transform duration-300",
+            isDark
+              ? "transform translate-x-0 bg-white/20"
+              : "transform translate-x-8 bg-white/20"
+          )}
+        >
+          {isDark ? (
+            <Moon
+              className="w-4 h-4 text-white"
+              strokeWidth={1.5}
+            />
+          ) : (
+            <Sun
+              className="w-4 h-4 text-white"
+              strokeWidth={1.5}
+            />
+          )}
+        </div>
+        {/* Second icon - slides left when light mode */}
+        <div
+          className={cn(
+            "flex justify-center items-center w-6 h-6 rounded-full transition-transform duration-300",
+            isDark
+              ? "bg-transparent"
+              : "transform -translate-x-8"
+          )}
+        >
+          {isDark ? (
+            <Sun
+              className="w-4 h-4 text-white/50"
+              strokeWidth={1.5}
+            />
+          ) : (
+            <Moon
+              className="w-4 h-4 text-white/50"
+              strokeWidth={1.5}
+            />
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -86,7 +126,7 @@ export const Navbar = React.memo(function Navbar() {
   const ActionButtons = useMemo(
     () => (
       <div className="flex items-center gap-2">
-        <AnimatedThemeToggle className="h-9 w-9 hidden lg:flex" />
+        <AnimatedThemeToggle className="hidden lg:flex" />
 
 
 
