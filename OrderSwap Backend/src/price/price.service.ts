@@ -486,23 +486,13 @@ export class PriceService {
         );
       }
 
-      // Fallback to synthetic candles if Birdeye fails or returns no data
+      // Return error if Birdeye fails or returns no data (no synthetic/fake data)
       if (!candles || candles.length === 0) {
-        this.logger.warn(`Birdeye returned no data for ${shortAddress}, falling back to synthetic candles`);
-        candles = await this.generateSyntheticCandles(
-          tokenAddress,
-          timeframe,
-          limit,
-        );
-      }
-
-      // Validate candles were generated
-      if (!candles || candles.length === 0) {
-        this.logger.error(`No candles available for ${shortAddress}`);
+        this.logger.warn(`Birdeye returned no data for ${shortAddress} - returning error to client`);
         return {
           success: false,
           error: 'NO_DATA',
-          message: 'No chart data available for this token. The token may not have sufficient price data.',
+          message: 'Unable to fetch chart data. The price data provider may be temporarily unavailable or the token may not have sufficient trading history.',
         };
       }
 
@@ -549,128 +539,30 @@ export class PriceService {
     }
   }
 
-  /**
-   * Generate synthetic OHLCV candles based on current price data
-   * This is a workaround since DexScreener free API doesn't provide historical candles
-   */
-  private async generateSyntheticCandles(
-    tokenAddress: string,
-    timeframe: ChartTimeframe,
-    limit: number,
-  ): Promise<OHLCVCandle[]> {
-    try {
-      // Get current token data
-      const tokenInfo = await this.getTokenInfo(tokenAddress);
-
-      if (!tokenInfo.priceUsd || tokenInfo.priceUsd === 0) {
-        return [];
-      }
-
-      const currentPrice = tokenInfo.priceUsd;
-      const priceChange24h = tokenInfo.priceChange24h || 0;
-      const volume24h = tokenInfo.volume24h || 0;
-
-      // Calculate timeframe in milliseconds
-      const timeframeMs = this.getTimeframeInMs(timeframe);
-      const now = Date.now();
-
-      const candles: OHLCVCandle[] = [];
-
-      // Generate candles going backwards in time
-      for (let i = 0; i < limit; i++) {
-        const timestamp = Math.floor((now - i * timeframeMs) / 1000);
-
-        // Calculate price with some variation based on 24h change
-        // Add random walk effect for realistic looking chart
-        const progress = i / limit; // 0 to 1, where 0 is most recent
-        const priceVariation = (priceChange24h / 100) * progress;
-        const randomWalk = (Math.random() - 0.5) * 0.02; // ±1% random variation
-
-        const basePrice = currentPrice * (1 - priceVariation);
-        const adjustedPrice = basePrice * (1 + randomWalk);
-
-        // Generate OHLC with realistic variations
-        const volatility = 0.005; // 0.5% intra-candle volatility
-        const open = adjustedPrice;
-        const high = open * (1 + Math.random() * volatility);
-        const low = open * (1 - Math.random() * volatility);
-        const close = low + Math.random() * (high - low);
-
-        // Distribute volume across candles
-        const avgVolume = volume24h / limit;
-        const volumeVariation = (Math.random() - 0.5) * 0.5; // ±25% variation
-        const volume = avgVolume * (1 + volumeVariation);
-
-        candles.unshift({
-          timestamp,
-          open,
-          high,
-          low,
-          close,
-          volume: Math.max(0, volume),
-        });
-      }
-
-      // Validate we generated candles
-      if (candles.length === 0) {
-        this.logger.warn(`Generated 0 candles for ${tokenAddress}`);
-      } else {
-        this.logger.log(`Generated ${candles.length} synthetic candles for token`);
-      }
-
-      return candles;
-    } catch (error) {
-      this.logger.error(`Error generating synthetic candles: ${error.message}`);
-      return [];
-    }
-  }
+  // REMOVED: generateSyntheticCandles method
+  // Synthetic/fake candle generation has been removed to ensure only real market data is displayed.
+  // If Birdeye API returns no data, the frontend will show a clean "Chart Unavailable" message.
 
   /**
    * Get the latest candle for real-time updates
+   * Only returns real data from the candle aggregator - no fake/synthetic data
    */
   async getLatestCandle(
     tokenAddress: string,
     timeframe: ChartTimeframe = ChartTimeframe.ONE_HOUR,
   ): Promise<OHLCVCandle | null> {
     try {
-      // Try to get live candle from aggregator first
+      // Only return live candle from aggregator - no synthetic fallback
       const liveCandle = this.candleAggregator.getCurrentCandle(tokenAddress, timeframe);
 
       if (liveCandle) {
         return liveCandle;
       }
 
-      // Fallback to fetching current price and creating a candle
-      const tokenInfo = await this.getTokenInfo(tokenAddress);
-
-      if (!tokenInfo.priceUsd || tokenInfo.priceUsd === 0) {
-        return null;
-      }
-
-      const currentPrice = tokenInfo.priceUsd;
-      const timeframeMs = this.getTimeframeInMs(timeframe);
-      const now = Date.now();
-
-      // Align timestamp to timeframe boundary
-      const alignedTimestamp = Math.floor(now / timeframeMs) * timeframeMs;
-
-      // For real-time candle, use current price with minimal variation
-      const volatility = 0.002; // 0.2% intra-candle volatility
-      const open = currentPrice * (1 - Math.random() * volatility * 0.5);
-      const high = Math.max(open, currentPrice) * (1 + Math.random() * volatility * 0.5);
-      const low = Math.min(open, currentPrice) * (1 - Math.random() * volatility * 0.5);
-      const close = currentPrice;
-
-      return {
-        timestamp: Math.floor(alignedTimestamp / 1000),
-        open,
-        high,
-        low,
-        close,
-        volume: tokenInfo.volume24h / 200, // Rough estimate
-      };
+      // No live candle available - return null instead of fake data
+      return null;
     } catch (error) {
-      this.logger.error(`Error generating latest candle: ${error.message}`);
+      this.logger.error(`Error fetching latest candle: ${error.message}`);
       return null;
     }
   }
