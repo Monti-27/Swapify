@@ -118,6 +118,12 @@ function WaitlistFormContent({ onClose }: { onClose: () => void }) {
     const [claimingTelegram, setClaimingTelegram] = useState(false);
     const [showConfetti, setShowConfetti] = useState(false);
 
+    // Social verification username inputs
+    const [showTwitterInput, setShowTwitterInput] = useState(false);
+    const [showTelegramInput, setShowTelegramInput] = useState(false);
+    const [twitterUsername, setTwitterUsername] = useState("");
+    const [telegramUsername, setTelegramUsername] = useState("");
+
     // Check if user exists on mount
     useEffect(() => {
         const savedWallet = localStorage.getItem("waitlist_wallet");
@@ -186,27 +192,49 @@ function WaitlistFormContent({ onClose }: { onClose: () => void }) {
         setTimeout(() => setCopied(false), 2000);
     };
 
-    const verifySocial = async (platform: "twitter" | "telegram") => {
-        if (!user) return;
-        const setLoading = platform === "twitter" ? setClaimingTwitter : setClaimingTelegram;
-        setLoading(true);
-
+    // Open social link and show username input
+    const openSocialLink = (platform: "twitter" | "telegram") => {
         const url = platform === "twitter"
             ? "https://x.com/SwapifySol"
-            : "https://t.me/swapifysol";
+            : "https://t.me/swapifyfun";
         window.open(url, "_blank");
 
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Show the username input field
+        if (platform === "twitter") {
+            setShowTwitterInput(true);
+        } else {
+            setShowTelegramInput(true);
+        }
+    };
+
+    // Submit social username for verification
+    const submitSocialUsername = async (platform: "twitter" | "telegram") => {
+        if (!user) return;
+
+        const username = platform === "twitter" ? twitterUsername : telegramUsername;
+        if (!username.trim()) return;
+
+        const setLoading = platform === "twitter" ? setClaimingTwitter : setClaimingTelegram;
+        setLoading(true);
 
         try {
             const res = await fetch(`${API_BASE}/waitlist/verify`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ userId: user.id, platform }),
+                body: JSON.stringify({
+                    userId: user.id,
+                    platform,
+                    username: username.trim().replace(/^@/, '')
+                }),
             });
             if (res.ok) {
                 const data = await res.json();
                 setUser(data.user);
+                if (platform === "twitter") {
+                    setShowTwitterInput(false);
+                } else {
+                    setShowTelegramInput(false);
+                }
             }
         } catch {
             // Silently fail
@@ -357,51 +385,134 @@ function WaitlistFormContent({ onClose }: { onClose: () => void }) {
                             </div>
                         </div>
 
-                        {/* Social - Horizontal */}
-                        <div className="space-y-2">
+                        {/* Social - With Username Inputs */}
+                        <div className="space-y-3">
                             <span className="text-white/40 text-[10px] uppercase tracking-wider">Bonus Tasks</span>
-                            <div className="flex gap-3">
+
+                            {/* Twitter Task */}
+                            <div className="space-y-2">
                                 <motion.button
-                                    onClick={() => !user?.followedTwitter && verifySocial("twitter")}
+                                    onClick={() => !user?.followedTwitter && !showTwitterInput && openSocialLink("twitter")}
                                     disabled={user?.followedTwitter || claimingTwitter}
-                                    whileHover={!user?.followedTwitter ? { scale: 1.02 } : {}}
-                                    whileTap={!user?.followedTwitter ? { scale: 0.98 } : {}}
-                                    className={`flex-1 flex items-center justify-center gap-2.5 px-4 py-3.5 rounded-lg transition-all ${user?.followedTwitter
+                                    whileHover={!user?.followedTwitter && !showTwitterInput ? { scale: 1.02 } : {}}
+                                    whileTap={!user?.followedTwitter && !showTwitterInput ? { scale: 0.98 } : {}}
+                                    className={`w-full flex items-center justify-between px-4 py-3.5 rounded-lg transition-all ${user?.followedTwitter
                                         ? "bg-primary/[0.05] border border-primary/20"
                                         : "bg-white/[0.02] border border-white/[0.06] hover:border-white/10"
                                         }`}
                                 >
-                                    <Image src="/x logo.svg" alt="X" width={16} height={16} className="opacity-60" />
-                                    <span className="text-white/70 text-sm">Follow</span>
+                                    <div className="flex items-center gap-2.5">
+                                        <Image src="/x logo.svg" alt="X" width={16} height={16} className="opacity-80 invert" />
+                                        <span className="text-white/70 text-sm">Follow on X</span>
+                                    </div>
                                     {claimingTwitter ? (
                                         <Loader2 className="w-3.5 h-3.5 text-white/30 animate-spin" />
                                     ) : user?.followedTwitter ? (
                                         <Check className="w-3.5 h-3.5 text-primary" />
+                                    ) : showTwitterInput ? (
+                                        <Check className="w-3.5 h-3.5 text-white/30" />
                                     ) : (
                                         <span className="text-primary/70 text-xs">+3</span>
                                     )}
                                 </motion.button>
 
+                                {/* Twitter Username Input */}
+                                <AnimatePresence>
+                                    {showTwitterInput && !user?.followedTwitter && (
+                                        <motion.div
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: "auto" }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            className="overflow-hidden"
+                                        >
+                                            <div className="flex items-center gap-3 bg-white/[0.02] border border-white/[0.06] rounded-lg p-3">
+                                                <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                    <Image src="/x logo.svg" alt="X" width={14} height={14} className="opacity-70 flex-shrink-0 invert" />
+                                                    <span className="text-white/40 text-sm">@</span>
+                                                    <input
+                                                        type="text"
+                                                        value={twitterUsername}
+                                                        onChange={(e) => setTwitterUsername(e.target.value)}
+                                                        placeholder="username"
+                                                        className="flex-1 min-w-0 bg-transparent text-white placeholder:text-white/25 outline-none text-sm"
+                                                    />
+                                                </div>
+                                                <motion.button
+                                                    onClick={() => submitSocialUsername("twitter")}
+                                                    disabled={!twitterUsername.trim() || claimingTwitter}
+                                                    whileHover={{ scale: 1.05 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    className="flex-shrink-0 px-4 py-2 bg-primary hover:bg-primary/90 text-black text-xs font-semibold rounded-lg disabled:opacity-40 disabled:cursor-not-allowed"
+                                                >
+                                                    {claimingTwitter ? <Loader2 className="w-3 h-3 animate-spin" /> : "Submit"}
+                                                </motion.button>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+
+                            {/* Telegram Task */}
+                            <div className="space-y-2">
                                 <motion.button
-                                    onClick={() => !user?.joinedTelegram && verifySocial("telegram")}
+                                    onClick={() => !user?.joinedTelegram && !showTelegramInput && openSocialLink("telegram")}
                                     disabled={user?.joinedTelegram || claimingTelegram}
-                                    whileHover={!user?.joinedTelegram ? { scale: 1.02 } : {}}
-                                    whileTap={!user?.joinedTelegram ? { scale: 0.98 } : {}}
-                                    className={`flex-1 flex items-center justify-center gap-2.5 px-4 py-3.5 rounded-lg transition-all ${user?.joinedTelegram
+                                    whileHover={!user?.joinedTelegram && !showTelegramInput ? { scale: 1.02 } : {}}
+                                    whileTap={!user?.joinedTelegram && !showTelegramInput ? { scale: 0.98 } : {}}
+                                    className={`w-full flex items-center justify-between px-4 py-3.5 rounded-lg transition-all ${user?.joinedTelegram
                                         ? "bg-primary/[0.05] border border-primary/20"
                                         : "bg-white/[0.02] border border-white/[0.06] hover:border-white/10"
                                         }`}
                                 >
-                                    <Image src="/Telegram Logo.svg" alt="Telegram" width={16} height={16} className="opacity-60" />
-                                    <span className="text-white/70 text-sm">Join</span>
+                                    <div className="flex items-center gap-2.5">
+                                        <Image src="/Telegram Logo.svg" alt="Telegram" width={16} height={16} className="opacity-60" />
+                                        <span className="text-white/70 text-sm">Join Telegram</span>
+                                    </div>
                                     {claimingTelegram ? (
                                         <Loader2 className="w-3.5 h-3.5 text-white/30 animate-spin" />
                                     ) : user?.joinedTelegram ? (
                                         <Check className="w-3.5 h-3.5 text-primary" />
+                                    ) : showTelegramInput ? (
+                                        <Check className="w-3.5 h-3.5 text-white/30" />
                                     ) : (
                                         <span className="text-primary/70 text-xs">+3</span>
                                     )}
                                 </motion.button>
+
+                                {/* Telegram Username Input */}
+                                <AnimatePresence>
+                                    {showTelegramInput && !user?.joinedTelegram && (
+                                        <motion.div
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: "auto" }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            className="overflow-hidden"
+                                        >
+                                            <div className="flex items-center gap-3 bg-white/[0.02] border border-white/[0.06] rounded-lg p-3">
+                                                <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                    <Image src="/Telegram Logo.svg" alt="Telegram" width={14} height={14} className="opacity-40 flex-shrink-0" />
+                                                    <span className="text-white/40 text-sm">@</span>
+                                                    <input
+                                                        type="text"
+                                                        value={telegramUsername}
+                                                        onChange={(e) => setTelegramUsername(e.target.value)}
+                                                        placeholder="username"
+                                                        className="flex-1 min-w-0 bg-transparent text-white placeholder:text-white/25 outline-none text-sm"
+                                                    />
+                                                </div>
+                                                <motion.button
+                                                    onClick={() => submitSocialUsername("telegram")}
+                                                    disabled={!telegramUsername.trim() || claimingTelegram}
+                                                    whileHover={{ scale: 1.05 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    className="flex-shrink-0 px-4 py-2 bg-primary hover:bg-primary/90 text-black text-xs font-semibold rounded-lg disabled:opacity-40 disabled:cursor-not-allowed"
+                                                >
+                                                    {claimingTelegram ? <Loader2 className="w-3 h-3 animate-spin" /> : "Submit"}
+                                                </motion.button>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                             </div>
                         </div>
 
