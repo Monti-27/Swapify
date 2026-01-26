@@ -74,8 +74,16 @@ export const ModemAnimatedFooter = ({
                         <div className="grid grid-cols-2 gap-8 p-6 md:p-8 md:grid-cols-5 lg:gap-12">
                             {/* Brand Column */}
                             <div className="col-span-2 md:col-span-3 flex flex-col gap-6">
-                                <div className="flex items-center gap-2 opacity-90">
-                                    <span className="text-xl font-bold font-sans tracking-tight text-primary">SWAPIFY</span>
+                                <div className="flex items-center gap-3 opacity-100">
+                                    <div className="relative w-8 h-8">
+                                        <Image
+                                            src="/swapify-logo.svg"
+                                            alt="Swapify Logo"
+                                            fill
+                                            className="object-contain"
+                                        />
+                                    </div>
+                                    <span className="text-2xl font-bold font-display tracking-tight text-primary">SWAPIFY</span>
                                 </div>
                                 <p className="text-muted-foreground max-w-md font-sans text-sm leading-relaxed text-balance">
                                     {brandDescription}
