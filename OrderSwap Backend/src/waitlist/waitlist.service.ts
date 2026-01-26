@@ -133,7 +133,7 @@ export class WaitlistService {
      * Verify social task completion and award points
      */
     async verifySocial(dto: VerifySocialDto) {
-        const { userId, platform } = dto;
+        const { userId, platform, username } = dto;
 
         const user = await this.prisma.waitlistUser.findUnique({
             where: { id: userId },
@@ -152,10 +152,18 @@ export class WaitlistService {
             throw new BadRequestException('You have already claimed this reward');
         }
 
-        // Update flag and add points
+        // Update flag, save username, and add points
         const updateData = platform === 'twitter'
-            ? { followedTwitter: true, points: { increment: 3 } }
-            : { joinedTelegram: true, points: { increment: 3 } };
+            ? {
+                followedTwitter: true,
+                twitterUsername: username || null,
+                points: { increment: 3 }
+            }
+            : {
+                joinedTelegram: true,
+                telegramUsername: username || null,
+                points: { increment: 3 }
+            };
 
         const updatedUser = await this.prisma.waitlistUser.update({
             where: { id: userId },

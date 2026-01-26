@@ -27,6 +27,11 @@ export class VerifySocialDto {
     @ApiProperty({ description: 'Social platform', enum: ['twitter', 'telegram'] })
     @IsIn(['twitter', 'telegram'], { message: 'Platform must be twitter or telegram' })
     platform: 'twitter' | 'telegram';
+
+    @ApiPropertyOptional({ description: 'Social media username (without @)' })
+    @IsOptional()
+    @IsString()
+    username?: string;
 }
 
 export class GetWaitlistUserDto {
