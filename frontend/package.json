@@ -19,6 +19,7 @@
     "@metaplex-foundation/umi": "^1.4.1",
     "@metaplex-foundation/umi-bundle-defaults": "^1.4.1",
     "@motionone/utils": "^10.18.0",
+    "@phosphor-icons/react": "^2.1.10",
     "@privy-io/react-auth": "^3.4.1",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-dialog": "^1.1.15",
