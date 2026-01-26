@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 18.06 18.94">
+  <!-- Generator: Adobe Illustrator 30.0.0, SVG Export Plug-In . SVG Version: 2.1.1 Build 123)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: url(#radial-gradient);
+      }
+
+      .st1 {
+        fill: url(#radial-gradient1);
+      }
+
+      .st2 {
+        filter: url(#drop-shadow-1);
+      }
+
+      .st3 {
+        fill: url(#radial-gradient2);
+      }
+    </style>
+    <filter id="drop-shadow-1" x=".38" y="1.42" width="17" height="17" filterUnits="userSpaceOnUse">
+      <feOffset dx="1" dy="1"/>
+      <feGaussianBlur result="blur" stdDeviation="0"/>
+      <feFlood flood-color="#000" flood-opacity=".75"/>
+      <feComposite in2="blur" operator="in"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <radialGradient id="radial-gradient" cx="3.21" cy="6.84" fx="3.21" fy="6.84" r="12.53" gradientTransform="translate(-1.01 -2.01) scale(1.12 1.22)" gradientUnits="userSpaceOnUse">
+      <stop offset=".06" stop-color="#0a5c34"/>
+      <stop offset=".14" stop-color="#0a6138"/>
+      <stop offset=".24" stop-color="#0b7145"/>
+      <stop offset=".36" stop-color="#0d8b5b"/>
+      <stop offset=".41" stop-color="#0e9a68"/>
+      <stop offset=".54" stop-color="#0e9b69"/>
+      <stop offset=".59" stop-color="#0ea26e"/>
+      <stop offset=".62" stop-color="#0fae78"/>
+      <stop offset=".64" stop-color="#10b981"/>
+    </radialGradient>
+    <radialGradient id="radial-gradient1" cx="-1899.77" cy="500.42" fx="-1899.77" fy="500.42" r="12.53" gradientTransform="translate(-2114.01 624.27) rotate(-180) scale(1.12 1.22)" xlink:href="#radial-gradient"/>
+    <radialGradient id="radial-gradient2" cx="4.92" cy="11.62" fx="12.33" fy="11.62" r="11.8" gradientTransform="translate(-1.01 -2.01) scale(1.12 1.22)" gradientUnits="userSpaceOnUse">
+      <stop offset=".32" stop-color="#0a5c34"/>
+      <stop offset=".39" stop-color="#0b7145"/>
+      <stop offset=".49" stop-color="#0d8e5e"/>
+      <stop offset=".79" stop-color="#0fac76"/>
+      <stop offset=".96" stop-color="#10b981"/>
+    </radialGradient>
+  </defs>
+  <g class="st2">
+    <path class="st0" d="M12.16,5.71c-1.31-.38-2.44-.57-3.29-.68-1.04-.13-1.84-.23-2.9-.13-1.16.11-2.09.41-2.74.67-.18.08-.59.31-.88.82-.1.18-.3.55-.26,1.06.04.5.29.83.38.94-.11-.03-.83-.26-1.17-1.05-.06-.13-.27-.66-.13-1.28.05-.21.18-.57.84-1.21.72-.7,1.4-1.06,1.46-1.1,1.89-1,5.09-2.25,5.29-2.33l4.96,2.33c0-.35,0-.7-.01-1.05.89.94,1.78,1.89,2.67,2.83-.9.32-1.83.64-2.78.95-.9.29-1.79.57-2.66.83.4-.53.81-1.06,1.21-1.6"/>
+    <path class="st1" d="M14.29,10.46c.11.03.83.26,1.17,1.05.06.13.27.66.13,1.28-.05.21-.18.57-.84,1.21-.72.7-1.4,1.06-1.46,1.1-1.89,1-5.09,2.25-5.29,2.33l-4.96-2.33c0,.35,0,.7.01,1.05-.89-.94-1.78-1.89-2.67-2.83.9-.32,1.83-.64,2.78-.95.9-.29,1.79-.57,2.66-.83-.4.53-.81,1.06-1.21,1.6,1.31.38,2.44.57,3.29.68,1.04.13,1.84.23,2.9.13,1.16-.11,2.09-.41,2.74-.67.18-.08.59-.31.88-.82.1-.18.3-.55.26-1.06-.04-.5-.29-.83-.38-.94Z"/>
+    <path class="st3" d="M3.23,7.29c-.05.35.15.74.5,1,4.28,2.14,7.52,3.62,8.5,3.92.18.06.67.19,1.19,0,.35-.13.85-.45.87-.87h0c-4.78-2.52-8.33-4.3-9.25-4.71-.2-.09-.7-.29-1.18-.08-.06.03-.56.26-.64.74Z"/>
+  </g>
+</svg>
