@@ -21,7 +21,10 @@ export const metadata: Metadata = {
     title: "Swapify - Join Waitlist",
     description: "Join the future of decentralized trading. Early access waitlist is open.",
     icons: {
-        icon: "/favicon/favicon.png",
+        icon: [
+            { url: "/faviconswapify/16x16favicon.png", sizes: "16x16", type: "image/png" },
+            { url: "/faviconswapify/32x32favicon.png", sizes: "32x32", type: "image/png" },
+        ],
     },
 };
 
