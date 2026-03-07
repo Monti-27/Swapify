@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
-    // TEMPORARILY DISABLED - Remove this line to re-enable waitlist mode
+    // WAITLIST MODE DISABLED - All routes are now accessible
+    return NextResponse.next();
 
     const { pathname } = request.nextUrl;
 
