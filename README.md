@@ -1,47 +1,102 @@
-# Welcome to WeSwap
+# Swapify
 
-WeSwap is a next-generation automated trading and swap platform redefining the trading experience on the Solana blockchain. We combine complex DeFi tools into a simplified, powerful interface designed for both veteran "degen" traders and crypto newcomers.
+Swapify is the product name for this codebase. It is a Solana trading stack built around fast swaps, automated strategies, and the services needed to run them reliably.
 
-### Why WeSwap?
+This repository holds the main pieces of the project in one place: the frontend, the backend, the on-chain program, and the supporting services around it.
 
-In the Solana ecosystem, speed is everything. But speed alone isn't enough; you need the right strategy and automation. WeSwap offers more than just a standard DEX interface. We provide smart modes and optimized trading routes that allow our users to capture market movements before they happen.
+## What is in this repo
 
-### Our Vision
+- `frontend/` contains the Next.js app for the landing pages, dashboard, wallet flows, and trading experience.
+- `OrderSwap Backend/` contains the NestJS API, authentication flow, strategy management, WebSocket updates, and database layer.
+- `program/` contains the Solana program workspace, along with the CLI, keeper bot, and indexer.
+- `docs/` contains the documentation source files.
+- The root markdown files such as `getting-started.md` and `core-features.md` are the product docs.
 
-To empower investors to capitalize on opportunities within the Solana network using professional strategies, without the need to monitor charts 24/7.
+## How the pieces fit together
 
-## 📚 Documentation Structure
+- The frontend handles the user-facing app and wallet interactions.
+- The backend handles auth, persistence, orchestration, and real-time updates.
+- The Solana program holds the core on-chain logic.
+- The keeper watches for valid execution conditions and submits actions when needed.
+- The indexer listens for on-chain events and pushes useful data into Supabase for easier querying.
 
-This documentation is organized into the following sections:
+## Tech stack
 
-1. [**Introduction**](./#why-weswap) - Learn about WeSwap, our vision, and what makes us unique
-2. [**Getting Started**](getting-started.md) - Set up your wallet and connect to the platform
-3. [**Core Features**](core-features.md) - Discover Boomerang Mode and Smart Limit Orders
-4. [**Tutorials**](step-by-step-tutorials.md) - Step-by-step guides for your first trades
-5. [**Tokenomics**](tokenomics-and-launch.md) - Learn about our fair launch and token utility
-6. [**Security**](security-and-infrastructure.md) - Understand our non-custodial architecture
-7. [**Roadmap**](roadmap.md) - Our vision from Foundation to Dominance
-8. [**FAQ & Contact**](faq-and-contact.md) - Common questions and how to reach us
+- Frontend: Next.js, React, TypeScript, Tailwind, Zustand, Solana wallet tooling
+- Backend: NestJS, Prisma, PostgreSQL, Socket.IO, Jupiter APIs
+- On-chain and services: Anchor, Solana Web3.js, TypeScript, Supabase
 
-## 🚀 Quick Start
+## Repository structure
 
-1. Install [Phantom Wallet](https://phantom.app/) or [Solflare](https://solflare.com/)
-2. Get some SOL for transaction fees
-3. Connect to WeSwap and start trading!
+```text
+.
+├── README.md
+├── frontend/                     # Swapify web app
+├── OrderSwap Backend/            # API and execution backend
+├── program/                      # Solana program workspace
+│   ├── app/                      # CLI and TypeScript client
+│   ├── indexer/                  # Event indexer
+│   ├── keeper/                   # Automated execution bot
+│   ├── programs/                 # Anchor program source
+│   └── scripts/                  # Development scripts
+├── docs/                         # Documentation source
+├── getting-started.md
+├── core-features.md
+├── step-by-step-tutorials.md
+├── tokenomics-and-launch.md
+├── security-and-infrastructure.md
+├── roadmap.md
+└── faq-and-contact.md
+```
 
-## 🔗 Links
+## Running the project locally
 
-* **X (Twitter):** [https://x.com/WeSwapfun](https://x.com/WeSwapfun)
-* **Telegram:** [t.me/WeSwapfun](https://t.me/WeSwapfun)
-* **Launch Platform:** [Pump.fun](https://pump.fun)
+You do not need every part running at the same time unless you are working on full end-to-end flows. Most day-to-day work starts with the frontend or backend.
 
-## 🎯 Key Features
+### Frontend
 
-* **Boomerang Mode** - Automated profit loop that returns gains to your main holding
-* **Smart Limit Orders** - CEX-like experience on Solana DEX
-* **Non-Custodial** - Your keys, your crypto
-* **Fair Launch** - No presales, no VC allocations
+```bash
+cd frontend
+npm install
+cp .env.example .env.local
+npm run dev
+```
 
-***
+The frontend runs on `http://localhost:3000` by default.
 
-_Built on Solana | Launched on Pump.fun | Powered by the Community_
+### Backend
+
+```bash
+cd "OrderSwap Backend"
+npm install
+cp .env.example .env
+npm run prisma:generate
+npm run prisma:migrate
+npm run start:dev
+```
+
+The backend runs on `http://localhost:3001` by default.
+
+### Program workspace and supporting services
+
+Use the `program/` directory when you need the protocol-side tooling:
+
+- `program/app/` for the CLI and TypeScript client
+- `program/indexer/` for event syncing
+- `program/keeper/` for automated execution
+
+Each of those folders has its own `README.md` with setup details.
+
+## Documentation map
+
+- `getting-started.md` for the first-time setup flow
+- `core-features.md` for the main product features
+- `step-by-step-tutorials.md` for walkthroughs
+- `tokenomics-and-launch.md` for token details
+- `security-and-infrastructure.md` for architecture and safety notes
+- `roadmap.md` for planned milestones
+- `faq-and-contact.md` for common questions
+
+## Naming note
+
+The product is now called Swapify. Some folder names and internal packages still use older project naming, but this repository is the Swapify codebase.
